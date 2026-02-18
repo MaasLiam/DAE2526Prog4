@@ -1,5 +1,4 @@
 #include "Component.h"
-#pragma once
 
 dae::Component::Component(GameObject* parent)
 	: m_Parent(parent)
@@ -8,7 +7,7 @@ dae::Component::Component(GameObject* parent)
 
 void dae::Component::Update(float deltaTime)
 {
-	deltaTime;
+	(void)deltaTime;
 }
 
 void dae::Component::Render() const

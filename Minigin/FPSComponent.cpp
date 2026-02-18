@@ -1,7 +1,7 @@
 #include "FPSComponent.h"
 #include "TextComponent.h"
 #include "GameObject.h"
-#include <format>
+//#include <format>
 
 dae::FPSComponent::FPSComponent(GameObject* parent)
 	: Component(parent)
@@ -27,8 +27,8 @@ void dae::FPSComponent::Update(float deltaTime)
     {
         const float fps = static_cast<float>(m_FrameCount) / m_AccumulatedTime;
 
-        m_pTextComponent->SetText(std::format("{:.1f} FPS", fps));
-
+        //m_pTextComponent->SetText(std::format("{:.1f} FPS", fps));
+        m_pTextComponent->SetText(std::to_string(static_cast<int>(fps)) + " FPS");
         m_AccumulatedTime = 0.f;
         m_FrameCount = 0;
     }

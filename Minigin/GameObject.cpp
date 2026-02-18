@@ -3,7 +3,7 @@
 #include "ResourceManager.h"
 #include "Renderer.h"
 #include <assert.h>
-
+#include <algorithm>
 
 void dae::GameObject::Update(float deltaTime)
 {
