@@ -13,8 +13,9 @@ namespace dae
 	public:
 		Scene& CreateScene();
 
-		void Update();
+		void Update(float deltaTime);
 		void Render();
+		void LateUpdate();
 	private:
 		friend class Singleton<SceneManager>;
 		SceneManager() = default;

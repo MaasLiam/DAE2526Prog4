@@ -1,16 +1,27 @@
 ﻿#include <stdexcept>
 #include <SDL3_ttf/SDL_ttf.h>
-#include "TextObject.h"
+#include "TextComponent.h"
 #include "Renderer.h"
 #include "Font.h"
 #include "Texture2D.h"
 
-dae::TextObject::TextObject(const std::string& text, std::shared_ptr<Font> font, const SDL_Color& color)
-	: m_needsUpdate(true), m_text(text), m_color(color), m_font(std::move(font)), m_textTexture(nullptr)
-{ }
+#include "GameObject.h"
+#include "TransformComponent.h"
 
-void dae::TextObject::Update()
+dae::TextComponent::TextComponent(GameObject* parent, std::string text, std::shared_ptr<Font> font, SDL_Color color)
+	:Component(parent), 
+	m_needsUpdate(true), 
+	m_text(text), 
+	m_color(color), 
+	m_font(std::move(font)), 
+	m_textTexture(nullptr)
+{ 
+}
+
+
+void dae::TextComponent::Update(float delatTime)
 {
+	delatTime;
 	if (m_needsUpdate)
 	{
 		const auto surf = TTF_RenderText_Blended(m_font->GetFont(), m_text.c_str(), m_text.length(), m_color);
@@ -29,27 +40,26 @@ void dae::TextObject::Update()
 	}
 }
 
-void dae::TextObject::Render() const
+void dae::TextComponent::Render() const
 {
-	if (m_textTexture != nullptr)
-	{
-		const auto& pos = m_transform.GetPosition();
-		Renderer::GetInstance().RenderTexture(*m_textTexture, pos.x, pos.y);
-	}
-}
+	if (!m_textTexture)
+		return;
 
-void dae::TextObject::SetText(const std::string& text)
+	const auto* transform = m_Parent->GetComponent<TransformComponent>();
+	if (!transform)
+		return;
+
+	const auto& pos = transform->GetPosition();
+
+	Renderer::GetInstance().RenderTexture(*m_textTexture, pos.x, pos.y);
+}
+void dae::TextComponent::SetText(const std::string& text)
 {
 	m_text = text;
 	m_needsUpdate = true;
 }
 
-void dae::TextObject::SetPosition(const float x, const float y)
-{
-	m_transform.SetPosition(x, y);
-}
-
-void dae::TextObject::SetColor(const SDL_Color& color) 
+void dae::TextComponent::SetColor(const SDL_Color& color)
 { 
 	m_color = color; 
 	m_needsUpdate = true; 

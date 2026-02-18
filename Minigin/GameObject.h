@@ -1,27 +1,57 @@
 #pragma once
 #include <string>
 #include <memory>
-#include "Transform.h"
+#include "Component.h"
+#include <vector>
 
 namespace dae
 {
 	class Texture2D;
-	class GameObject 
+	class GameObject final
 	{
-		Transform m_transform{};
-		std::shared_ptr<Texture2D> m_texture{};
 	public:
-		virtual void Update();
-		virtual void Render() const;
+		void Update(float deltaTime);
+		void Render() const;
+		
+		void AddComponent(std::unique_ptr<Component> component);
 
-		void SetTexture(const std::string& filename);
-		void SetPosition(float x, float y);
+		template<typename T>
+		T* GetComponent() const
+		{
+			for (const auto& component : m_Components)
+			{
+				if (auto casted = dynamic_cast<T*>(component.get()))
+				{
+					return casted;
+				}
+			}
+			return nullptr;
+		}
 
+		template <typename T>
+		bool HasComponent() const
+		{
+			return GetComponent<T>() != nullptr;
+		}
+
+		template<typename T>
+		void* RemoveComponent()
+		{
+			//mark for removal
+			if (auto* component = GetComponent<T>())
+			{
+				m_ComponentsToRemove.push_back(component);
+			}
+		}
+		
 		GameObject() = default;
-		virtual ~GameObject();
+		~GameObject() = default;
 		GameObject(const GameObject& other) = delete;
 		GameObject(GameObject&& other) = delete;
 		GameObject& operator=(const GameObject& other) = delete;
 		GameObject& operator=(GameObject&& other) = delete;
+	private:
+		std::vector<std::unique_ptr<Component>> m_Components{};
+		std::vector<Component*> m_ComponentsToRemove{};
 	};
 }
