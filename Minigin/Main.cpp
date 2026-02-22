@@ -34,6 +34,7 @@ static void load()
 	scene.Add(std::move(go));
 
 	auto font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36);
+
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent(std::make_unique<dae::TransformComponent>(go.get()));
 	go->GetComponent<dae::TransformComponent>()->SetPosition(292, 20);

@@ -8,11 +8,6 @@ dae::TransformComponent::TransformComponent(GameObject* parent)
 {
 }
 
-void dae::TransformComponent::Update(float deltaTime)
-{
-	(void)deltaTime;
-}
-
 void dae::TransformComponent::SetPosition(float x, float y, float z)
 {
 	m_position.x = x;

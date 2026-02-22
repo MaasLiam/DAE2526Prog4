@@ -19,9 +19,8 @@ dae::TextComponent::TextComponent(GameObject* parent, std::string text, std::sha
 }
 
 
-void dae::TextComponent::Update(float deltaTime)
+void dae::TextComponent::Update(float)
 {
-	(void)deltaTime;
 	if (m_needsUpdate)
 	{
 		const auto surf = TTF_RenderText_Blended(m_font->GetFont(), m_text.c_str(), m_text.length(), m_color);

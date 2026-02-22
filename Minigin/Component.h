@@ -9,8 +9,8 @@ namespace dae
         explicit Component(GameObject* parent);
         virtual ~Component() = default;
 
-        virtual void Update(float deltaTime);
-        virtual void Render() const;
+        virtual void Update(float) {};
+        virtual void Render() const {};
 
     protected:
         GameObject* m_Parent{};
