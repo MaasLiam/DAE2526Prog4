@@ -51,14 +51,14 @@ static void load()
 	go->AddComponent<dae::FPSComponent>();
 	scene.Add(std::move(go));
 
-
+	//first fighter
 	auto parentFighterGo = std::make_unique<dae::GameObject>();
 	auto* parentPtr = parentFighterGo.get();
 	parentFighterGo->AddComponent<dae::TransformComponent>();
 	parentFighterGo->AddComponent<dae::RenderComponent>("fighter01.png");
 	parentFighterGo->AddComponent<dae::RotationComponent>(20.f, 5.f, glm::vec3{ 250.f, 250.f, 0.f });
 
-	//second orbit
+	//second fighter
 	auto childFighterGo = std::make_unique<dae::GameObject>();
 	childFighterGo->AddComponent<dae::TransformComponent>();
 	childFighterGo->AddComponent<dae::RenderComponent>("fighter01.png");
