@@ -5,12 +5,12 @@
 #include "GameObject.h"
 #include "TransformComponent.h"
 
-dae::RenderComponent::RenderComponent(GameObject& parent)
+dae::RenderComponent::RenderComponent(GameObject* parent)
 	: Component(parent)
 {
 }
 
-dae::RenderComponent::RenderComponent(GameObject& parent, const std::string& filename)
+dae::RenderComponent::RenderComponent(GameObject* parent, const std::string& filename)
 	: Component(parent)
 {
 	auto tex = ResourceManager::GetInstance().LoadTexture(filename);
@@ -21,10 +21,10 @@ void dae::RenderComponent::Render() const
 {
     if (!m_pTexture) return;
 
-    auto* transform = GetOwner().GetComponent<TransformComponent>();
+    auto* transform = GetOwner()->GetComponent<TransformComponent>();
     if (!transform) return;
 
-    const auto& pos = transform->GetPosition();
+    const auto& pos = transform->GetWorldPosition();
     Renderer::GetInstance().RenderTexture(*m_pTexture, pos.x, pos.y);
 }
 

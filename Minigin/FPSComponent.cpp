@@ -3,7 +3,7 @@
 #include "GameObject.h"
 //#include <format>
 
-dae::FPSComponent::FPSComponent(GameObject& parent)
+dae::FPSComponent::FPSComponent(GameObject* parent)
 	: Component(parent)
 	, m_UpdateInterval(0.1f)
 {
@@ -12,7 +12,7 @@ dae::FPSComponent::FPSComponent(GameObject& parent)
 void dae::FPSComponent::Update(float deltaTime)
 {
     if (!m_pTextComponent)
-        m_pTextComponent = GetOwner().GetComponent<TextComponent>();
+        m_pTextComponent = GetOwner()->GetComponent<TextComponent>();
 
     if (!m_pTextComponent)
         return;
@@ -26,8 +26,6 @@ void dae::FPSComponent::Update(float deltaTime)
     if (m_AccumulatedTime >= m_UpdateInterval)
     {
         const float fps = static_cast<float>(m_FrameCount) / m_AccumulatedTime;
-
-        //m_pTextComponent->SetText(std::format("{:.1f} FPS", fps));
         m_pTextComponent->SetText(std::to_string(static_cast<int>(fps)) + " FPS");
         m_AccumulatedTime = 0.f;
         m_FrameCount = 0;

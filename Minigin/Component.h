@@ -6,8 +6,8 @@ namespace dae
     class Component
     {
     public:
-        explicit Component(GameObject& parent);
-        GameObject& GetOwner() const;
+        explicit Component(GameObject* parent);
+        GameObject* GetOwner() const;
         virtual ~Component() = default;
         Component(const Component&) = delete;
         Component(Component&&) = delete;
@@ -18,6 +18,6 @@ namespace dae
         virtual void Render() const {};
 
     private:
-        GameObject& m_Owner;
+        GameObject* m_Owner;
     };
 }

@@ -11,9 +11,9 @@ namespace dae
     class RenderComponent final : public Component
     {
     public:
-        explicit RenderComponent(GameObject& parent);
+        explicit RenderComponent(GameObject* parent);
 
-        RenderComponent(GameObject& parent, const std::string& filename);
+        RenderComponent(GameObject* parent, const std::string& filename);
 
         void Render() const override;
 

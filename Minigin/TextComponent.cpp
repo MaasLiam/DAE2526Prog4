@@ -9,7 +9,7 @@
 #include "TransformComponent.h"
 #include "RenderComponent.h"
 
-dae::TextComponent::TextComponent(GameObject& parent, std::string text, std::shared_ptr<Font> font, SDL_Color color)
+dae::TextComponent::TextComponent(GameObject* parent, std::string text, std::shared_ptr<Font> font, SDL_Color color)
 	:Component(parent), 
 	m_needsUpdate(true), 
 	m_text(text), 
@@ -24,7 +24,7 @@ void dae::TextComponent::Update(float)
 {
 	if (m_needsUpdate)
 	{
-		auto* render = GetOwner().GetComponent<RenderComponent>();
+		auto* render = GetOwner()->GetComponent<RenderComponent>();
 		if (render)
 		{
 			const auto surf = TTF_RenderText_Blended(m_font->GetFont(), m_text.c_str(), m_text.length(), m_color);

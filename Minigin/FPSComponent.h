@@ -8,7 +8,7 @@ namespace dae
 	class FPSComponent final : public Component
 	{
 	public:
-		FPSComponent(GameObject& parent); 
+		FPSComponent(GameObject* parent); 
 		void Update(float deltaTime);
 
 		private:
