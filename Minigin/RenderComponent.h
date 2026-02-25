@@ -8,13 +8,19 @@ namespace dae
 	class GameObject;
 	class Texture2D;
 
-	class RenderComponent final : public Component
-	{
-	public:
-		RenderComponent(GameObject* parent, const std::string& fileName);
-		void Render() const override;
-	private:
-		std::shared_ptr<Texture2D> m_Texture;
-	};
+    class RenderComponent final : public Component
+    {
+    public:
+        explicit RenderComponent(GameObject& parent);
+
+        RenderComponent(GameObject& parent, const std::string& filename);
+
+        void Render() const override;
+
+        void SetTexture(Texture2D* texture);
+
+    private:
+		Texture2D* m_pTexture{};
+    };
 
 }

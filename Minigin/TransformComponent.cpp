@@ -2,7 +2,7 @@
 
 
 
-dae::TransformComponent::TransformComponent(GameObject* parent)
+dae::TransformComponent::TransformComponent(GameObject& parent)
 	: Component(parent)
 	, m_position{}
 {

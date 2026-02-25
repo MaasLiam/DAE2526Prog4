@@ -7,7 +7,7 @@
 
 void dae::GameObject::Update(float deltaTime)
 {
-	for (const auto& component : m_Components)
+	for (auto& component : m_Components)
 	{
 		component->Update(deltaTime);
 	}
@@ -37,10 +37,3 @@ void dae::GameObject::Render() const
 		component->Render();
 	}
 }
-
-void dae::GameObject::AddComponent(std::unique_ptr<Component> component)
-{
-	assert(component != nullptr && "Cannot add a null component to a GameObject.");
-	m_Components.push_back(std::move(component));
-}
-

@@ -6,13 +6,18 @@ namespace dae
     class Component
     {
     public:
-        explicit Component(GameObject* parent);
+        explicit Component(GameObject& parent);
+        GameObject& GetOwner() const;
         virtual ~Component() = default;
+        Component(const Component&) = delete;
+        Component(Component&&) = delete;
+        Component& operator=(const Component&) = delete;
+        Component& operator=(Component&&) = delete;
 
         virtual void Update(float) {};
         virtual void Render() const {};
 
-    protected:
-        GameObject* m_Parent{};
+    private:
+        GameObject& m_Owner;
     };
 }

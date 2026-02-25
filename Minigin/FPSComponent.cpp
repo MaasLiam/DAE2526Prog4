@@ -3,7 +3,7 @@
 #include "GameObject.h"
 //#include <format>
 
-dae::FPSComponent::FPSComponent(GameObject* parent)
+dae::FPSComponent::FPSComponent(GameObject& parent)
 	: Component(parent)
 	, m_UpdateInterval(0.1f)
 {
@@ -12,7 +12,7 @@ dae::FPSComponent::FPSComponent(GameObject* parent)
 void dae::FPSComponent::Update(float deltaTime)
 {
     if (!m_pTextComponent)
-        m_pTextComponent = m_Parent->GetComponent<TextComponent>();
+        m_pTextComponent = GetOwner().GetComponent<TextComponent>();
 
     if (!m_pTextComponent)
         return;

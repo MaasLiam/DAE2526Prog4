@@ -12,8 +12,13 @@ namespace dae
 	public:
 		void Update(float deltaTime);
 		void Render() const;
-		
-		void AddComponent(std::unique_ptr<Component> component);
+
+		template <typename T, typename... Args>
+		void AddComponent(Args&&... args)
+		{
+
+			m_Components.push_back(std::make_unique<T>(*this, std::forward<Args>(args)...));
+		}
 
 		template<typename T>
 		T* GetComponent() const
@@ -35,7 +40,7 @@ namespace dae
 		}
 
 		template<typename T>
-		void* RemoveComponent()
+		void RemoveComponent()
 		{
 			//mark for removal
 			if (auto* component = GetComponent<T>())

@@ -5,20 +5,31 @@
 #include "GameObject.h"
 #include "TransformComponent.h"
 
-dae::RenderComponent::RenderComponent(GameObject* parent, const std::string& fileName)
+dae::RenderComponent::RenderComponent(GameObject& parent)
 	: Component(parent)
 {
-	m_Texture = ResourceManager::GetInstance().LoadTexture(fileName);
+}
+
+dae::RenderComponent::RenderComponent(GameObject& parent, const std::string& filename)
+	: Component(parent)
+{
+	auto tex = ResourceManager::GetInstance().LoadTexture(filename);
+	m_pTexture = tex.get();
 }
 
 void dae::RenderComponent::Render() const
 {
-	if (m_Texture != nullptr)
-	{
-		auto* transform = m_Parent->GetComponent<TransformComponent>();
-		const auto& pos = transform != nullptr ? transform->GetPosition() : glm::vec3{ 0, 0, 0 };
+    if (!m_pTexture) return;
 
-		Renderer::GetInstance().RenderTexture(*m_Texture, pos.x, pos.y);
-	}
+    auto* transform = GetOwner().GetComponent<TransformComponent>();
+    if (!transform) return;
+
+    const auto& pos = transform->GetPosition();
+    Renderer::GetInstance().RenderTexture(*m_pTexture, pos.x, pos.y);
+}
+
+void dae::RenderComponent::SetTexture(Texture2D* texture)
+{
+	m_pTexture = texture;
 }
 
