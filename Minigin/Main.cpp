@@ -22,7 +22,7 @@ static void load()
 {
 	auto& scene = dae::SceneManager::GetInstance().CreateScene();
 
-
+	//background
 	auto go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::TransformComponent>();
 	go->AddComponent<dae::RenderComponent>("background.png");
