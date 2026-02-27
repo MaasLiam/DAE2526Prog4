@@ -46,4 +46,3 @@ void dae::TransformComponent::SetDirtyWorldPosition()
 {
 	m_DirtyWorldPosition = true;
 }
-

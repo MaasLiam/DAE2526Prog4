@@ -5,16 +5,17 @@
 namespace dae
 {
 	class GameObject;
+	class TransformComponent;
 	class RotationComponent final : public Component
 	{
 	public:
-		RotationComponent(GameObject* owner, float radius, float angularSpeed, const glm::vec3& center = { 0.f,0.f,0.f });
+		RotationComponent(GameObject* owner, float radius, float angularSpeed);
 		void Update(float deltaTime) override;
 	private:
 		float m_Radius{};
 		float m_AngularSpeed{};
 		float m_Angle{};
-		glm::vec3 m_Center{};
+		TransformComponent* m_pTransform{};
 	};
 
 }
