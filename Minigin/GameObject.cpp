@@ -115,7 +115,4 @@ void dae::GameObject::SetDirtyWorldPosition()
 {
 	if (auto* t = GetComponent<TransformComponent>())
 		t->SetDirtyWorldPosition();
-
-	for (auto* child : m_Children)
-		child->SetDirtyWorldPosition();
 }
