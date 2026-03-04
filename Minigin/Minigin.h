@@ -2,6 +2,8 @@
 #include <string>
 #include <functional>
 #include <filesystem>
+#include <memory>
+#include "Game.h"
 
 namespace dae
 {
@@ -9,10 +11,11 @@ namespace dae
 	{
 		bool m_quit{};
 		float m_deltaTime{};
+		std::unique_ptr<Game> m_pGame{};
 	public:
-		explicit Minigin(const std::filesystem::path& dataPath);
+		explicit Minigin(const std::filesystem::path& dataPath, std::unique_ptr<Game> game);
 		~Minigin();
-		void Run(const std::function<void()>& load);
+		void Run();
 		void RunOneFrame();
 
 		Minigin(const Minigin& other) = delete;

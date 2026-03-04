@@ -54,7 +54,8 @@ void PrintSDLVersion()
 	LogSDLVersion("Linked with SDL_ttf ", SDL_VERSIONNUM_MAJOR(version), SDL_VERSIONNUM_MINOR(version),	SDL_VERSIONNUM_MICRO(version));
 }
 
-dae::Minigin::Minigin(const std::filesystem::path& dataPath)
+dae::Minigin::Minigin(const std::filesystem::path& dataPath, std::unique_ptr<Game> game)
+	: m_pGame(std::move(game))
 {
 	PrintSDLVersion();
 	
@@ -87,9 +88,11 @@ dae::Minigin::~Minigin()
 	SDL_Quit();
 }
 
-void dae::Minigin::Run(const std::function<void()>& load)
+void dae::Minigin::Run()
 {
-	load();
+	if (m_pGame)
+		m_pGame->Initialize();
+
 #ifndef __EMSCRIPTEN__
 	while (!m_quit)
 		RunOneFrame();
@@ -107,7 +110,15 @@ void dae::Minigin::RunOneFrame()
 	lastTime = currentTime;
 
 	m_quit = !InputManager::GetInstance().ProcessInput();
+	if (m_pGame)
+		m_pGame->Update(m_deltaTime);
+
 	SceneManager::GetInstance().Update(m_deltaTime);
 	SceneManager::GetInstance().LateUpdate();
-	Renderer::GetInstance().Render();
+	Renderer::GetInstance().BeginFrame();
+
+	if (m_pGame)
+		m_pGame->Render();
+
+	Renderer::GetInstance().EndFrame();
 }

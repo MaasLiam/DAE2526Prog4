@@ -55,7 +55,6 @@ namespace dae
 
 		size_t GetChildCount() const;
 		GameObject* GetChildAt(size_t index) const;
-		const std::vector<GameObject*>& GetChildren() const;
 		glm::vec3 GetWorldPos() const;
 		void SetDirtyWorldPosition();
 		
@@ -73,10 +72,10 @@ namespace dae
 		std::vector<Component*> m_ComponentsToRemove{};
 
 		GameObject* m_pParent{ nullptr };
-		std::vector<GameObject*> m_Children{};
+		std::vector<std::unique_ptr<GameObject>> m_Children{};
 
-		void AddChild(GameObject* child);
-		void RemoveChild(GameObject* child);
+		std::unique_ptr<GameObject> AddChild(std::unique_ptr<GameObject> child);
+		std::unique_ptr<GameObject> RemoveChild(GameObject* child);
 		bool IsChild(GameObject* gameObject);
 		void SetLocalPosition(glm::vec3 pos);
 		

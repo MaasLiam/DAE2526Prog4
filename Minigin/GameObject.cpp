@@ -63,10 +63,15 @@ void dae::GameObject::SetParent(GameObject* parent, bool keepWorldPosition)
 		}
 		SetDirtyWorldPosition();
 	}
-	if (m_pParent) m_pParent->RemoveChild(this);
+	if (m_pParent)
+	{
+		auto child = m_pParent->RemoveChild(this);
+		if (parent)
+		{
+			parent->AddChild(std::move(child));
+		}
+	}
 	m_pParent = parent;
-	if (m_pParent) m_pParent->AddChild(this);
-
 }
 
 size_t dae::GameObject::GetChildCount() const
@@ -77,27 +82,32 @@ size_t dae::GameObject::GetChildCount() const
 dae::GameObject* dae::GameObject::GetChildAt(size_t index) const
 {
 	if (index >= m_Children.size()) return nullptr;
-	return m_Children[index];
+	return m_Children[index].get();
 }
 
-const std::vector<dae::GameObject*>& dae::GameObject::GetChildren() const
+std::unique_ptr<dae::GameObject> dae::GameObject::AddChild(std::unique_ptr<GameObject> child)
 {
-	return m_Children;
+	m_Children.push_back(std::move(child));
+	return nullptr;
 }
 
-void dae::GameObject::AddChild(GameObject* child)
+std::unique_ptr<dae::GameObject> dae::GameObject::RemoveChild(GameObject* child)
 {
-	m_Children.push_back(child);
-}
-
-void dae::GameObject::RemoveChild(GameObject* child)
-{
-	m_Children.erase(std::remove(m_Children.begin(), m_Children.end(), child), m_Children.end());
+	auto it = std::find_if(m_Children.begin(), m_Children.end(),
+		[child](const std::unique_ptr<GameObject>& ptr) { return ptr.get() == child; });
+	if (it != m_Children.end())
+	{
+		auto removed = std::move(*it);
+		m_Children.erase(it);
+		return removed;
+	}
+	return nullptr;
 }
 
 bool dae::GameObject::IsChild(GameObject* gameObject)
 {
-	return std::find(m_Children.begin(), m_Children.end(), gameObject) != m_Children.end();
+	return std::find_if(m_Children.begin(), m_Children.end(),
+		[gameObject](const std::unique_ptr<GameObject>& ptr) { return ptr.get() == gameObject; }) != m_Children.end();
 }
 
 void dae::GameObject::SetLocalPosition(glm::vec3 pos)

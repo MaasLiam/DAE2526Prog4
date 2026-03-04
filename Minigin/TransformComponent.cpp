@@ -46,8 +46,9 @@ void dae::TransformComponent::SetDirtyWorldPosition()
 {
 	m_DirtyWorldPosition = true;
 
-	for (auto* child : GetOwner()->GetChildren())
+	for (size_t i = 0; i < GetOwner()->GetChildCount(); ++i)
 	{
+		auto* child = GetOwner()->GetChildAt(i);
 		if (!child) continue;
 		if (auto* childTransform = child->GetComponent<TransformComponent>())
 			childTransform->SetDirtyWorldPosition();
