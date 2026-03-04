@@ -17,7 +17,7 @@
 #include <cmath>
 #include <cfloat>
 
-struct TransformBench
+struct Transform
 {
     float matrix[16] = {
         1,0,0,0,
@@ -30,14 +30,14 @@ struct TransformBench
 class GameObject3D
 {
 public:
-    TransformBench transform{};
+    Transform transform{};
     int ID{ 1 };
 };
 
 class GameObject3DAlt
 {
 public:
-    TransformBench* transform{};
+    Transform* transform{};
     int ID{ 1 };
 };
 
