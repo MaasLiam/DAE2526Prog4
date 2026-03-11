@@ -105,11 +105,7 @@ public:
 	~Impl()
 	{
 #ifndef _WIN32
-		if (m_pGamepad)
-		{
-			SDL_CloseGamepad(m_pGamepad);
-			m_pGamepad = nullptr;
-		}
+		CloseController();
 #endif
 	}
 
@@ -127,18 +123,27 @@ protected:
 
 		m_CurrentButtons = state.Gamepad.wButtons;
 #else
+		// Make sure SDL updates device state/events before polling buttons.
+		SDL_PumpEvents();
+
+		// If the handle exists but is no longer valid, close it and try again.
+		if (m_pGamepad && !SDL_GamepadConnected(m_pGamepad))
+		{
+			SDL_Log("Gamepad disconnected, closing handle.");
+			CloseController();
+		}
+
+		// Retry opening every frame until a controller becomes available.
 		if (!m_pGamepad)
 		{
 			OpenController();
 		}
+
 		if (!m_pGamepad)
 		{
 			return;
 		}
-		if (!SDL_GamepadConnected(m_pGamepad))
-		{
-			return;
-		}
+
 		if (SDL_GetGamepadButton(m_pGamepad, SDL_GAMEPAD_BUTTON_DPAD_UP))
 		{
 			m_CurrentButtons |= ToSDLStyleMask(InputKey::DPadUp);
@@ -210,14 +215,30 @@ protected:
 
 private:
 #ifndef _WIN32
+	void CloseController()
+	{
+		if (m_pGamepad)
+		{
+			SDL_CloseGamepad(m_pGamepad);
+			m_pGamepad = nullptr;
+		}
+	}
+
 	void OpenController()
 	{
+		if (m_pGamepad)
+			return;
+
 		int gamepadCount{};
 		SDL_JoystickID* joystickIds = SDL_GetJoysticks(&gamepadCount);
 		if (!joystickIds)
+		{
+			SDL_Log("No joysticks found.");
 			return;
+		}
 
 		int foundGamepadIndex{};
+
 		for (int i{}; i < gamepadCount; ++i)
 		{
 			if (SDL_IsGamepad(joystickIds[i]))
@@ -225,6 +246,14 @@ private:
 				if (foundGamepadIndex == static_cast<int>(m_ControllerIndex))
 				{
 					m_pGamepad = SDL_OpenGamepad(joystickIds[i]);
+					if (m_pGamepad)
+					{
+						SDL_Log("Opened gamepad at index %d", foundGamepadIndex);
+					}
+					else
+					{
+						SDL_Log("Failed to open gamepad at index %d: %s", foundGamepadIndex, SDL_GetError());
+					}
 					break;
 				}
 				++foundGamepadIndex;
