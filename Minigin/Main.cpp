@@ -21,7 +21,7 @@ int main(int, char*[]) {
 	if(!fs::exists(data_location))
 		data_location = "../Data/";
 #endif
-	dae::Minigin engine(data_location, std::make_unique<ThrashTheCache>());
+	dae::Minigin engine(data_location, std::make_unique<Galaga>());
 	engine.Run();
     return 0;
 }

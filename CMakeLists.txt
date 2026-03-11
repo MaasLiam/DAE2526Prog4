@@ -32,7 +32,11 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Minigin/FPSComponent.cpp 
   Minigin/RotationComponent.cpp
   Game/Galaga.cpp
-  Game/ThrashTheCache.cpp)
+  Game/ThrashTheCache.cpp 
+  Minigin/KeyboardInput.cpp
+  Minigin/ControllerInput.cpp 
+  Minigin/MoveObjectCommand.cpp
+)
 
 # enable c++20 features
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
