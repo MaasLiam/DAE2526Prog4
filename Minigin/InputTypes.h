@@ -16,6 +16,8 @@ namespace dae
 		A,
 		S,
 		D,
+		C,
+		X,
 
 		// Controller
 		DPadUp,

@@ -36,7 +36,13 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Minigin/KeyboardInput.cpp
   Minigin/ControllerInput.cpp 
   Minigin/MoveObjectCommand.cpp
-)
+  Minigin/Subject.cpp
+  Minigin/HealthComponent.cpp
+  Minigin/DamagePlayerCommand.cpp
+  Minigin/DisplayLivesComponent.cpp
+  Minigin/ScoreComponent.cpp
+  Minigin/AddScoreCommand.cpp
+  Minigin/DisplayScoreComponent.cpp "Minigin/SteamAchievements.cpp" "Minigin/SteamAchievementObserver.cpp")
 
 # enable c++20 features
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
@@ -130,7 +136,7 @@ add_library(imgui STATIC
   ${imgui_SOURCE_DIR}/imgui_demo.cpp
   ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
   ${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer3.cpp
-)
+ "Minigin/ScoreComponent.h")
 
 target_compile_definitions(imgui PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
 target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${sdl3_SOURCE_DIR}/include)

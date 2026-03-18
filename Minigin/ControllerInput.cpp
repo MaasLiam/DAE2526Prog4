@@ -123,17 +123,14 @@ protected:
 
 		m_CurrentButtons = state.Gamepad.wButtons;
 #else
-		// Make sure SDL updates device state/events before polling buttons.
 		SDL_PumpEvents();
 
-		// If the handle exists but is no longer valid, close it and try again.
 		if (m_pGamepad && !SDL_GamepadConnected(m_pGamepad))
 		{
 			SDL_Log("Gamepad disconnected, closing handle.");
 			CloseController();
 		}
 
-		// Retry opening every frame until a controller becomes available.
 		if (!m_pGamepad)
 		{
 			OpenController();

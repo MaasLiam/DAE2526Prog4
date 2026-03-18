@@ -51,10 +51,18 @@ int dae::KeyboardInput::ToSDLScancode(InputKey key) const
 {
 	switch (key)
 	{
-	case InputKey::W: return SDL_SCANCODE_W;
-	case InputKey::A: return SDL_SCANCODE_A;
-	case InputKey::S: return SDL_SCANCODE_S;
-	case InputKey::D: return SDL_SCANCODE_D;
+	case InputKey::W: 
+		return SDL_SCANCODE_W;
+	case InputKey::A: 
+		return SDL_SCANCODE_A;
+	case InputKey::S: 
+		return SDL_SCANCODE_S;
+	case InputKey::D: 
+		return SDL_SCANCODE_D;
+	case InputKey::C: 
+		return SDL_SCANCODE_C;
+	case InputKey::X:
+		return SDL_SCANCODE_X;
 
 	default:
 		return -1;

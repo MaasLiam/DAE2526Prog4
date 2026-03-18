@@ -10,10 +10,19 @@
 #include "RotationComponent.h"
 #include "InputManager.h"
 #include "MoveObjectCommand.h"
+#include "HealthComponent.h"
+#include "DamagePlayerCommand.h"
+#include "DisplayLivesComponent.h"
+#include "AddScoreCommand.h"
+#include "DisplayScoreComponent.h"
 
 #include "KeyboardInput.h"
 #include "ControllerInput.h"
 #include "InputTypes.h"
+#include "ScoreComponent.h"
+#include "SteamAchievements.h"
+#include "SteamAchievementObserver.h"
+
 
 void Galaga::Initialize()
 {
@@ -77,13 +86,19 @@ void Galaga::Initialize()
 	//scene.Add(std::move(childFighterGo));
 
 	auto& inputManager = dae::InputManager::GetInstance();
+	font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 20);
 
 	// Player 1
 	/*auto go = std::make_unique<dae::GameObject>();*/
 	go = std::make_unique<dae::GameObject>();
+	go->AddComponent<dae::HealthComponent>(3);
+	go->AddComponent<dae::ScoreComponent>();
 	go->AddComponent<dae::TransformComponent>();
 	go->AddComponent<dae::RenderComponent>("fighter01.png");
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 100, 100, 0 });
+	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 472, 280, 0 });
+
+	auto* player1Health = go->GetComponent<dae::HealthComponent>();
+	auto* player1Score = go->GetComponent<dae::ScoreComponent>();
 
 	constexpr float player1Speed = 100.f;
 
@@ -107,14 +122,47 @@ void Galaga::Initialize()
 		dae::InputKey::D,
 		dae::InputState::Pressed);
 
+	inputManager.GetKeyboardInput()->AddBinding(
+		std::make_unique<dae::DamagePlayerCommand>(*go),
+		dae::InputKey::X,
+		dae::InputState::Down);
+
+	inputManager.GetKeyboardInput()->AddBinding(
+		std::make_unique<dae::AddScoreCommand>(*go, 100),
+		dae::InputKey::C,
+		dae::InputState::Down);
+
+	scene.Add(std::move(go));
+
+	//player1 health ui
+	go = std::make_unique<dae::GameObject>();
+	go->AddComponent<dae::TransformComponent>();
+	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 20, 60, 0 });
+	go->AddComponent<dae::RenderComponent>();
+	go->AddComponent<dae::TextComponent>("P1 Lives: 3", font, SDL_Color{ 255, 255, 255, 255 });
+	go->AddComponent<dae::DisplayLivesComponent>(*player1Health, "P1");
+	scene.Add(std::move(go));
+
+	//player1 score ui
+	go = std::make_unique<dae::GameObject>();
+	go->AddComponent<dae::TransformComponent>();
+	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 120, 60, 0 });
+	go->AddComponent<dae::RenderComponent>();
+	go->AddComponent<dae::TextComponent>("P1 Score: 0", font, SDL_Color{ 255, 255, 255, 255 });
+	go->AddComponent<dae::DisplayScoreComponent>(*player1Score, "P1");
 	scene.Add(std::move(go));
 
 
 	// Player 2
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::TransformComponent>();
+	go->AddComponent<dae::HealthComponent>(3);
+	go->AddComponent<dae::ScoreComponent>();
 	go->AddComponent<dae::RenderComponent>("enemySprite01.png");
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 200, 200, 0 });
+	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 552, 280, 0 });
+
+	auto* player2Health = go->GetComponent<dae::HealthComponent>();
+	auto* player2Score = go->GetComponent<dae::ScoreComponent>();
 
 	constexpr float player2Speed = 200.f; // double speed
 
@@ -138,5 +186,57 @@ void Galaga::Initialize()
 		dae::InputKey::DPadRight,
 		dae::InputState::Pressed);
 
+	inputManager.GetControllerInput(0)->AddBinding(
+		std::make_unique<dae::DamagePlayerCommand>(*go),
+		dae::InputKey::ButtonA,
+		dae::InputState::Down);
+
+	inputManager.GetControllerInput(0)->AddBinding(
+		std::make_unique<dae::AddScoreCommand>(*go, 100),
+		dae::InputKey::ButtonX,
+		dae::InputState::Down);
+
+	//player 2 health ui
 	scene.Add(std::move(go));
+
+	go = std::make_unique<dae::GameObject>();
+	go->AddComponent<dae::TransformComponent>();
+	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 20, 90, 0 });
+	go->AddComponent<dae::RenderComponent>();
+	go->AddComponent<dae::TextComponent>("P2 Lives : 3", font, SDL_Color{ 255, 255, 255, 255 });
+	go->AddComponent<dae::DisplayLivesComponent>(*player2Health, "P2");
+
+	scene.Add(std::move(go));
+
+	//player2 score ui
+	go = std::make_unique<dae::GameObject>();
+	go->AddComponent<dae::TransformComponent>();
+	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 120, 90, 0 });
+	go->AddComponent<dae::RenderComponent>();
+	go->AddComponent<dae::TextComponent>("P2 Score: 0", font, SDL_Color{ 255, 255, 255, 255 });
+	go->AddComponent<dae::DisplayScoreComponent>(*player2Score, "P2");
+	scene.Add(std::move(go));
+
+
+	//add controll info text
+	//p1
+	go = std::make_unique<dae::GameObject>();
+	go->AddComponent<dae::TransformComponent>();
+	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 20, 520, 0 });
+	go->AddComponent<dae::RenderComponent>();
+	go->AddComponent<dae::TextComponent>("P1: WASD to move, X to take damage, C to add score", font, SDL_Color{ 255, 255, 255, 255 });
+	scene.Add(std::move(go));
+
+	//p2
+	go = std::make_unique<dae::GameObject>();
+	go->AddComponent<dae::TransformComponent>();
+	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 20, 550, 0 });
+	go->AddComponent<dae::RenderComponent>();
+	go->AddComponent<dae::TextComponent>("P2: D - Pad to move, A to take damage, X to add score", font, SDL_Color{ 255, 255, 255, 255 });
+	scene.Add(std::move(go));
+
+
+	//steam achievements
+	m_pSteamAchievements = std::make_unique<dae::SteamAchievements>();
+	m_pSteamAchievementObserver = std::make_unique<dae::SteamAchievementObserver>(*player1Score, *m_pSteamAchievements);
 }
