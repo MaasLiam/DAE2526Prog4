@@ -30,19 +30,19 @@ namespace dae
 #endif
 	}
 
-	bool SteamAchievements::SetAchievement(const char* id)
+	void SteamAchievements::SetAchievement(const char* id)
 	{
 #ifdef USE_STEAMWORKS
-		if (!m_Initialized)
-		{
-			return false;
-		}
+		bool achieved{ false };
+
+		if (SteamUserStats()->GetAchievement(id, &achieved) && achieved)
+			return;
 
 		SteamUserStats()->SetAchievement(id);
-		return SteamUserStats()->StoreStats();
+		SteamUserStats()->StoreStats();
 #else
 		(void)id;
-		return false;
+		return;
 #endif
 	}
 

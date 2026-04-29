@@ -15,7 +15,7 @@ namespace dae
 		SteamAchievements();
 
 		bool Initialize();
-		bool SetAchievement(const char* id);
+		void SetAchievement(const char* id);
 
 #ifdef USE_STEAMWORKS
 		STEAM_CALLBACK(SteamAchievements, OnUserStatsStored, UserStatsStored_t, m_CallbackUserStatsStored);

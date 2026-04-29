@@ -15,6 +15,7 @@
 #include "DisplayLivesComponent.h"
 #include "AddScoreCommand.h"
 #include "DisplayScoreComponent.h"
+#include "ShootCommand.h"
 
 #include "KeyboardInput.h"
 #include "ControllerInput.h"
@@ -22,6 +23,9 @@
 #include "ScoreComponent.h"
 #include "SteamAchievements.h"
 #include "SteamAchievementObserver.h"
+
+#include "CollisionComponent.h"
+#include "EnemyComponent.h"
 
 
 void Galaga::Initialize()
@@ -94,7 +98,7 @@ void Galaga::Initialize()
 	go->AddComponent<dae::HealthComponent>(3);
 	go->AddComponent<dae::ScoreComponent>();
 	go->AddComponent<dae::TransformComponent>();
-	go->AddComponent<dae::RenderComponent>("fighter01.png");
+	go->AddComponent<dae::RenderComponent>("Sprites/fighter01.png");
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 472, 280, 0 });
 
 	auto* player1Health = go->GetComponent<dae::HealthComponent>();
@@ -104,32 +108,32 @@ void Galaga::Initialize()
 
 	inputManager.GetKeyboardInput()->AddBinding(
 		std::make_unique<dae::MoveObjectCommand>(*go, dae::MoveDirection::Up, player1Speed),
-		dae::InputKey::W,
+		dae::InputKey::ArrowUp,
 		dae::InputState::Pressed);
 
 	inputManager.GetKeyboardInput()->AddBinding(
 		std::make_unique<dae::MoveObjectCommand>(*go, dae::MoveDirection::Down, player1Speed),
-		dae::InputKey::S,
+		dae::InputKey::ArrowDown,
 		dae::InputState::Pressed);
 
 	inputManager.GetKeyboardInput()->AddBinding(
 		std::make_unique<dae::MoveObjectCommand>(*go, dae::MoveDirection::Left, player1Speed),
-		dae::InputKey::A,
+		dae::InputKey::ArrowLeft,
 		dae::InputState::Pressed);
 
 	inputManager.GetKeyboardInput()->AddBinding(
 		std::make_unique<dae::MoveObjectCommand>(*go, dae::MoveDirection::Right, player1Speed),
-		dae::InputKey::D,
+		dae::InputKey::ArrowRight,
 		dae::InputState::Pressed);
 
 	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<dae::DamagePlayerCommand>(*go),
-		dae::InputKey::X,
+		std::make_unique<ShootCommand>(*go, scene),
+		dae::InputKey::C,
 		dae::InputState::Down);
 
 	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<dae::AddScoreCommand>(*go, 100),
-		dae::InputKey::C,
+		std::make_unique<ShootCommand>(*go, scene),
+		dae::InputKey::X,
 		dae::InputState::Down);
 
 	scene.Add(std::move(go));
@@ -158,7 +162,7 @@ void Galaga::Initialize()
 	go->AddComponent<dae::TransformComponent>();
 	go->AddComponent<dae::HealthComponent>(3);
 	go->AddComponent<dae::ScoreComponent>();
-	go->AddComponent<dae::RenderComponent>("enemySprite01.png");
+	go->AddComponent<dae::RenderComponent>("Sprites/BossGalaga.png");
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 552, 280, 0 });
 
 	auto* player2Health = go->GetComponent<dae::HealthComponent>();
@@ -187,13 +191,8 @@ void Galaga::Initialize()
 		dae::InputState::Pressed);
 
 	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<dae::DamagePlayerCommand>(*go),
+		std::make_unique<ShootCommand>(*go, scene),
 		dae::InputKey::ButtonA,
-		dae::InputState::Down);
-
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<dae::AddScoreCommand>(*go, 100),
-		dae::InputKey::ButtonX,
 		dae::InputState::Down);
 
 	//player 2 health ui
@@ -224,7 +223,7 @@ void Galaga::Initialize()
 	go->AddComponent<dae::TransformComponent>();
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 20, 520, 0 });
 	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("P1: WASD to move, X to take damage, C to add score", font, SDL_Color{ 255, 255, 255, 255 });
+	go->AddComponent<dae::TextComponent>("P1: WASD to move, X and C to shoot", font, SDL_Color{ 255, 255, 255, 255 });
 	scene.Add(std::move(go));
 
 	//p2
@@ -232,11 +231,25 @@ void Galaga::Initialize()
 	go->AddComponent<dae::TransformComponent>();
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 20, 550, 0 });
 	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("P2: D - Pad to move, A to take damage, X to add score", font, SDL_Color{ 255, 255, 255, 255 });
+	go->AddComponent<dae::TextComponent>("P2: D - Pad to move, A to shoot", font, SDL_Color{ 255, 255, 255, 255 });
 	scene.Add(std::move(go));
 
 
-	//steam achievements
 	m_pSteamAchievements = std::make_unique<dae::SteamAchievements>();
-	m_pSteamAchievementObserver = std::make_unique<dae::SteamAchievementObserver>(*player1Score, *m_pSteamAchievements);
+	m_pSteamAchievementObserver = std::make_unique<dae::SteamAchievementObserver>(*m_pSteamAchievements);
+
+	player1Score->GetSubject().AddObserver(m_pSteamAchievementObserver.get());
+	player2Score->GetSubject().AddObserver(m_pSteamAchievementObserver.get());
+
+
+	//Enemies 
+	auto enemy = std::make_unique<dae::GameObject>();
+	enemy->AddComponent<dae::TransformComponent>();
+	enemy->GetComponent<dae::TransformComponent>()->SetLocalPosition(300.f, 120.f, 0.f);
+
+	enemy->AddComponent<dae::RenderComponent>("Sprites/Bee01.png");
+	enemy->AddComponent<CollisionComponent>(32.f, 32.f);
+	enemy->AddComponent<EnemyComponent>(EnemyType::Bee);
+
+	scene.Add(std::move(enemy));
 }

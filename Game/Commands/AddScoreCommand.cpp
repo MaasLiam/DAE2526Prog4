@@ -1,14 +1,15 @@
 #include "AddScoreCommand.h"
 #include "GameObject.h"
 #include "ScoreComponent.h"
+#include "Event.h"
 
 namespace dae
 {
-	AddScoreCommand::AddScoreCommand(GameObject& target, int scoreToAdd)
+	AddScoreCommand::AddScoreCommand(GameObject& target)
 		: m_Target(target)
-		, m_ScoreToAdd(scoreToAdd)
 	{
 	}
+
 	void AddScoreCommand::Execute(float)
 	{
 		auto* scoreComponent = m_Target.GetComponent<ScoreComponent>();
@@ -16,6 +17,7 @@ namespace dae
 		{
 			return;
 		}
-		scoreComponent->AddScore(m_ScoreToAdd);
+
+		scoreComponent->Notify(Event::EnemyKilled, &m_Target);
 	}
 }

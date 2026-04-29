@@ -13,12 +13,13 @@ else()
   set(TARGET_PARAM WIN32)
 endif()
 
-# list source files here
-add_executable(${TARGET_NAME} ${TARGET_PARAM}
+set(ENGINE_TARGET MiniginEngine)
+
+# engine static library
+add_library(${ENGINE_TARGET} STATIC
   Minigin/Font.cpp
   Minigin/GameObject.cpp
   Minigin/InputManager.cpp
-  Minigin/Main.cpp
   Minigin/Minigin.cpp
   Minigin/Renderer.cpp
   Minigin/ResourceManager.cpp
@@ -31,20 +32,40 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Minigin/RenderComponent.cpp
   Minigin/FPSComponent.cpp 
   Minigin/RotationComponent.cpp
-  Game/Galaga.cpp
-  Game/ThrashTheCache.cpp 
   Minigin/KeyboardInput.cpp
   Minigin/ControllerInput.cpp 
   Minigin/MoveObjectCommand.cpp
   Minigin/Subject.cpp
-  Minigin/HealthComponent.cpp
-  Minigin/DamagePlayerCommand.cpp
-  Minigin/DisplayLivesComponent.cpp
-  Minigin/ScoreComponent.cpp
-  Minigin/AddScoreCommand.cpp
-  Minigin/DisplayScoreComponent.cpp "Minigin/SteamAchievements.cpp" "Minigin/SteamAchievementObserver.cpp")
+  Minigin/NullSoundSystem.cpp
+  Minigin/ServiceLocator.cpp
+  Minigin/LoggingSoundSystem.cpp
+  Minigin/SDLSoundSystem.cpp
+)
+
+# game executable
+add_executable(${TARGET_NAME} ${TARGET_PARAM}
+  Game/Main.cpp
+  Game/Galaga.cpp
+  Game/ThrashTheCache.cpp 
+
+  Game/Components/HealthComponent.cpp
+  Game/Components/DisplayLivesComponent.cpp
+  Game/Components/ScoreComponent.cpp
+  Game/Components/DisplayScoreComponent.cpp
+  Game/Components/BulletComponent.cpp
+  Game/Components/CollisionComponent.cpp
+
+  Game/Commands/DamagePlayerCommand.cpp
+  Game/Commands/AddScoreCommand.cpp
+  Game/Commands/ShootCommand.cpp
+
+  Game/Achievements/SteamAchievements.cpp
+  Game/Achievements/SteamAchievementObserver.cpp
+
+ "Game/Components/EnemyComponent.cpp")
 
 # enable c++20 features
+target_compile_features(${ENGINE_TARGET} PUBLIC cxx_std_20)
 target_compile_features(${TARGET_NAME} PUBLIC cxx_std_20)
 
 include(FetchContent)
@@ -119,6 +140,25 @@ if(NOT SDL3_ttf_FOUND)
   endif()
 endif()
 
+# Add SDL3_mixer
+find_package(SDL3_mixer CONFIG QUIET)
+
+if(NOT SDL3_mixer_FOUND)
+  FetchContent_Declare(
+    SDL3_mixer
+    GIT_REPOSITORY https://github.com/libsdl-org/SDL_mixer.git
+    GIT_TAG main
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+  )
+
+  set(SDL3MIXER_VENDORED ON)
+  set(SDL3MIXER_SAMPLES OFF)
+  set(SDL3MIXER_INSTALL OFF)
+
+  FetchContent_MakeAvailable(SDL3_mixer)
+endif()
+
 # Add Dear ImGui
 FetchContent_Declare(
   imgui
@@ -136,26 +176,38 @@ add_library(imgui STATIC
   ${imgui_SOURCE_DIR}/imgui_demo.cpp
   ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
   ${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer3.cpp
- "Minigin/ScoreComponent.h")
+)
 
 target_compile_definitions(imgui PUBLIC IMGUI_DEFINE_MATH_OPERATORS)
-target_include_directories(imgui PUBLIC ${imgui_SOURCE_DIR} ${sdl3_SOURCE_DIR}/include)
+target_include_directories(imgui PUBLIC
+  ${imgui_SOURCE_DIR}
+  ${sdl3_SOURCE_DIR}/include
+)
 target_link_libraries(imgui PUBLIC SDL3::SDL3)
-# enable c++20 features
 target_compile_features(imgui PUBLIC cxx_std_20)
 
-include(FetchContent)
+# Add imgui_plot
 FetchContent_Declare(
-    imgui_plot
-    GIT_REPOSITORY https://github.com/soulthreads/imgui-plot.git
+  imgui_plot
+  GIT_REPOSITORY https://github.com/soulthreads/imgui-plot.git
 )
-FetchContent_MakeAvailable(imgui_plot)
+
+FetchContent_GetProperties(imgui_plot)
+if(NOT imgui_plot_POPULATED)
+  FetchContent_Populate(imgui_plot)
+endif()
+
+add_library(imgui_plot STATIC
+  ${imgui_plot_SOURCE_DIR}/src/imgui_plot.cpp
+)
+
 target_include_directories(imgui_plot PUBLIC
-    ${imgui_plot_SOURCE_DIR}
+  ${imgui_plot_SOURCE_DIR}/include
+  ${imgui_SOURCE_DIR}
 )
 
 target_link_libraries(imgui_plot PUBLIC imgui)
-target_link_libraries(${TARGET_NAME} PRIVATE imgui_plot)
+target_compile_features(imgui_plot PUBLIC cxx_std_20)
 
 if (WIN32)
   # Add VLD (Visual Leak Detector) for memory leak detection on Windows
@@ -166,9 +218,8 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/steam")
 find_package(Steamworks QUIET)
 
-target_include_directories("${TARGET_NAME}" PUBLIC 
+target_include_directories(${ENGINE_TARGET} PUBLIC 
   ${CMAKE_SOURCE_DIR}/Minigin/
-  ${CMAKE_SOURCE_DIR}/Game/
   ${glm_SOURCE_DIR}
   ${sdl3_SOURCE_DIR}/include
   ${sdl3_image_SOURCE_DIR}/include
@@ -177,18 +228,41 @@ target_include_directories("${TARGET_NAME}" PUBLIC
   ${VLD_INCLUDE_DIR}
 )
 
-target_link_libraries("${TARGET_NAME}" PUBLIC 
+target_include_directories(${TARGET_NAME} PUBLIC 
+  ${CMAKE_SOURCE_DIR}/Game/
+  ${CMAKE_SOURCE_DIR}/Game/Components/
+  ${CMAKE_SOURCE_DIR}/Game/Commands/
+  ${CMAKE_SOURCE_DIR}/Game/Achievements/
+  ${imgui_plot_SOURCE_DIR}/include
+)
+
+target_link_libraries(${ENGINE_TARGET} PUBLIC 
   SDL3::SDL3 
   SDL3_ttf::SDL3_ttf
+  SDL3_mixer::SDL3_mixer
   imgui
   ${VLD_LIBRARIES}
+)
+
+target_link_libraries(${TARGET_NAME} PUBLIC
+  ${ENGINE_TARGET}
+  imgui_plot
 )
 
 if(MSVC)
   # compile at warning level 4 + treat warnings as errors
   target_compile_options(${TARGET_NAME} PRIVATE /W4 /WX)
+  target_compile_options(${ENGINE_TARGET} PRIVATE /W4 /WX)
+  target_compile_options(imgui_plot PRIVATE /W3)
 else()
+  target_compile_options(${ENGINE_TARGET} PRIVATE -Wall -Wextra -Werror)
   target_compile_options(${TARGET_NAME} PRIVATE -Wall -Wextra -Werror)
+
+  target_compile_options(imgui_plot PRIVATE -Wall -Wextra)
+
+  if(EMSCRIPTEN)
+    target_compile_options(imgui_plot PRIVATE -Wno-sign-compare)
+  endif()
 endif()
 
 if(EMSCRIPTEN)
@@ -221,6 +295,7 @@ elseif(WIN32)
   set(SDL_RUNTIME_DLLS
     SDL3::SDL3
     SDL3_ttf::SDL3_ttf
+    SDL3_mixer::SDL3_mixer
   )
 
   foreach(dllTarget IN LISTS SDL_RUNTIME_DLLS)
@@ -264,7 +339,7 @@ elseif(APPLE)
   if(Steamworks_FOUND)
     target_link_libraries("${TARGET_NAME}" PUBLIC Steamworks::Steamworks)
     target_compile_definitions(${TARGET_NAME} PRIVATE USE_STEAMWORKS)
-    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUIL D
       COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${Steamworks_LIBRARIES}" "$<TARGET_BUNDLE_DIR:${TARGET_NAME}>/Contents/Frameworks/"
     )
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD

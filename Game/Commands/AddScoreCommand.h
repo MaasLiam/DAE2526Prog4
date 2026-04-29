@@ -4,13 +4,14 @@
 namespace dae
 {
 	class GameObject;
+
 	class AddScoreCommand final : public Command
 	{
 	public:
-		AddScoreCommand(GameObject& target, int scoreToAdd);
+		explicit AddScoreCommand(GameObject& target);
 		void Execute(float) override;
+
 	private:
 		GameObject& m_Target;
-		int m_ScoreToAdd;
 	};
 }

@@ -19,6 +19,11 @@ namespace dae
 		C,
 		X,
 
+		ArrowUp,
+		ArrowDown,
+		ArrowLeft,
+		ArrowRight,
+
 		// Controller
 		DPadUp,
 		DPadDown,
