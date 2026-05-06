@@ -7,15 +7,13 @@
 #include "Scene.h"
 #include "RenderComponent.h"
 #include "FPSComponent.h"
-#include "RotationComponent.h"
 #include "InputManager.h"
 #include "MoveObjectCommand.h"
 #include "HealthComponent.h"
-#include "DamagePlayerCommand.h"
 #include "DisplayLivesComponent.h"
-#include "AddScoreCommand.h"
 #include "DisplayScoreComponent.h"
 #include "ShootCommand.h"
+#include "EnemyFormationControllerComponent.h"
 
 #include "KeyboardInput.h"
 #include "ControllerInput.h"
@@ -243,13 +241,56 @@ void Galaga::Initialize()
 
 
 	//Enemies 
-	auto enemy = std::make_unique<dae::GameObject>();
-	enemy->AddComponent<dae::TransformComponent>();
-	enemy->GetComponent<dae::TransformComponent>()->SetLocalPosition(300.f, 120.f, 0.f);
+	//auto enemy = std::make_unique<dae::GameObject>();
+	//enemy->AddComponent<dae::TransformComponent>();
+	//enemy->GetComponent<dae::TransformComponent>()->SetLocalPosition(300.f, 120.f, 0.f);
 
-	enemy->AddComponent<dae::RenderComponent>("Sprites/Bee01.png");
-	enemy->AddComponent<CollisionComponent>(32.f, 32.f);
-	enemy->AddComponent<EnemyComponent>(EnemyType::Bee);
+	//enemy->AddComponent<dae::RenderComponent>("Sprites/Bee01.png");
+	//enemy->AddComponent<CollisionComponent>(32.f, 32.f);
+	//enemy->AddComponent<EnemyComponent>(EnemyType::Bee);
+	////enemy->GetComponent<EnemyComponent>()->StartDiving()
+	//scene.Add(std::move(enemy));
 
-	scene.Add(std::move(enemy));
+	const int enemyCount = 8;
+	const float startX = 250.f;
+	const float formationY = 120.f;
+	const float spacing = 50.f;
+
+	auto formationController = std::make_unique<dae::GameObject>();
+	formationController->AddComponent<EnemyFormationControllerComponent>();
+
+	auto* formationControllerComponent =
+		formationController->GetComponent<EnemyFormationControllerComponent>();
+
+	for (int i = 0; i < enemyCount; ++i)
+	{
+		auto enemy = std::make_unique<dae::GameObject>();
+
+		const glm::vec3 formationPosition{
+			startX + i * spacing,
+			formationY,
+			0.f
+		};
+
+		enemy->AddComponent<dae::TransformComponent>();
+
+		enemy->GetComponent<dae::TransformComponent>()->SetLocalPosition(
+			formationPosition.x,
+			-60.f - i * 20.f,
+			0.f
+		);
+
+		enemy->AddComponent<dae::RenderComponent>("Sprites/Bee01.png");
+		enemy->AddComponent<CollisionComponent>(32.f, 32.f);
+		enemy->AddComponent<EnemyComponent>(EnemyType::Bee);
+
+		auto* enemyComponent = enemy->GetComponent<EnemyComponent>();
+		enemyComponent->FlyIntoFormation(formationPosition);
+
+		formationControllerComponent->AddEnemy(enemyComponent);
+
+		scene.Add(std::move(enemy));
+	}
+
+	scene.Add(std::move(formationController));
 }

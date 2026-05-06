@@ -62,7 +62,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Game/Achievements/SteamAchievements.cpp
   Game/Achievements/SteamAchievementObserver.cpp
 
- "Game/Components/EnemyComponent.cpp")
+ "Game/Components/EnemyComponent.cpp" "Game/Components/BulletEnemyCollisionComponent.cpp" "Game/Components/EnemyFormationControllerComponent.cpp")
 
 # enable c++20 features
 target_compile_features(${ENGINE_TARGET} PUBLIC cxx_std_20)

@@ -12,12 +12,12 @@ namespace dae
 
 		void Notify(Event event, GameObject* gameObject) override;
 
+		void AddScore(int score);
+
 		int GetScore() const;
 		Subject& GetSubject();
 
 	private:
-		void AddScore(int score);
-
 		int m_Score{ 0 };
 		Subject m_Subject{};
 	};

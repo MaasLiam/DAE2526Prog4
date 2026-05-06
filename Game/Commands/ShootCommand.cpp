@@ -5,6 +5,8 @@
 #include "RenderComponent.h"
 #include "BulletComponent.h"
 #include "CollisionComponent.h"
+#include "BulletEnemyCollisionComponent.h"
+#include "ScoreComponent.h"
 
 #include "ServiceLocator.h"
 #include "SoundIds.h"
@@ -33,6 +35,12 @@ void ShootCommand::Execute(float)
 	bullet->AddComponent<dae::RenderComponent>("Sprites/BulletSprite.png");
 	bullet->AddComponent<CollisionComponent>(4.f, 12.f);
 	bullet->AddComponent<BulletComponent>(m_Scene, 400.f);
+
+	auto* scoreComponent = m_Shooter.GetComponent<dae::ScoreComponent>();
+	if (scoreComponent)
+	{
+		bullet->AddComponent<BulletEnemyCollisionComponent>(m_Scene, *scoreComponent);
+	}
 
 	m_Scene.Add(std::move(bullet));
 

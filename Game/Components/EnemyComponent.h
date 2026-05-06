@@ -1,6 +1,10 @@
 #pragma once
 
 #include "Component.h"
+#include <memory>
+#include <glm/glm.hpp>
+
+class EnemyState;
 
 enum class EnemyType
 {
@@ -9,29 +13,45 @@ enum class EnemyType
 	BossGalaga
 };
 
-enum class EnemyState
+enum class EnemyStateId
 {
+	FlyingIntoFormation,
 	InFormation,
-	Diving
+	Diving,
+	TractorBeam,
+	Dead
 };
 
 class EnemyComponent final : public dae::Component
 {
 public:
 	EnemyComponent(dae::GameObject* owner, EnemyType type);
+	~EnemyComponent() override;
+
+	void Update(float deltaTime) override;
 
 	int GetScoreValue() const;
 
 	EnemyType GetType() const;
-	EnemyState GetState() const;
+	EnemyStateId GetStateId() const;
 
-	void SetState(EnemyState state);
+	void SetState(EnemyStateId state);
+	void StartDiving();
+	void StartTractorBeam();
+	void ReturnToFormation();
+
+	void FlyIntoFormation(const glm::vec3& targetPosition);
+	const glm::vec3& GetFormationPosition() const;
+	void SetFormationPosition(const glm::vec3& position);
 
 	void TakeDamage();
 	bool IsDead() const;
 
 private:
+	void ChangeState(std::unique_ptr<EnemyState> newState);
+
 	EnemyType m_Type{};
-	EnemyState m_State{ EnemyState::InFormation };
+	std::unique_ptr<EnemyState> m_State{};
 	int m_Health{ 1 };
+	glm::vec3 m_FormationPosition{};
 };

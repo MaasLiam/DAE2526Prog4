@@ -20,6 +20,11 @@ void Scene::RemoveAll()
 	m_objects.clear();
 }
 
+const std::vector<std::unique_ptr<GameObject>>& dae::Scene::GetObjects() const
+{
+	return m_objects;
+}
+
 void Scene::Update(float deltaTime)
 {
 	for(auto& object : m_objects)
