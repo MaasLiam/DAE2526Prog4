@@ -6,10 +6,10 @@ if(EMSCRIPTEN)
 endif()
 
 if(EMSCRIPTEN)
-  set(TARGET_NAME minigin_web)
+  set(TARGET_NAME Galaga_web)
   set(TARGET_PARAM )
 else()
-  set(TARGET_NAME minigin)
+  set(TARGET_NAME Galaga)
   set(TARGET_PARAM WIN32)
 endif()
 
@@ -44,25 +44,28 @@ add_library(${ENGINE_TARGET} STATIC
 
 # game executable
 add_executable(${TARGET_NAME} ${TARGET_PARAM}
-  Game/Main.cpp
-  Game/Galaga.cpp
-  Game/ThrashTheCache.cpp 
+  Galaga/Main.cpp
+  Galaga/Galaga.cpp
+  Galaga/ThrashTheCache.cpp 
 
-  Game/Components/HealthComponent.cpp
-  Game/Components/DisplayLivesComponent.cpp
-  Game/Components/ScoreComponent.cpp
-  Game/Components/DisplayScoreComponent.cpp
-  Game/Components/BulletComponent.cpp
-  Game/Components/CollisionComponent.cpp
+  Galaga/Components/HealthComponent.cpp
+  Galaga/Components/DisplayLivesComponent.cpp
+  Galaga/Components/ScoreComponent.cpp
+  Galaga/Components/DisplayScoreComponent.cpp
+  Galaga/Components/BulletComponent.cpp
+  Galaga/Components/CollisionComponent.cpp
 
-  Game/Commands/DamagePlayerCommand.cpp
-  Game/Commands/AddScoreCommand.cpp
-  Game/Commands/ShootCommand.cpp
+  Galaga/Commands/DamagePlayerCommand.cpp
+  Galaga/Commands/AddScoreCommand.cpp
+  Galaga/Commands/ShootCommand.cpp
 
-  Game/Achievements/SteamAchievements.cpp
-  Game/Achievements/SteamAchievementObserver.cpp
+  Galaga/Achievements/SteamAchievements.cpp
+  Galaga/Achievements/SteamAchievementObserver.cpp
 
- "Game/Components/EnemyComponent.cpp" "Game/Components/BulletEnemyCollisionComponent.cpp" "Game/Components/EnemyFormationControllerComponent.cpp")
+  Galaga/Components/EnemyComponent.cpp
+  Galaga/Components/BulletEnemyCollisionComponent.cpp
+  Galaga/Components/EnemyFormationControllerComponent.cpp
+)
 
 # enable c++20 features
 target_compile_features(${ENGINE_TARGET} PUBLIC cxx_std_20)
@@ -229,10 +232,10 @@ target_include_directories(${ENGINE_TARGET} PUBLIC
 )
 
 target_include_directories(${TARGET_NAME} PUBLIC 
-  ${CMAKE_SOURCE_DIR}/Game/
-  ${CMAKE_SOURCE_DIR}/Game/Components/
-  ${CMAKE_SOURCE_DIR}/Game/Commands/
-  ${CMAKE_SOURCE_DIR}/Game/Achievements/
+  ${CMAKE_SOURCE_DIR}/Galaga/
+  ${CMAKE_SOURCE_DIR}/Galaga/Components/
+  ${CMAKE_SOURCE_DIR}/Galaga/Commands/
+  ${CMAKE_SOURCE_DIR}/Galaga/Achievements/
   ${imgui_plot_SOURCE_DIR}/include
 )
 
