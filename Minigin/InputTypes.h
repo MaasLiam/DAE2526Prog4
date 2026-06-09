@@ -18,6 +18,7 @@ namespace dae
 		D,
 		C,
 		X,
+		F1,
 
 		ArrowUp,
 		ArrowDown,

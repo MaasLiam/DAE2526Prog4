@@ -29,8 +29,11 @@ namespace dae
 		friend class SceneManager;
 		explicit Scene() = default;
 
-		std::vector < std::unique_ptr<GameObject>> m_objects{};
-		std::vector < const GameObject*> m_objectsToRemove{};
+		std::vector<std::unique_ptr<GameObject>> m_objects{};
+		std::vector<const GameObject*> m_objectsToRemove{};
+		std::vector<std::unique_ptr<GameObject>> m_objectsToAdd{};
+
+		bool m_IsUpdating{};
 	};
 
 }

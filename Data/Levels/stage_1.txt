@@ -1,0 +1,5 @@
+BossGalaga 4 320 80 50
+Butterfly 6 270 130 50
+Butterfly 6 270 175 50
+Bee 8 220 220 50
+Bee 8 220 265 50
