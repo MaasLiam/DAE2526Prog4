@@ -68,6 +68,16 @@ namespace dae
 			m_Condition.notify_one();
 		}
 
+		void ToggleMute()
+		{
+			m_IsMuted = !m_IsMuted;
+		}
+
+		bool IsMuted() const
+		{
+			return m_IsMuted;
+		}
+
 	private:
 		struct PlayRequest
 		{
@@ -90,6 +100,11 @@ namespace dae
 				{
 					const PlayRequest request = m_Queue.front();
 					m_Queue.pop();
+
+					if (m_IsMuted)
+					{
+						continue;
+					}
 
 					if (!m_Mixer)
 						continue;
@@ -150,6 +165,7 @@ namespace dae
 
 		std::thread m_WorkerThread;
 		std::atomic<bool> m_Running{ false };
+		std::atomic<bool> m_IsMuted{ false };
 	};
 
 	SDLSoundSystem::SDLSoundSystem()
@@ -167,5 +183,15 @@ namespace dae
 	void SDLSoundSystem::Load(SoundId id, const std::string& path)
 	{
 		m_Impl->Load(id, path);
+	}
+
+	void SDLSoundSystem::ToggleMute()
+	{
+		m_Impl->ToggleMute();
+	}
+
+	bool SDLSoundSystem::IsMuted() const
+	{
+		return m_Impl->IsMuted();
 	}
 }

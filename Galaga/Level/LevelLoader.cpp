@@ -143,8 +143,13 @@ namespace
 
 void LevelLoader::LoadStage(dae::Scene& scene, int stageIndex)
 {
-	RemoveCurrentStageObjects(scene);
+	ClearStage(scene);
 
 	const auto enemySpawns = ReadEnemySpawns(stageIndex);
 	SpawnEnemies(scene, enemySpawns);
+}
+
+void LevelLoader::ClearStage(dae::Scene& scene)
+{
+	RemoveCurrentStageObjects(scene);
 }

@@ -5,5 +5,6 @@ enum class GameState
 	StartScreen,
 	Playing,
 	StageComplete,
-	GameOver
+	EnteringHighScore,
+	HighScoreScreen
 };

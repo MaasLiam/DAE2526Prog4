@@ -13,6 +13,9 @@ namespace dae
 		void Play(SoundId id, float volume) override;
 		void Load(SoundId id, const std::string& filePath) override;
 
+		void ToggleMute() override;
+		bool IsMuted() const override;
+
 	private:
 		std::unique_ptr<SoundSystem> m_RealSoundSystem;
 	};

@@ -68,7 +68,11 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Galaga/Components/EnemyFormationControllerComponent.cpp
   Galaga/Components/MissileLimitComponent.cpp
   Galaga/Components/GalagaGameControllerComponent.cpp
-  Galaga/Level/LevelLoader.cpp "Galaga/Commands/SkipStageCommand.cpp")
+  Galaga/Level/LevelLoader.cpp 
+  Galaga/Commands/SkipStageCommand.cpp
+  Galaga/Commands/ToggleMuteCommand.cpp
+  Galaga/HighScores/HighScoreManager.cpp
+ "Galaga/Commands/ChangeInitialCommand.cpp" "Galaga/Commands/MoveInitialCursorCommand.cpp" "Galaga/Commands/ConfirmHighScoreNameCommand.cpp")
 
 # enable c++20 features
 target_compile_features(${ENGINE_TARGET} PUBLIC cxx_std_20)
@@ -247,6 +251,7 @@ target_include_directories(${TARGET_NAME} PUBLIC
   ${CMAKE_SOURCE_DIR}/Galaga/Commands/
   ${CMAKE_SOURCE_DIR}/Galaga/Achievements/
   ${CMAKE_SOURCE_DIR}/Galaga/Level/
+  ${CMAKE_SOURCE_DIR}/Galaga/HighScores/
   ${imgui_plot_SOURCE_DIR}/include
 )
 

@@ -5,17 +5,14 @@
 #include "CollisionComponent.h"
 #include "EnemyComponent.h"
 #include "ScoreComponent.h"
+#include "GalagaGameControllerComponent.h"
 
-BulletEnemyCollisionComponent::BulletEnemyCollisionComponent(
-	dae::GameObject* owner,
-	dae::Scene& scene,
-	dae::ScoreComponent& scoreComponent
-)
+BulletEnemyCollisionComponent::BulletEnemyCollisionComponent(dae::GameObject* owner, dae::Scene& scene, dae::ScoreComponent& scoreComponent, GalagaGameControllerComponent* gameController)
 	: dae::Component(owner)
 	, m_Scene(scene)
 	, m_ScoreComponent(scoreComponent)
-{
-}
+	, m_GameController(gameController)
+{}
 
 void BulletEnemyCollisionComponent::Update(float)
 {
@@ -33,6 +30,11 @@ void BulletEnemyCollisionComponent::Update(float)
 
 		if (bulletCollision->Overlaps(*enemyCollision))
 		{
+			if (m_GameController)
+			{
+				m_GameController->RegisterHit();
+			}
+
 			const int scoreValue = enemy->GetScoreValue();
 
 			enemy->TakeDamage();

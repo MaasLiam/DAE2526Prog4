@@ -11,11 +11,14 @@
 
 #include "ServiceLocator.h"
 #include "SoundIds.h"
+#include "GalagaGameControllerComponent.h"
 
-ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene)
+ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGameControllerComponent* gameController)
 	: m_Shooter(shooter)
 	, m_Scene(scene)
+	, m_GameController(gameController)
 {
+
 }
 
 void ShootCommand::Execute(float)
@@ -30,8 +33,12 @@ void ShootCommand::Execute(float)
 		return;
 	}
 
-	auto position = shooterTransform->GetLocalPosition();
+	if (m_GameController)
+	{
+		m_GameController->RegisterShotFired();
+	}
 
+	auto position = shooterTransform->GetLocalPosition();
 	auto bullet = std::make_unique<dae::GameObject>();
 	bullet->AddComponent<dae::TransformComponent>();
 	bullet->GetComponent<dae::TransformComponent>()->SetLocalPosition(position.x + 2.f, position.y - 10.f);
@@ -43,7 +50,7 @@ void ShootCommand::Execute(float)
 	auto* scoreComponent = m_Shooter.GetComponent<dae::ScoreComponent>();
 	if (scoreComponent)
 	{
-		bullet->AddComponent<BulletEnemyCollisionComponent>(m_Scene, *scoreComponent);
+		bullet->AddComponent<BulletEnemyCollisionComponent>(m_Scene, *scoreComponent, m_GameController);
 	}
 
 	if (missileLimit)

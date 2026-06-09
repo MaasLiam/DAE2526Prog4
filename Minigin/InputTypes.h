@@ -19,6 +19,8 @@ namespace dae
 		C,
 		X,
 		F1,
+		F2,
+		Enter,
 
 		ArrowUp,
 		ArrowDown,

@@ -65,6 +65,10 @@ int dae::KeyboardInput::ToSDLScancode(InputKey key) const
 		return SDL_SCANCODE_X;
 	case InputKey::F1:
 		return SDL_SCANCODE_F1;
+	case InputKey::F2:
+		return SDL_SCANCODE_F2;
+	case InputKey::Enter:
+		return SDL_SCANCODE_RETURN;
 	case InputKey::ArrowUp:
 		return SDL_SCANCODE_UP;
 	case InputKey::ArrowDown:
