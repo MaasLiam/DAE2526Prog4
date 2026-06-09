@@ -14,6 +14,7 @@
 #include "DisplayScoreComponent.h"
 #include "ShootCommand.h"
 #include "EnemyFormationControllerComponent.h"
+#include "MissileLimitComponent.h"
 
 #include "KeyboardInput.h"
 #include "ControllerInput.h"
@@ -24,6 +25,7 @@
 
 #include "CollisionComponent.h"
 #include "EnemyComponent.h"
+#include "EnemyPlayerCollisionComponent.h"
 
 
 void Galaga::Initialize()
@@ -93,8 +95,9 @@ void Galaga::Initialize()
 	// Player 1
 	/*auto go = std::make_unique<dae::GameObject>();*/
 	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::HealthComponent>(3);
+	go->AddComponent<dae::HealthComponent>(4);
 	go->AddComponent<dae::ScoreComponent>();
+	go->AddComponent<MissileLimitComponent>();
 	go->AddComponent<dae::TransformComponent>();
 	go->AddComponent<dae::RenderComponent>("Sprites/fighter01.png");
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 472, 280, 0 });
@@ -134,6 +137,8 @@ void Galaga::Initialize()
 		dae::InputKey::X,
 		dae::InputState::Down);
 
+	auto* player1Object = go.get();
+	player1Object->AddComponent<CollisionComponent>(32.f, 32.f);
 	scene.Add(std::move(go));
 
 	//player1 health ui
@@ -158,8 +163,9 @@ void Galaga::Initialize()
 	// Player 2
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::TransformComponent>();
-	go->AddComponent<dae::HealthComponent>(3);
+	go->AddComponent<dae::HealthComponent>(4);
 	go->AddComponent<dae::ScoreComponent>();
+	go->AddComponent<MissileLimitComponent>();
 	go->AddComponent<dae::RenderComponent>("Sprites/BossGalaga.png");
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 552, 280, 0 });
 
@@ -193,9 +199,11 @@ void Galaga::Initialize()
 		dae::InputKey::ButtonA,
 		dae::InputState::Down);
 
-	//player 2 health ui
+	auto* player2Object = go.get();
+	player2Object->AddComponent<CollisionComponent>(32.f, 32.f);
 	scene.Add(std::move(go));
 
+	//player 2 health ui
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::TransformComponent>();
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 20, 90, 0 });
@@ -240,6 +248,14 @@ void Galaga::Initialize()
 	player2Score->GetSubject().AddObserver(m_pSteamAchievementObserver.get());
 
 
+	auto collisionManager = std::make_unique<dae::GameObject>();
+	collisionManager->AddComponent<EnemyPlayerCollisionComponent>(scene);
+
+	auto* enemyPlayerCollisionComponent = collisionManager->GetComponent<EnemyPlayerCollisionComponent>();
+
+	enemyPlayerCollisionComponent->AddPlayer(player1Object);
+	enemyPlayerCollisionComponent->AddPlayer(player2Object);
+
 	//Enemies 
 	//auto enemy = std::make_unique<dae::GameObject>();
 	//enemy->AddComponent<dae::TransformComponent>();
@@ -257,10 +273,7 @@ void Galaga::Initialize()
 	const float spacing = 50.f;
 
 	auto formationController = std::make_unique<dae::GameObject>();
-	formationController->AddComponent<EnemyFormationControllerComponent>();
-
-	auto* formationControllerComponent =
-		formationController->GetComponent<EnemyFormationControllerComponent>();
+	formationController->AddComponent<EnemyFormationControllerComponent>(scene);
 
 	for (int i = 0; i < enemyCount; ++i)
 	{
@@ -287,10 +300,9 @@ void Galaga::Initialize()
 		auto* enemyComponent = enemy->GetComponent<EnemyComponent>();
 		enemyComponent->FlyIntoFormation(formationPosition);
 
-		formationControllerComponent->AddEnemy(enemyComponent);
-
 		scene.Add(std::move(enemy));
 	}
 
+	scene.Add(std::move(collisionManager));
 	scene.Add(std::move(formationController));
 }

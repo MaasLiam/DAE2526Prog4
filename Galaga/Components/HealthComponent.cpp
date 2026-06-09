@@ -22,6 +22,7 @@ namespace dae
 
 		if (m_Lives <= 0)
 		{
+			m_IsDead = true;
 			m_Subject.Notify(Event::GameOver, GetOwner());
 		}
 	}

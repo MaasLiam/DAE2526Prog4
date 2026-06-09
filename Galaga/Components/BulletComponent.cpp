@@ -3,12 +3,22 @@
 #include "GameObject.h"
 #include "TransformComponent.h"
 #include "Scene.h"
+#include "MissileLimitComponent.h"
 
-BulletComponent::BulletComponent(dae::GameObject* owner, dae::Scene& scene, float speed)
+BulletComponent::BulletComponent(dae::GameObject* owner, dae::Scene& scene, float speed, MissileLimitComponent* missileLimit)
 	: dae::Component(owner)
 	, m_Scene(scene)
 	, m_Speed(speed)
+	, m_MissileLimit(missileLimit)
 {
+}
+
+BulletComponent::~BulletComponent()
+{
+	if (m_MissileLimit)
+	{
+		m_MissileLimit->UnregisterMissile();
+	}
 }
 
 void BulletComponent::Update(float deltaTime)

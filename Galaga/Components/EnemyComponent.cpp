@@ -10,16 +10,23 @@ public:
 
 	virtual void OnEnter(EnemyComponent&) {}
 	virtual void OnExit(EnemyComponent&) {}
-	virtual void Update(EnemyComponent&, float) {}
 
-	virtual EnemyStateId GetId() const = 0;
+	virtual std::unique_ptr<EnemyState> Update(EnemyComponent&, float)
+	{
+		return nullptr;
+	}
+
+	virtual bool IsInFormationState() const
+	{
+		return false;
+	}
+
 	virtual int GetScoreValue(const EnemyComponent& enemy) const = 0;
 };
 
 class InFormationEnemyState final : public EnemyState
 {
 public:
-	EnemyStateId GetId() const override { return EnemyStateId::InFormation; }
 
 	int GetScoreValue(const EnemyComponent& enemy) const override
 	{
@@ -32,18 +39,22 @@ public:
 
 		return 0;
 	}
+
+	bool IsInFormationState() const override
+	{
+		return true;
+	}
 };
 
 class DivingEnemyState final : public EnemyState
 {
 public:
-	EnemyStateId GetId() const override { return EnemyStateId::Diving; }
 
-	void Update(EnemyComponent& enemy, float deltaTime) override
+	std::unique_ptr<EnemyState> Update(EnemyComponent& enemy, float deltaTime) override
 	{
 		auto* transform = enemy.GetOwner()->GetComponent<dae::TransformComponent>();
 		if (!transform)
-			return;
+			return nullptr;
 
 		auto position = transform->GetLocalPosition();
 
@@ -63,7 +74,12 @@ public:
 		transform->SetLocalPosition(position);
 
 		if (position.y > 520.f)
-			enemy.ReturnToFormation();
+		{
+			transform->SetLocalPosition(enemy.GetFormationPosition());
+			return std::make_unique<InFormationEnemyState>();
+		}
+
+		return nullptr;
 	}
 
 	int GetScoreValue(const EnemyComponent& enemy) const override
@@ -86,13 +102,14 @@ private:
 class TractorBeamEnemyState final : public EnemyState
 {
 public:
-	EnemyStateId GetId() const override { return EnemyStateId::TractorBeam; }
 
-	void Update(EnemyComponent& enemy, float deltaTime) override
+	std::unique_ptr<EnemyState> Update(EnemyComponent& enemy, float deltaTime) override
 	{
 		auto* transform = enemy.GetOwner()->GetComponent<dae::TransformComponent>();
 		if (!transform)
-			return;
+		{
+			return nullptr;
+		}
 
 		auto position = transform->GetLocalPosition();
 		position.y += 35.f * deltaTime;
@@ -100,7 +117,11 @@ public:
 
 		m_Timer += deltaTime;
 		if (m_Timer >= 3.f)
-			enemy.ReturnToFormation();
+		{
+			return std::make_unique<InFormationEnemyState>();
+		}
+
+		return nullptr;
 	}
 
 	int GetScoreValue(const EnemyComponent&) const override
@@ -115,7 +136,6 @@ private:
 class DeadEnemyState final : public EnemyState
 {
 public:
-	EnemyStateId GetId() const override { return EnemyStateId::Dead; }
 
 	int GetScoreValue(const EnemyComponent&) const override
 	{
@@ -126,13 +146,14 @@ public:
 class FlyingIntoFormationEnemyState final : public EnemyState
 {
 public:
-	EnemyStateId GetId() const override { return EnemyStateId::FlyingIntoFormation; }
 
-	void Update(EnemyComponent& enemy, float deltaTime) override
+	std::unique_ptr<EnemyState> Update(EnemyComponent& enemy, float deltaTime) override
 	{
 		auto* transform = enemy.GetOwner()->GetComponent<dae::TransformComponent>();
 		if (!transform)
-			return;
+		{
+			return nullptr;
+		}
 
 		auto position = transform->GetLocalPosition();
 		const auto target = enemy.GetFormationPosition();
@@ -143,18 +164,28 @@ public:
 		if (distance < 2.f)
 		{
 			transform->SetLocalPosition(target);
-			enemy.ReturnToFormation();
-			return;
+			return std::make_unique<InFormationEnemyState>();
 		}
 
 		const glm::vec3 normalizedDirection = direction / distance;
 		position += normalizedDirection * 120.f * deltaTime;
 
 		transform->SetLocalPosition(position);
+		return nullptr;
 	}
 
-	int GetScoreValue(const EnemyComponent&) const override
+	int GetScoreValue(const EnemyComponent& enemy) const override
 	{
+		switch (enemy.GetType())
+		{
+		case EnemyType::Bee:
+			return 50;
+		case EnemyType::Butterfly:
+			return 80;
+		case EnemyType::BossGalaga:
+			return 150;
+		}
+
 		return 0;
 	}
 };
@@ -164,7 +195,9 @@ EnemyComponent::EnemyComponent(dae::GameObject* owner, EnemyType type)
 	, m_Type(type)
 {
 	if (m_Type == EnemyType::BossGalaga)
+	{
 		m_Health = 2;
+	}
 
 	ChangeState(std::make_unique<InFormationEnemyState>());
 }
@@ -173,8 +206,15 @@ EnemyComponent::~EnemyComponent() = default;
 
 void EnemyComponent::Update(float deltaTime)
 {
-	if (m_State)
-		m_State->Update(*this, deltaTime);
+	if (!m_State)
+	{
+		return;
+	}
+
+	if (auto newState = m_State->Update(*this, deltaTime))
+	{
+		ChangeState(std::move(newState));
+	}
 }
 
 int EnemyComponent::GetScoreValue() const
@@ -187,84 +227,71 @@ EnemyType EnemyComponent::GetType() const
 	return m_Type;
 }
 
-EnemyStateId EnemyComponent::GetStateId() const
-{
-	return m_State ? m_State->GetId() : EnemyStateId::Dead;
-}
-
-void EnemyComponent::SetState(EnemyStateId state)
-{
-	switch (state)
-	{
-	case EnemyStateId::InFormation:
-		ChangeState(std::make_unique<InFormationEnemyState>());
-		break;
-	case EnemyStateId::Diving:
-		ChangeState(std::make_unique<DivingEnemyState>());
-		break;
-	case EnemyStateId::TractorBeam:
-		ChangeState(std::make_unique<TractorBeamEnemyState>());
-		break;
-	case EnemyStateId::Dead:
-		ChangeState(std::make_unique<DeadEnemyState>());
-		break;
-	case EnemyStateId::FlyingIntoFormation:
-		ChangeState(std::make_unique<FlyingIntoFormationEnemyState>());
-		break;
-	}
-}
-
 void EnemyComponent::StartDiving()
 {
-	SetState(EnemyStateId::Diving);
+	ChangeState(std::make_unique<DivingEnemyState>());
 }
 
 void EnemyComponent::StartTractorBeam()
 {
 	if (m_Type == EnemyType::BossGalaga)
-		SetState(EnemyStateId::TractorBeam);
+	{
+		ChangeState(std::make_unique<TractorBeamEnemyState>());
+	}
 }
 
 void EnemyComponent::ReturnToFormation()
 {
 	auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
 	if (transform)
+	{
 		transform->SetLocalPosition(m_FormationPosition);
+	}
 
-	SetState(EnemyStateId::InFormation);
+	ChangeState(std::make_unique<InFormationEnemyState>());
 }
 
 void EnemyComponent::TakeDamage()
 {
 	if (IsDead())
+	{
 		return;
+	}
 
 	--m_Health;
 
 	if (m_Health <= 0)
-		SetState(EnemyStateId::Dead);
+	{
+		ChangeState(std::make_unique<DeadEnemyState>());
+	}
 }
 
 bool EnemyComponent::IsDead() const
 {
-	return m_Health <= 0 || GetStateId() == EnemyStateId::Dead;
+	return m_Health <= 0;
 }
 
 void EnemyComponent::ChangeState(std::unique_ptr<EnemyState> newState)
 {
 	if (m_State)
+	{
 		m_State->OnExit(*this);
+	}
 
 	m_State = std::move(newState);
 
+	m_IsInFormation = m_State && m_State->IsInFormationState();
+
 	if (m_State)
+	{
 		m_State->OnEnter(*this);
+	}
 }
 
 void EnemyComponent::FlyIntoFormation(const glm::vec3& targetPosition)
 {
 	m_FormationPosition = targetPosition;
-	SetState(EnemyStateId::FlyingIntoFormation);
+	ChangeState(std::make_unique<FlyingIntoFormationEnemyState>());
 }
 
 const glm::vec3& EnemyComponent::GetFormationPosition() const
@@ -275,4 +302,9 @@ const glm::vec3& EnemyComponent::GetFormationPosition() const
 void EnemyComponent::SetFormationPosition(const glm::vec3& position)
 {
 	m_FormationPosition = position;
+}
+
+bool EnemyComponent::IsInFormation() const
+{
+	return m_IsInFormation;
 }

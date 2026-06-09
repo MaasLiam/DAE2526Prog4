@@ -46,6 +46,7 @@ public:
 
 	void TakeDamage();
 	bool IsDead() const;
+	bool IsInFormation() const;
 
 private:
 	void ChangeState(std::unique_ptr<EnemyState> newState);
@@ -54,4 +55,6 @@ private:
 	std::unique_ptr<EnemyState> m_State{};
 	int m_Health{ 1 };
 	glm::vec3 m_FormationPosition{};
+
+	bool m_IsInFormation{ true };
 };

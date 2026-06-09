@@ -63,9 +63,10 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Galaga/Achievements/SteamAchievementObserver.cpp
 
   Galaga/Components/EnemyComponent.cpp
+  Galaga/Components/EnemyPlayerCollisionComponent.cpp
   Galaga/Components/BulletEnemyCollisionComponent.cpp
   Galaga/Components/EnemyFormationControllerComponent.cpp
-)
+ "Galaga/Components/MissileLimitComponent.cpp")
 
 # enable c++20 features
 target_compile_features(${ENGINE_TARGET} PUBLIC cxx_std_20)
