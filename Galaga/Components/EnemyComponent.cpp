@@ -3,6 +3,82 @@
 #include "GameObject.h"
 #include "TransformComponent.h"
 
+#include <utility>
+#include <vector>
+
+namespace
+{
+	std::vector<glm::vec3> CreateBeeEntryPath(const glm::vec3& start, const glm::vec3& target)
+	{
+		const bool entersFromLeft = start.x < target.x;
+		const float sideX = entersFromLeft ? 80.f : 720.f;
+		const float curveOffset = entersFromLeft ? -70.f : 70.f;
+
+		return
+		{
+			glm::vec3{ sideX, 70.f, 0.f },
+			glm::vec3{ target.x + curveOffset, 170.f, 0.f },
+			glm::vec3{ target.x, target.y + 35.f, 0.f },
+			target
+		};
+	}
+
+	std::vector<glm::vec3> CreateButterflyEntryPath(const glm::vec3& start, const glm::vec3& target)
+	{
+		const bool entersFromLeft = start.x < target.x;
+		const float sideX = entersFromLeft ? 60.f : 740.f;
+		const float oppositeX = entersFromLeft ? 640.f : 160.f;
+
+		return
+		{
+			glm::vec3{ sideX, 80.f, 0.f },
+			glm::vec3{ oppositeX, 120.f, 0.f },
+			glm::vec3{ target.x - 90.f, 190.f, 0.f },
+			glm::vec3{ target.x + 90.f, 150.f, 0.f },
+			glm::vec3{ target.x, target.y + 30.f, 0.f },
+			target
+		};
+	}
+
+	std::vector<glm::vec3> CreateBossEntryPath(const glm::vec3& start, const glm::vec3& target)
+	{
+		const bool entersFromLeft = start.x < target.x;
+		const float sideX = entersFromLeft ? 80.f : 720.f;
+		const float loopDirection = entersFromLeft ? 1.f : -1.f;
+
+		return
+		{
+			glm::vec3{ sideX, 70.f, 0.f },
+			glm::vec3{ target.x + loopDirection * 120.f, 80.f, 0.f },
+			glm::vec3{ target.x + loopDirection * 120.f, 170.f, 0.f },
+			glm::vec3{ target.x - loopDirection * 60.f, 170.f, 0.f },
+			glm::vec3{ target.x - loopDirection * 60.f, 95.f, 0.f },
+			target
+		};
+	}
+
+	std::vector<glm::vec3> CreateEntryPath(
+		const glm::vec3& start,
+		const glm::vec3& target,
+		EnemyType type
+	)
+	{
+		switch (type)
+		{
+		case EnemyType::Bee:
+			return CreateBeeEntryPath(start, target);
+
+		case EnemyType::Butterfly:
+			return CreateButterflyEntryPath(start, target);
+
+		case EnemyType::BossGalaga:
+			return CreateBossEntryPath(start, target);
+		}
+
+		return { target };
+	}
+}
+
 class EnemyState
 {
 public:
@@ -146,6 +222,9 @@ public:
 class FlyingIntoFormationEnemyState final : public EnemyState
 {
 public:
+	explicit FlyingIntoFormationEnemyState(std::vector<glm::vec3> waypoints)
+		: m_Waypoints(std::move(waypoints))
+	{}
 
 	std::unique_ptr<EnemyState> Update(EnemyComponent& enemy, float deltaTime) override
 	{
@@ -155,22 +234,46 @@ public:
 			return nullptr;
 		}
 
+		if (m_CurrentWaypoint >= m_Waypoints.size())
+		{
+			transform->SetLocalPosition(enemy.GetFormationPosition());
+			return std::make_unique<InFormationEnemyState>();
+		}
+
 		auto position = transform->GetLocalPosition();
-		const auto target = enemy.GetFormationPosition();
+		const auto target = m_Waypoints[m_CurrentWaypoint];
 
 		const glm::vec3 direction = target - position;
 		const float distance = glm::length(direction);
 
-		if (distance < 2.f)
+		if (distance < 4.f)
 		{
 			transform->SetLocalPosition(target);
-			return std::make_unique<InFormationEnemyState>();
+			++m_CurrentWaypoint;
+
+			if (m_CurrentWaypoint >= m_Waypoints.size())
+			{
+				transform->SetLocalPosition(enemy.GetFormationPosition());
+				return std::make_unique<InFormationEnemyState>();
+			}
+
+			return nullptr;
 		}
 
 		const glm::vec3 normalizedDirection = direction / distance;
-		position += normalizedDirection * 120.f * deltaTime;
+		const float speed = GetEntrySpeed(enemy.GetType());
+		const glm::vec3 movement = normalizedDirection * speed * deltaTime;
 
+		if (glm::length(movement) >= distance)
+		{
+			transform->SetLocalPosition(target);
+			++m_CurrentWaypoint;
+			return nullptr;
+		}
+
+		position += movement;
 		transform->SetLocalPosition(position);
+
 		return nullptr;
 	}
 
@@ -180,14 +283,37 @@ public:
 		{
 		case EnemyType::Bee:
 			return 50;
+
 		case EnemyType::Butterfly:
 			return 80;
+
 		case EnemyType::BossGalaga:
 			return 150;
 		}
 
 		return 0;
 	}
+
+private:
+	static float GetEntrySpeed(EnemyType type)
+	{
+		switch (type)
+		{
+		case EnemyType::Bee:
+			return 170.f;
+
+		case EnemyType::Butterfly:
+			return 190.f;
+
+		case EnemyType::BossGalaga:
+			return 150.f;
+		}
+
+		return 170.f;
+	}
+
+	std::vector<glm::vec3> m_Waypoints{};
+	size_t m_CurrentWaypoint{};
 };
 
 EnemyComponent::EnemyComponent(dae::GameObject* owner, EnemyType type)
@@ -291,7 +417,18 @@ void EnemyComponent::ChangeState(std::unique_ptr<EnemyState> newState)
 void EnemyComponent::FlyIntoFormation(const glm::vec3& targetPosition)
 {
 	m_FormationPosition = targetPosition;
-	ChangeState(std::make_unique<FlyingIntoFormationEnemyState>());
+
+	auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
+	if (!transform)
+	{
+		ChangeState(std::make_unique<FlyingIntoFormationEnemyState>(std::vector<glm::vec3>{ targetPosition }));
+		return;
+	}
+
+	const auto startPosition = transform->GetLocalPosition();
+	auto path = CreateEntryPath(startPosition, targetPosition, m_Type);
+
+	ChangeState(std::make_unique<FlyingIntoFormationEnemyState>(std::move(path)));
 }
 
 const glm::vec3& EnemyComponent::GetFormationPosition() const

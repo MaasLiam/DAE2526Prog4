@@ -27,6 +27,32 @@
 #include "EnemyComponent.h"
 #include "EnemyPlayerCollisionComponent.h"
 
+namespace
+{
+	struct EnemySpawn
+	{
+		EnemyType type{};
+		glm::vec3 formationPosition{};
+	};
+
+	const char* GetEnemyTexture(EnemyType type)
+	{
+		switch (type)
+		{
+		case EnemyType::Bee:
+			return "Sprites/Bee01.png";
+
+		case EnemyType::Butterfly:
+			return "Sprites/Butterfly01.png";
+
+		case EnemyType::BossGalaga:
+			return "Sprites/BossGalaga.png";
+		}
+
+		return "Sprites/Bee01.png";
+	}
+}
+
 
 void Galaga::Initialize()
 {
@@ -100,7 +126,7 @@ void Galaga::Initialize()
 	go->AddComponent<MissileLimitComponent>();
 	go->AddComponent<dae::TransformComponent>();
 	go->AddComponent<dae::RenderComponent>("Sprites/fighter01.png");
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 472, 280, 0 });
+	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 360, 500, 0 });
 
 	auto* player1Health = go->GetComponent<dae::HealthComponent>();
 	auto* player1Score = go->GetComponent<dae::ScoreComponent>();
@@ -167,7 +193,7 @@ void Galaga::Initialize()
 	go->AddComponent<dae::ScoreComponent>();
 	go->AddComponent<MissileLimitComponent>();
 	go->AddComponent<dae::RenderComponent>("Sprites/BossGalaga.png");
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 552, 280, 0 });
+	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 440, 500, 0 });
 
 	auto* player2Health = go->GetComponent<dae::HealthComponent>();
 	auto* player2Score = go->GetComponent<dae::ScoreComponent>();
@@ -267,42 +293,59 @@ void Galaga::Initialize()
 	////enemy->GetComponent<EnemyComponent>()->StartDiving()
 	//scene.Add(std::move(enemy));
 
-	const int enemyCount = 8;
-	const float startX = 250.f;
-	const float formationY = 120.f;
-	const float spacing = 50.f;
-
 	auto formationController = std::make_unique<dae::GameObject>();
 	formationController->AddComponent<EnemyFormationControllerComponent>(scene);
 
-	for (int i = 0; i < enemyCount; ++i)
-	{
-		auto enemy = std::make_unique<dae::GameObject>();
+	std::vector<EnemySpawn> enemySpawns{};
 
-		const glm::vec3 formationPosition{
-			startX + i * spacing,
-			formationY,
-			0.f
+	auto addRow = [&enemySpawns](EnemyType type, int amount, float startX, float y, float spacing)
+		{
+			for (int index = 0; index < amount; ++index)
+			{
+				enemySpawns.push_back(EnemySpawn
+					{
+						type,
+						glm::vec3
+						{
+							startX + static_cast<float>(index) * spacing,
+							y,
+							0.f
+						}
+					}
+				);
+			}
 		};
 
+	addRow(EnemyType::BossGalaga, 4, 320.f, 80.f, 50.f);
+	addRow(EnemyType::Butterfly, 6, 270.f, 130.f, 50.f);
+	addRow(EnemyType::Butterfly, 6, 270.f, 175.f, 50.f);
+	addRow(EnemyType::Bee, 8, 220.f, 220.f, 50.f);
+	addRow(EnemyType::Bee, 8, 220.f, 265.f, 50.f);
+
+	for (size_t index = 0; index < enemySpawns.size(); ++index)
+	{
+		const auto& spawn = enemySpawns[index];
+
+		auto enemy = std::make_unique<dae::GameObject>();
 		enemy->AddComponent<dae::TransformComponent>();
 
-		enemy->GetComponent<dae::TransformComponent>()->SetLocalPosition(
-			formationPosition.x,
-			-60.f - i * 20.f,
-			0.f
-		);
+		const bool entersFromLeft = index % 2 == 0;
+		const float spawnX = entersFromLeft ? -80.f : 720.f;
+		const float spawnY = -60.f - static_cast<float>(index % 8) * 28.f;
 
-		enemy->AddComponent<dae::RenderComponent>("Sprites/Bee01.png");
+		enemy->GetComponent<dae::TransformComponent>()->SetLocalPosition(spawnX, spawnY, 0.f);
+
+		enemy->AddComponent<dae::RenderComponent>(GetEnemyTexture(spawn.type));
 		enemy->AddComponent<CollisionComponent>(32.f, 32.f);
-		enemy->AddComponent<EnemyComponent>(EnemyType::Bee);
+		enemy->AddComponent<EnemyComponent>(spawn.type);
 
 		auto* enemyComponent = enemy->GetComponent<EnemyComponent>();
-		enemyComponent->FlyIntoFormation(formationPosition);
+		enemyComponent->FlyIntoFormation(spawn.formationPosition);
 
 		scene.Add(std::move(enemy));
 	}
 
-	scene.Add(std::move(collisionManager));
 	scene.Add(std::move(formationController));
+
+	scene.Add(std::move(collisionManager));
 }

@@ -221,6 +221,13 @@ endif()
 # Add steam if available
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/steam")
 find_package(Steamworks QUIET)
+if(Steamworks_FOUND)
+  message(STATUS "Steamworks found: ${Steamworks_VERSION}")
+  message(STATUS "Steamworks include: ${Steamworks_INCLUDE_DIRS}")
+  message(STATUS "Steamworks library: ${Steamworks_LIBRARIES}")
+else()
+  message(STATUS "Steamworks not found")
+endif()
 
 target_include_directories(${ENGINE_TARGET} PUBLIC 
   ${CMAKE_SOURCE_DIR}/Minigin/

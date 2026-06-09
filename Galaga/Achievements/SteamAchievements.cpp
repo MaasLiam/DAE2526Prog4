@@ -14,7 +14,12 @@ namespace dae
 	bool SteamAchievements::Initialize()
 	{
 #ifdef USE_STEAMWORKS
-		if (SteamUserStats() == nullptr || SteamUser() == nullptr)
+		if (SteamUser() == nullptr)
+		{
+			return false;
+		}
+
+		if (SteamUserStats() == nullptr)
 		{
 			return false;
 		}
@@ -33,26 +38,41 @@ namespace dae
 	void SteamAchievements::SetAchievement(const char* id)
 	{
 #ifdef USE_STEAMWORKS
-		bool achieved{ false };
-
-		if (SteamUserStats()->GetAchievement(id, &achieved) && achieved)
+		if (!m_Initialized)
+		{
 			return;
+		}
 
-		SteamUserStats()->SetAchievement(id);
-		SteamUserStats()->StoreStats();
+		if (id == nullptr)
+		{
+			return;
+		}
+
+		auto* userStats = SteamUserStats();
+		if (userStats == nullptr)
+		{
+			m_Initialized = false;
+			return;
+		}
+
+		bool achieved{ false };
+		if (userStats->GetAchievement(id, &achieved) && achieved)
+		{
+			return;
+		}
+
+		userStats->SetAchievement(id);
+		userStats->StoreStats();
 #else
 		(void)id;
-		return;
 #endif
 	}
 
 #ifdef USE_STEAMWORKS
 	void SteamAchievements::OnUserStatsStored(UserStatsStored_t*)
-	{
-	}
+	{}
 
 	void SteamAchievements::OnAchievementStored(UserAchievementStored_t*)
-	{
-	}
+	{}
 #endif
 }

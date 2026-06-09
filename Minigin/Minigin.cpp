@@ -86,7 +86,11 @@ dae::Minigin::Minigin(const std::filesystem::path& dataPath, std::unique_ptr<Gam
 #ifdef USE_STEAMWORKS
 	if (!SteamAPI_Init())
 	{
-		throw std::runtime_error("Fatal Error - Steam must be running to play this game (SteamAPI_Init() failed).");
+		OutputDebugString("SteamAPI_Init failed. Continuing without Steam.\n");
+	}
+	else
+	{
+		OutputDebugString("SteamAPI_Init succeeded.\n");
 	}
 #endif
 
