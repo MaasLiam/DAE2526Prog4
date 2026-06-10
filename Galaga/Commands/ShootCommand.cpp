@@ -12,6 +12,7 @@
 #include "ServiceLocator.h"
 #include "SoundIds.h"
 #include "GalagaGameControllerComponent.h"
+#include "GameState.h"
 
 ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGameControllerComponent* gameController)
 	: m_Shooter(shooter)
@@ -23,6 +24,11 @@ ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGa
 
 void ShootCommand::Execute(float)
 {
+	if (m_GameController && m_GameController->GetState() != GameState::Playing)
+	{
+		return;
+	}
+
 	auto* shooterTransform = m_Shooter.GetComponent<dae::TransformComponent>();
 	if (!shooterTransform)
 		return;

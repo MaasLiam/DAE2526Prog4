@@ -3,16 +3,19 @@
 #include "Component.h"
 #include "GameState.h"
 #include "HighScoreManager.h"
+#include "GameMode.h"
 
 #include <array>
 #include <string>
 #include <vector>
+#include <glm/vec3.hpp>
 
 namespace dae
 {
 	class GameObject;
 	class Scene;
 	class TextComponent;
+	class TransformComponent;
 }
 
 class GalagaGameControllerComponent final : public dae::Component
@@ -23,9 +26,13 @@ public:
 		dae::Scene& scene,
 		dae::TextComponent& titleText,
 		dae::TextComponent& scoreText,
+		dae::TransformComponent& scoreTextTransform,
 		dae::TextComponent& initialsText,
+		dae::TransformComponent& initialsTextTransform,
 		dae::TextComponent& instructionText,
+		dae::TransformComponent& instructionTextTransform,
 		dae::TextComponent& tableTitleText,
+		dae::TransformComponent& tableTitleTextTransform,
 		std::array<dae::TextComponent*, 5> highScoreRows,
 		dae::TextComponent& controlsP1Text,
 		dae::TextComponent& controlsP2Text
@@ -35,8 +42,10 @@ public:
 
 	void RegisterPlayer(dae::GameObject* player);
 	void RegisterObjectToHideOnResults(dae::GameObject* object);
+	void RegisterGameplayObject(dae::GameObject* object, const glm::vec3& gameplayPosition);
 
 	GameState GetState() const;
+	void ForceRefreshCurrentState();
 
 	void StartGame();
 	void SkipStage();
@@ -45,10 +54,22 @@ public:
 	void MoveInitialCursor(int direction);
 	void ConfirmHighScoreName();
 
+	void MoveMenuSelection(int direction);
+	void ConfirmCurrentSelection();
+
 	void RegisterShotFired();
 	void RegisterHit();
 
+	void SelectGameMode(GameMode gameMode);
+	GameMode GetGameMode() const;
+
 private:
+	struct GameplayObject
+	{
+		dae::GameObject* object{};
+		glm::vec3 gameplayPosition{};
+	};
+
 	bool AreAllEnemiesDefeated() const;
 	bool AreAllPlayersDead() const;
 
@@ -64,20 +85,28 @@ private:
 	void RefreshHighScoreTable();
 	void HideResultTexts();
 	void HideGameplayInstructionTexts();
+	void RefreshModeSelectionText();
+	void HideGameplayObjects();
+	void ShowGameplayObjects();
 
 	dae::Scene& m_Scene;
 
 	dae::TextComponent& m_TitleText;
 	dae::TextComponent& m_ScoreText;
+	dae::TransformComponent& m_ScoreTextTransform;
 	dae::TextComponent& m_InitialsText;
+	dae::TransformComponent& m_InitialsTextTransform;
 	dae::TextComponent& m_InstructionText;
+	dae::TransformComponent& m_InstructionTextTransform;
 	dae::TextComponent& m_TableTitleText;
+	dae::TransformComponent& m_TableTitleTextTransform;
 	std::array<dae::TextComponent*, 5> m_HighScoreRows{};
 	dae::TextComponent& m_ControlsP1Text;
 	dae::TextComponent& m_ControlsP2Text;
 
 	std::vector<dae::GameObject*> m_Players{};
 	std::vector<dae::GameObject*> m_ObjectsToHideOnResults{};
+	std::vector<GameplayObject> m_GameplayObjects{};
 
 	HighScoreManager m_HighScoreManager{ "highscores.txt" };
 
@@ -93,4 +122,6 @@ private:
 	int m_SelectedInitialIndex{};
 
 	static constexpr int m_MaxStageIndex{ 3 };
+	GameMode m_GameMode{ GameMode::SinglePlayer };
+	int m_SelectedGameModeIndex{};
 };

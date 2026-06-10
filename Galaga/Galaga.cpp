@@ -52,7 +52,7 @@ void Galaga::Initialize()
 	//logo 
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::TransformComponent>();
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(358, 180);
+	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(358, 95);
 	go->AddComponent<dae::RenderComponent>("logo.png");
 	auto* logoObject = go.get();
 	scene.Add(std::move(go));
@@ -71,6 +71,7 @@ void Galaga::Initialize()
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::TransformComponent>();
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(330, 125);
+	auto* scoreTextTransform = go->GetComponent<dae::TransformComponent>();
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("", font, SDL_Color{ 255, 255, 0, 255 });
 	auto* scoreText = go->GetComponent<dae::TextComponent>();
@@ -79,14 +80,17 @@ void Galaga::Initialize()
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::TransformComponent>();
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(390, 190);
+	auto* initialsTextTransform = go->GetComponent<dae::TransformComponent>();
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("", font, SDL_Color{ 255, 255, 255, 255 });
 	auto* initialsText = go->GetComponent<dae::TextComponent>();
 	scene.Add(std::move(go));
+	go = std::make_unique<dae::GameObject>();
 
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::TransformComponent>();
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(40, 280);
+	auto* instructionTextTransform = go->GetComponent<dae::TransformComponent>();
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("", font, SDL_Color{ 255, 255, 255, 255 });
 	auto* instructionText = go->GetComponent<dae::TextComponent>();
@@ -95,6 +99,7 @@ void Galaga::Initialize()
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::TransformComponent>();
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(320, 350);
+	auto* tableTitleTextTransform = go->GetComponent<dae::TransformComponent>();
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("", font, SDL_Color{ 255, 0, 0, 255 });
 	auto* tableTitleText = go->GetComponent<dae::TextComponent>();
@@ -163,6 +168,7 @@ void Galaga::Initialize()
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("P1: ARROWS to move, X and C to shoot", font, SDL_Color{ 255, 255, 255, 255 });
 	auto* controlsP1Text = go->GetComponent<dae::TextComponent>();
+	auto* controlsP1Object = go.get();
 	scene.Add(std::move(go));
 
 	//p2
@@ -172,6 +178,7 @@ void Galaga::Initialize()
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("P2: D-Pad to move, A to shoot", font, SDL_Color{ 255, 255, 255, 255 });
 	auto* controlsP2Text = go->GetComponent<dae::TextComponent>();
+	auto* controlsP2Object = go.get();
 	scene.Add(std::move(go));
 
 	auto gameController = std::make_unique<dae::GameObject>();
@@ -179,9 +186,13 @@ void Galaga::Initialize()
 		scene,
 		*titleText,
 		*scoreText,
+		*scoreTextTransform,
 		*initialsText,
+		*initialsTextTransform,
 		*instructionText,
+		*instructionTextTransform,
 		*tableTitleText,
+		*tableTitleTextTransform,
 		highScoreRows,
 		*controlsP1Text,
 		*controlsP2Text
@@ -189,7 +200,8 @@ void Galaga::Initialize()
 
 	auto* gameControllerComponent = gameController->GetComponent<GalagaGameControllerComponent>();
 
-
+	gameControllerComponent->RegisterGameplayObject(controlsP1Object, glm::vec3{ 20.f, 520.f, 0.f });
+	gameControllerComponent->RegisterGameplayObject(controlsP2Object, glm::vec3{ 20.f, 550.f, 0.f });
 	// Player 1
 	/*auto go = std::make_unique<dae::GameObject>();*/
 	go = std::make_unique<dae::GameObject>();
@@ -239,6 +251,8 @@ void Galaga::Initialize()
 	player1Object->AddComponent<CollisionComponent>(32.f, 32.f);
 	scene.Add(std::move(go));
 
+	gameControllerComponent->RegisterGameplayObject(player1Object, glm::vec3{ 360.f, 500.f, 0.f });
+
 	//player1 health ui
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::TransformComponent>();
@@ -246,7 +260,10 @@ void Galaga::Initialize()
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("P1 Lives: 3", font, SDL_Color{ 255, 255, 255, 255 });
 	go->AddComponent<dae::DisplayLivesComponent>(*player1Health, "P1");
+	auto* player1LivesUiObject = go.get();
 	scene.Add(std::move(go));
+
+	gameControllerComponent->RegisterGameplayObject(player1LivesUiObject, glm::vec3{ 20.f, 60.f, 0.f });
 
 	//player1 score ui
 	go = std::make_unique<dae::GameObject>();
@@ -255,7 +272,10 @@ void Galaga::Initialize()
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("P1 Score: 0", font, SDL_Color{ 255, 255, 255, 255 });
 	go->AddComponent<dae::DisplayScoreComponent>(*player1Score, "P1");
+	auto* player1ScoreUiObject = go.get();
 	scene.Add(std::move(go));
+
+	gameControllerComponent->RegisterGameplayObject(player1ScoreUiObject, glm::vec3{ 120.f, 60.f, 0.f });
 
 
 	// Player 2
@@ -301,6 +321,8 @@ void Galaga::Initialize()
 	player2Object->AddComponent<CollisionComponent>(32.f, 32.f);
 	scene.Add(std::move(go));
 
+	gameControllerComponent->RegisterGameplayObject(player2Object, glm::vec3{ 440.f, 500.f, 0.f });
+
 	//player 2 health ui
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::TransformComponent>();
@@ -308,8 +330,10 @@ void Galaga::Initialize()
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("P2 Lives : 3", font, SDL_Color{ 255, 255, 255, 255 });
 	go->AddComponent<dae::DisplayLivesComponent>(*player2Health, "P2");
-
+	auto* player2LivesUiObject = go.get();
 	scene.Add(std::move(go));
+
+	gameControllerComponent->RegisterGameplayObject(player2LivesUiObject, glm::vec3{ 20.f, 90.f, 0.f });
 
 	//player2 score ui
 	go = std::make_unique<dae::GameObject>();
@@ -318,11 +342,10 @@ void Galaga::Initialize()
 	go->AddComponent<dae::RenderComponent>();
 	go->AddComponent<dae::TextComponent>("P2 Score: 0", font, SDL_Color{ 255, 255, 255, 255 });
 	go->AddComponent<dae::DisplayScoreComponent>(*player2Score, "P2");
+	auto* player2ScoreUiObject = go.get();
 	scene.Add(std::move(go));
 
-
-	
-
+	gameControllerComponent->RegisterGameplayObject(player2ScoreUiObject, glm::vec3{ 120.f, 90.f, 0.f });
 	m_pSteamAchievements = std::make_unique<dae::SteamAchievements>();
 	m_pSteamAchievementObserver = std::make_unique<dae::SteamAchievementObserver>(*m_pSteamAchievements);
 
@@ -343,6 +366,10 @@ void Galaga::Initialize()
 	gameControllerComponent->RegisterPlayer(player2Object);
 	gameControllerComponent->RegisterObjectToHideOnResults(logoObject);
 	gameControllerComponent->RegisterObjectToHideOnResults(fpsObject);
+	gameControllerComponent->RegisterGameplayObject(fpsObject, glm::vec3{ 10.f, 10.f, 0.f });
+
+	gameControllerComponent->ForceRefreshCurrentState();
+	
 
 	inputManager.GetKeyboardInput()->AddBinding(std::make_unique<SkipStageCommand>(*gameControllerComponent), dae::InputKey::F1, dae::InputState::Down);
 	inputManager.GetKeyboardInput()->AddBinding(
@@ -402,6 +429,18 @@ void Galaga::Initialize()
 	inputManager.GetControllerInput(0)->AddBinding(
 		std::make_unique<ConfirmHighScoreNameCommand>(*gameControllerComponent),
 		dae::InputKey::ButtonA,
+		dae::InputState::Down
+	);
+
+	inputManager.GetKeyboardInput()->AddBinding(
+		std::make_unique<ConfirmHighScoreNameCommand>(*gameControllerComponent),
+		dae::InputKey::C,
+		dae::InputState::Down
+	);
+
+	inputManager.GetKeyboardInput()->AddBinding(
+		std::make_unique<ConfirmHighScoreNameCommand>(*gameControllerComponent),
+		dae::InputKey::X,
 		dae::InputState::Down
 	);
 	scene.Add(std::move(gameController));

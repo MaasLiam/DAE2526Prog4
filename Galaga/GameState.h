@@ -3,6 +3,7 @@
 enum class GameState
 {
 	StartScreen,
+	ModeSelection,
 	Playing,
 	StageComplete,
 	EnteringHighScore,

@@ -8,5 +8,5 @@ ConfirmHighScoreNameCommand::ConfirmHighScoreNameCommand(GalagaGameControllerCom
 
 void ConfirmHighScoreNameCommand::Execute(float)
 {
-	m_GameController.ConfirmHighScoreName();
+	m_GameController.ConfirmCurrentSelection();
 }
