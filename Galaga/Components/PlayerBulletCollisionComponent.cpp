@@ -4,6 +4,8 @@
 #include "GameObject.h"
 #include "HealthComponent.h"
 #include "Scene.h"
+#include "ServiceLocator.h"
+#include "SoundIds.h"
 
 PlayerBulletCollisionComponent::PlayerBulletCollisionComponent(dae::GameObject* owner, dae::Scene& scene, dae::GameObject& player)
 	: dae::Component(owner)
@@ -30,5 +32,6 @@ void PlayerBulletCollisionComponent::Update(float)
 	}
 
 	playerHealth->LoseLife();
+	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::PlayerHit), 1.0f);
 	m_Scene.Remove(*GetOwner());
 }

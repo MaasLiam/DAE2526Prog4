@@ -11,6 +11,7 @@
 #include "ScoreComponent.h"
 #include "TextComponent.h"
 #include "TransformComponent.h"
+#include "VersusBossComponent.h"
 
 #include <string>
 
@@ -62,6 +63,16 @@ void GalagaGameControllerComponent::Update(float deltaTime)
 		break;
 
 	case GameState::Playing:
+		if (m_GameMode == GameMode::Versus)
+		{
+			if (IsPlayerOneDead())
+			{
+				SetVersusWinner(2);
+			}
+
+			return;
+		}
+
 		if (AreAllPlayersDead())
 		{
 			EnterHighScoreScreen();
@@ -139,6 +150,46 @@ void GalagaGameControllerComponent::ForceRefreshCurrentState()
 
 void GalagaGameControllerComponent::StartGame()
 {
+	m_ResultMessage.clear();
+	m_FinalScore = 0;
+	m_ShotsFired = 0;
+	m_Hits = 0;
+	m_StageIndex = 1;
+
+	for (size_t index{}; index < m_Players.size(); ++index)
+	{
+		auto* player = m_Players[index];
+		if (!player)
+		{
+			continue;
+		}
+
+		auto* health = player->GetComponent<dae::HealthComponent>();
+		if (health)
+		{
+			health->Reset(4);
+		}
+
+		auto* score = player->GetComponent<dae::ScoreComponent>();
+		if (score)
+		{
+			score->Reset();
+		}
+
+		auto* transform = player->GetComponent<dae::TransformComponent>();
+		if (transform)
+		{
+			const glm::vec3 startPosition = index == 0 ? glm::vec3{ 360.f, 500.f, 0.f } : glm::vec3{ 440.f, 500.f, 0.f };
+			transform->SetLocalPosition(startPosition);
+		}
+
+		auto* versusBoss = player->GetComponent<VersusBossComponent>();
+		if (versusBoss)
+		{
+			versusBoss->Reset();
+		}
+	}
+
 	StartStage(1);
 }
 
@@ -156,6 +207,27 @@ void GalagaGameControllerComponent::SkipStage()
 	}
 
 	StartStage(m_StageIndex + 1);
+}
+
+void GalagaGameControllerComponent::ReturnToModeSelection()
+{
+	m_ResultMessage.clear();
+	m_SelectedGameModeIndex = 0;
+	m_SelectedInitialIndex = 0;
+	m_FinalScore = 0;
+	m_ShotsFired = 0;
+	m_Hits = 0;
+	m_StageIndex = 1;
+	m_StateTimer = 0.f;
+
+	for (auto& initial : m_Initials)
+	{
+		initial = 'A';
+	}
+
+	LevelLoader::ClearStage(m_Scene);
+	HideGameplayObjects();
+	SetState(GameState::ModeSelection);
 }
 
 void GalagaGameControllerComponent::ChangeSelectedInitial(int direction)
@@ -264,6 +336,12 @@ void GalagaGameControllerComponent::ConfirmCurrentSelection()
 	if (m_State == GameState::EnteringHighScore)
 	{
 		ConfirmHighScoreName();
+		return;
+	}
+
+	if (m_State == GameState::HighScoreScreen)
+	{
+		ReturnToModeSelection();
 	}
 }
 
@@ -313,6 +391,17 @@ bool GalagaGameControllerComponent::AreAllPlayersDead() const
 	}
 
 	return true;
+}
+
+bool GalagaGameControllerComponent::IsPlayerOneDead() const
+{
+	if (m_Players.empty() || !m_Players[0])
+	{
+		return false;
+	}
+
+	const auto* health = m_Players[0]->GetComponent<dae::HealthComponent>();
+	return health && health->IsDead();
 }
 
 int GalagaGameControllerComponent::GetTotalScore() const
@@ -370,7 +459,7 @@ void GalagaGameControllerComponent::SetState(GameState state)
 	case GameState::EnteringHighScore:
 	{
 		HideGameplayInstructionTexts();
-		m_TitleText.SetText("- RESULTS -");
+		m_TitleText.SetText(m_ResultMessage.empty() ? "- RESULTS -" : m_ResultMessage);
 
 		m_ScoreTextTransform.SetLocalPosition(120.f, 125.f, 0.f);
 		m_InitialsTextTransform.SetLocalPosition(390.f, 210.f, 0.f);
@@ -400,7 +489,7 @@ void GalagaGameControllerComponent::SetState(GameState state)
 		m_TitleText.SetText("- HIGHSCORES -");
 		m_ScoreText.SetText("FINAL SCORE: " + std::to_string(m_FinalScore));
 		m_InitialsText.SetText("");
-		m_InstructionText.SetText("SAVED TO highscores.txt");
+		m_InstructionText.SetText("C/X/A/ENTER RETURN TO MENU");
 		m_TableTitleText.SetText("RANK   NAME   SCORE");
 		RefreshHighScoreTable();
 		break;
@@ -438,29 +527,21 @@ void GalagaGameControllerComponent::EnterHighScoreScreen()
 	m_FinalScore = GetTotalScore();
 
 	LevelLoader::ClearStage(m_Scene);
+	HideGameplayObjects();
 
 	for (auto* object : m_ObjectsToHideOnResults)
 	{
-		if (object)
+		if (!object)
 		{
-			m_Scene.Remove(*object);
+			continue;
+		}
+
+		auto* transform = object->GetComponent<dae::TransformComponent>();
+		if (transform)
+		{
+			transform->SetLocalPosition(-1000.f, -1000.f, 0.f);
 		}
 	}
-
-	m_ObjectsToHideOnResults.clear();
-
-	for (const auto& object : m_Scene.GetObjects())
-	{
-		if (object->GetComponent<dae::HealthComponent>() ||
-			object->GetComponent<dae::ScoreComponent>() ||
-			object->GetComponent<dae::DisplayLivesComponent>() ||
-			object->GetComponent<dae::DisplayScoreComponent>())
-		{
-			m_Scene.Remove(*object);
-		}
-	}
-
-	m_Players.clear();
 
 	SetState(GameState::EnteringHighScore);
 }
@@ -704,4 +785,15 @@ void GalagaGameControllerComponent::SelectGameMode(GameMode gameMode)
 GameMode GalagaGameControllerComponent::GetGameMode() const
 {
 	return m_GameMode;
+}
+
+void GalagaGameControllerComponent::SetVersusWinner(int playerIndex)
+{
+	if (m_State != GameState::Playing)
+	{
+		return;
+	}
+
+	m_ResultMessage = playerIndex == 1 ? "P1 WINS" : "P2 WINS";
+	EnterHighScoreScreen();
 }

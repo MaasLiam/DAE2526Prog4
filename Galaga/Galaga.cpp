@@ -306,6 +306,7 @@ void Galaga::Initialize()
 	scene.Add(std::move(beamObject));
 
 	versusBossComponent->SetBeamVisual(tractorBeamObject);
+	gameControllerComponent->RegisterObjectToHideOnResults(tractorBeamObject);
 
 	constexpr float player2Speed = 200.f; // double speed
 

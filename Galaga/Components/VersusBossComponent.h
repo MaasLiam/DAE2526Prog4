@@ -17,12 +17,12 @@ public:
 	VersusBossComponent(dae::GameObject* owner, GalagaGameControllerComponent& gameController, dae::GameObject& targetPlayer);
 
 	void Update(float deltaTime) override;
-
 	void StartDive();
 	void StartTractorBeam();
 	void TakeHit();
 	bool IsDead() const;
 	void SetBeamVisual(dae::GameObject* beamVisual);
+	void Reset();
 
 private:
 	enum class BossState

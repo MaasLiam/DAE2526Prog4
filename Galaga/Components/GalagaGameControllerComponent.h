@@ -50,6 +50,7 @@ public:
 
 	void StartGame();
 	void SkipStage();
+	void ReturnToModeSelection();
 
 	void ChangeSelectedInitial(int direction);
 	void MoveInitialCursor(int direction);
@@ -63,6 +64,7 @@ public:
 
 	void SelectGameMode(GameMode gameMode);
 	GameMode GetGameMode() const;
+	void SetVersusWinner(int playerIndex);
 
 private:
 	struct GameplayObject
@@ -73,6 +75,7 @@ private:
 
 	bool AreAllEnemiesDefeated() const;
 	bool AreAllPlayersDead() const;
+	bool IsPlayerOneDead() const;
 
 	int GetTotalScore() const;
 	std::string GetInitialsString() const;
@@ -127,4 +130,5 @@ private:
 	static constexpr int m_MaxStageIndex{ 3 };
 	GameMode m_GameMode{ GameMode::SinglePlayer };
 	int m_SelectedGameModeIndex{};
+	std::string m_ResultMessage{};
 };

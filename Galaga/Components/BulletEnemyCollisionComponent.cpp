@@ -9,6 +9,8 @@
 #include "VersusBossComponent.h"
 #include "GameMode.h"
 #include "HealthComponent.h"
+#include "ServiceLocator.h"
+#include "SoundIds.h"
 
 BulletEnemyCollisionComponent::BulletEnemyCollisionComponent(dae::GameObject* owner, dae::Scene& scene, dae::ScoreComponent& scoreComponent, GalagaGameControllerComponent* gameController)
 	: dae::Component(owner)
@@ -39,12 +41,17 @@ void BulletEnemyCollisionComponent::Update(float)
 
 				versusBoss->TakeHit();
 
+				m_Scene.Remove(*GetOwner());
+
 				if (versusBoss->IsDead())
 				{
-					versusBossHealth->LoseLife();
+					dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::BossGalagaDestroyed), 1.0f);
+					m_GameController->SetVersusWinner(1);
 				}
-
-				m_Scene.Remove(*GetOwner());
+				else
+				{
+					dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::BossGalagaInjured), 1.0f);
+				}
 
 				return;
 			}
@@ -71,8 +78,21 @@ void BulletEnemyCollisionComponent::Update(float)
 
 			if (enemy->IsDead())
 			{
+				if (enemy->GetType() == EnemyType::BossGalaga)
+				{
+					dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::BossGalagaDestroyed), 1.0f);
+				}
+				else
+				{
+					dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::EnemyDestroyed), 1.0f);
+				}
+
 				m_ScoreComponent.AddScore(scoreValue);
 				m_Scene.Remove(*object);
+			}
+			else if (enemy->GetType() == EnemyType::BossGalaga)
+			{
+				dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::BossGalagaInjured), 1.0f);
 			}
 
 			m_Scene.Remove(*GetOwner());

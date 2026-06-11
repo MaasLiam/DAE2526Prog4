@@ -72,5 +72,5 @@ void ShootCommand::Execute(float)
 
 	m_Scene.Add(std::move(bullet));
 
-	dae::ServiceLocator::GetSoundSystem().Play(galaga::SoundIds::Shoot, 1.0f);
+	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::Shoot), 1.0f);
 }

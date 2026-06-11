@@ -9,11 +9,9 @@ namespace dae
 	{
 	public:
 		ScoreComponent(GameObject* owner);
-
 		void Notify(Event event, GameObject* gameObject) override;
-
 		void AddScore(int score);
-
+		void Reset();
 		int GetScore() const;
 		Subject& GetSubject();
 

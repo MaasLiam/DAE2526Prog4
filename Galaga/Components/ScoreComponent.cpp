@@ -22,6 +22,12 @@ namespace dae
 		m_Subject.Notify(Event::ScoreChanged, GetOwner());
 	}
 
+	void ScoreComponent::Reset()
+	{
+		m_Score = 0;
+		m_Subject.Notify(Event::ScoreChanged, GetOwner());
+	}
+
 	int ScoreComponent::GetScore() const
 	{
 		return m_Score;

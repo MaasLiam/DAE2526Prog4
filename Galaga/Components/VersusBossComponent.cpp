@@ -8,6 +8,8 @@
 #include "HealthComponent.h"
 #include "TransformComponent.h"
 #include "RenderComponent.h"
+#include "ServiceLocator.h"
+#include "SoundIds.h"
 
 #include <glm/geometric.hpp>
 
@@ -189,6 +191,29 @@ void VersusBossComponent::SetBeamVisual(dae::GameObject* beamVisual)
 	m_BeamVisual = beamVisual;
 }
 
+void VersusBossComponent::Reset()
+{
+	m_State = BossState::Idle;
+	m_TractorTimer = 0.f;
+	m_HasDamagedPlayerThisAttack = false;
+	m_HitPoints = 4;
+	m_DamagedVisualApplied = false;
+
+	SetBeamVisible(false);
+
+	auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
+	if (transform)
+	{
+		transform->SetLocalPosition(m_StartPosition);
+	}
+
+	auto* render = GetOwner()->GetComponent<dae::RenderComponent>();
+	if (render)
+	{
+		render->SetTexture("Sprites/BossGalaga.png");
+	}
+}
+
 void VersusBossComponent::MoveTowards(const glm::vec3& target, float speed, float deltaTime)
 {
 	auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
@@ -251,6 +276,7 @@ void VersusBossComponent::TryDamagePlayerOnContact()
 	}
 
 	playerHealth->LoseLife();
+	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::PlayerHit), 1.0f);
 	m_HasDamagedPlayerThisAttack = true;
 }
 
@@ -284,6 +310,7 @@ void VersusBossComponent::TryCapturePlayerWithBeam()
 	if (m_TractorTimer > 0.5f && playerInsideBeamX && playerInsideBeamY)
 	{
 		playerHealth->LoseLife();
+		dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::PlayerHit), 1.0f);
 		playerTransform->SetLocalPosition(360.f, 500.f, 0.f);
 
 		m_HasDamagedPlayerThisAttack = true;

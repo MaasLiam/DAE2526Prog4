@@ -26,14 +26,24 @@ namespace dae
 			m_Subject.Notify(Event::GameOver, GetOwner());
 		}
 	}
+
+	void HealthComponent::Reset(int lives)
+	{
+		m_Lives = lives;
+		m_IsDead = false;
+		m_Subject.Notify(Event::PlayerDied, GetOwner());
+	}
+
 	int HealthComponent::GetLives() const
 	{
 		return m_Lives;
 	}
+
 	bool HealthComponent::IsDead() const
 	{
 		return m_IsDead;
 	}
+
 	Subject& HealthComponent::GetSubject()
 	{
 		return m_Subject;

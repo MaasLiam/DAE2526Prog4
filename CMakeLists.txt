@@ -72,7 +72,16 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Galaga/Commands/SkipStageCommand.cpp
   Galaga/Commands/ToggleMuteCommand.cpp
   Galaga/HighScores/HighScoreManager.cpp
- "Galaga/Commands/ChangeInitialCommand.cpp" "Galaga/Commands/MoveInitialCursorCommand.cpp" "Galaga/Commands/ConfirmHighScoreNameCommand.cpp" "Galaga/Commands/SelectGameModeCommand.cpp" "Galaga/Commands/MovePlayerCommand.cpp" "Galaga/Components/PlayerBulletCollisionComponent.cpp" "Galaga/Commands/VersusBossShootCommand.cpp" "Galaga/Components/VersusBossComponent.cpp" "Galaga/Commands/VersusBossDiveCommand.cpp" "Galaga/Commands/VersusBossTractorBeamCommand.cpp")
+  Galaga/Commands/ChangeInitialCommand.cpp 
+  Galaga/Commands/MoveInitialCursorCommand.cpp
+  Galaga/Commands/ConfirmHighScoreNameCommand.cpp
+  Galaga/Commands/SelectGameModeCommand.cpp
+  Galaga/Commands/MovePlayerCommand.cpp
+  Galaga/Components/PlayerBulletCollisionComponent.cpp
+  Galaga/Commands/VersusBossShootCommand.cpp
+  Galaga/Components/VersusBossComponent.cpp
+  Galaga/Commands/VersusBossDiveCommand.cpp
+  Galaga/Commands/VersusBossTractorBeamCommand.cpp)
 
 # enable c++20 features
 target_compile_features(${ENGINE_TARGET} PUBLIC cxx_std_20)

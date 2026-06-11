@@ -40,7 +40,17 @@ int main(int, char*[]) {
 	);
 #endif
 
-	dae::ServiceLocator::GetSoundSystem().Load(galaga::SoundIds::Shoot, (data_location / "Sounds" / "Shoot.wav").string());
+	auto& soundSystem = dae::ServiceLocator::GetSoundSystem();
+
+	soundSystem.Load(galaga::ToSoundId(galaga::SoundIds::Shoot), (data_location / "Sounds" / "Shoot.wav").string());
+	soundSystem.Load(galaga::ToSoundId(galaga::SoundIds::StageStart), (data_location / "Sounds" / "StartStage.mp3").string());
+	soundSystem.Load(galaga::ToSoundId(galaga::SoundIds::TractorBeam), (data_location / "Sounds" / "tractorBeam.mp3").string());
+	soundSystem.Load(galaga::ToSoundId(galaga::SoundIds::GameOver), (data_location / "Sounds" / "GameOver.mp3").string());
+	soundSystem.Load(galaga::ToSoundId(galaga::SoundIds::BossGalagaDestroyed), (data_location / "Sounds" / "bossgalagaDestroyed.mp3").string());
+	soundSystem.Load(galaga::ToSoundId(galaga::SoundIds::BossGalagaInjured), (data_location / "Sounds" / "bossgalagaInjured.mp3").string());
+	soundSystem.Load(galaga::ToSoundId(galaga::SoundIds::EnemyDestroyed), (data_location / "Sounds" / "galagaDestroyed.mp3").string());
+	soundSystem.Load(galaga::ToSoundId(galaga::SoundIds::EnemyDive), (data_location / "Sounds" / "galagaDive.mp3").string());
+	soundSystem.Load(galaga::ToSoundId(galaga::SoundIds::PlayerHit), (data_location / "Sounds" / "PlayerHit.mp3").string());
 
 	engine.Run();
 

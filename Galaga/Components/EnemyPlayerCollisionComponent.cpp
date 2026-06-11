@@ -5,6 +5,8 @@
 #include "GameObject.h"
 #include "HealthComponent.h"
 #include "Scene.h"
+#include "ServiceLocator.h"
+#include "SoundIds.h"
 
 EnemyPlayerCollisionComponent::EnemyPlayerCollisionComponent(
     dae::GameObject* owner,
@@ -55,6 +57,7 @@ void EnemyPlayerCollisionComponent::Update(float)
             }
 
             playerHealth->LoseLife();
+            dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::PlayerHit), 1.0f);
 
             enemy->TakeDamage();
 

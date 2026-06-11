@@ -11,6 +11,7 @@ namespace dae
 		HealthComponent(GameObject* parent, int startLives = 3);
 
 		void LoseLife();
+		void Reset(int lives);
 		int GetLives() const;
 		bool IsDead() const;
 
