@@ -354,6 +354,41 @@ EnemyType EnemyComponent::GetType() const
 	return m_Type;
 }
 
+EnemyStateId EnemyComponent::GetStateId() const
+{
+	if (!m_State)
+	{
+		return EnemyStateId::Dead;
+	}
+
+	if (IsDead())
+	{
+		return EnemyStateId::Dead;
+	}
+
+	if (dynamic_cast<FlyingIntoFormationEnemyState*>(m_State.get()))
+	{
+		return EnemyStateId::FlyingIntoFormation;
+	}
+
+	if (dynamic_cast<InFormationEnemyState*>(m_State.get()))
+	{
+		return EnemyStateId::InFormation;
+	}
+
+	if (dynamic_cast<DivingEnemyState*>(m_State.get()))
+	{
+		return EnemyStateId::Diving;
+	}
+
+	if (dynamic_cast<TractorBeamEnemyState*>(m_State.get()))
+	{
+		return EnemyStateId::TractorBeam;
+	}
+
+	return EnemyStateId::Dead;
+}
+
 void EnemyComponent::StartDiving()
 {
 	ChangeState(std::make_unique<DivingEnemyState>());

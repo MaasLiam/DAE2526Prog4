@@ -35,7 +35,6 @@ public:
 	EnemyType GetType() const;
 	EnemyStateId GetStateId() const;
 
-	void SetState(EnemyStateId state);
 	void StartDiving();
 	void StartTractorBeam();
 	void ReturnToFormation();

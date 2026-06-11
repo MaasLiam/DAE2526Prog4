@@ -18,6 +18,12 @@ namespace dae
 	class TransformComponent;
 }
 
+enum class PlayerIndex
+{
+	PlayerOne = 0,
+	PlayerTwo = 1
+};
+
 class GalagaGameControllerComponent final : public dae::Component
 {
 public:
@@ -65,6 +71,12 @@ public:
 	void SelectGameMode(GameMode gameMode);
 	GameMode GetGameMode() const;
 	void SetVersusWinner(int playerIndex);
+
+	bool IsPlayerActive(PlayerIndex playerIndex) const;
+	bool IsPlayerAlive(PlayerIndex playerIndex) const;
+	bool CanPlayerAct(PlayerIndex playerIndex) const;
+
+	dae::GameObject* GetPlayer(PlayerIndex playerIndex) const;
 
 private:
 	struct GameplayObject

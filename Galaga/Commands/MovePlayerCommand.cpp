@@ -4,6 +4,7 @@
 #include "GameMode.h"
 #include "GameObject.h"
 #include "GameState.h"
+#include "HealthComponent.h"
 #include "TransformComponent.h"
 
 MovePlayerCommand::MovePlayerCommand(dae::GameObject& object, dae::MoveDirection direction, float speed, GalagaGameControllerComponent& gameController, ControlledPlayer controlledPlayer)
@@ -16,13 +17,9 @@ MovePlayerCommand::MovePlayerCommand(dae::GameObject& object, dae::MoveDirection
 
 void MovePlayerCommand::Execute(float deltaTime)
 {
-	if (m_GameController.GetState() != GameState::Playing)
-	{
-		return;
-	}
+	const PlayerIndex playerIndex = m_ControlledPlayer == ControlledPlayer::PlayerOne ? PlayerIndex::PlayerOne : PlayerIndex::PlayerTwo;
 
-	if (m_ControlledPlayer == ControlledPlayer::PlayerTwo &&
-		m_GameController.GetGameMode() != GameMode::Coop)
+	if (!m_GameController.CanPlayerAct(playerIndex))
 	{
 		return;
 	}
@@ -40,15 +37,12 @@ void MovePlayerCommand::Execute(float deltaTime)
 	case dae::MoveDirection::Up:
 		direction = { 0.f, -1.f, 0.f };
 		break;
-
 	case dae::MoveDirection::Down:
 		direction = { 0.f, 1.f, 0.f };
 		break;
-
 	case dae::MoveDirection::Left:
 		direction = { -1.f, 0.f, 0.f };
 		break;
-
 	case dae::MoveDirection::Right:
 		direction = { 1.f, 0.f, 0.f };
 		break;

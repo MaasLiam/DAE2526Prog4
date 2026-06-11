@@ -376,6 +376,11 @@ bool GalagaGameControllerComponent::AreAllPlayersDead() const
 		return false;
 	}
 
+	if (m_GameMode == GameMode::SinglePlayer || m_GameMode == GameMode::Versus)
+	{
+		return IsPlayerOneDead();
+	}
+
 	for (const auto* player : m_Players)
 	{
 		if (!player)
@@ -517,7 +522,7 @@ void GalagaGameControllerComponent::StartStage(int stageIndex)
 {
 	m_StageIndex = stageIndex;
 
-	LevelLoader::LoadStage(m_Scene, m_StageIndex);
+	LevelLoader::LoadStage(m_Scene, m_StageIndex, *this);
 
 	SetState(GameState::Playing);
 }
@@ -796,4 +801,51 @@ void GalagaGameControllerComponent::SetVersusWinner(int playerIndex)
 
 	m_ResultMessage = playerIndex == 1 ? "P1 WINS" : "P2 WINS";
 	EnterHighScoreScreen();
+}
+
+bool GalagaGameControllerComponent::IsPlayerActive(PlayerIndex playerIndex) const
+{
+	switch (m_GameMode)
+	{
+	case GameMode::SinglePlayer:
+		return playerIndex == PlayerIndex::PlayerOne;
+
+	case GameMode::Coop:
+		return playerIndex == PlayerIndex::PlayerOne || playerIndex == PlayerIndex::PlayerTwo;
+
+	case GameMode::Versus:
+		return playerIndex == PlayerIndex::PlayerOne;
+	}
+
+	return false;
+}
+
+bool GalagaGameControllerComponent::IsPlayerAlive(PlayerIndex playerIndex) const
+{
+	const auto index = static_cast<size_t>(playerIndex);
+
+	if (index >= m_Players.size() || !m_Players[index])
+	{
+		return false;
+	}
+
+	const auto* health = m_Players[index]->GetComponent<dae::HealthComponent>();
+	return health && !health->IsDead();
+}
+
+bool GalagaGameControllerComponent::CanPlayerAct(PlayerIndex playerIndex) const
+{
+	return m_State == GameState::Playing && IsPlayerActive(playerIndex) && IsPlayerAlive(playerIndex);
+}
+
+dae::GameObject* GalagaGameControllerComponent::GetPlayer(PlayerIndex playerIndex) const
+{
+	const auto index = static_cast<size_t>(playerIndex);
+
+	if (index >= m_Players.size())
+	{
+		return nullptr;
+	}
+
+	return m_Players[index];
 }

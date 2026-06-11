@@ -10,6 +10,8 @@
 #include "RenderComponent.h"
 #include "Scene.h"
 #include "TransformComponent.h"
+#include "ServiceLocator.h"
+#include "SoundIds.h"
 
 VersusBossShootCommand::VersusBossShootCommand(dae::GameObject& boss, dae::GameObject& targetPlayer, dae::Scene& scene, GalagaGameControllerComponent& gameController)
 	: m_Boss(boss)
@@ -45,4 +47,5 @@ void VersusBossShootCommand::Execute(float)
 	bullet->AddComponent<PlayerBulletCollisionComponent>(m_Scene, m_TargetPlayer);
 
 	m_Scene.Add(std::move(bullet));
+	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::Shoot), 1.0f);
 }

@@ -387,12 +387,12 @@ void Galaga::Initialize()
 
 
 	auto collisionManager = std::make_unique<dae::GameObject>();
-	collisionManager->AddComponent<EnemyPlayerCollisionComponent>(scene);
+	collisionManager->AddComponent<EnemyPlayerCollisionComponent>(scene, *gameControllerComponent);
 
 	auto* enemyPlayerCollisionComponent = collisionManager->GetComponent<EnemyPlayerCollisionComponent>();
 
 	enemyPlayerCollisionComponent->AddPlayer(player1Object);
-	//enemyPlayerCollisionComponent->AddPlayer(player2Object);
+	enemyPlayerCollisionComponent->AddPlayer(player2Object);
 
 
 	gameControllerComponent->RegisterPlayer(player1Object);

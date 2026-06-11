@@ -2,19 +2,21 @@
 
 #include "CollisionComponent.h"
 #include "EnemyComponent.h"
+#include "GalagaGameControllerComponent.h"
+#include "GameMode.h"
 #include "GameObject.h"
 #include "HealthComponent.h"
 #include "Scene.h"
 #include "ServiceLocator.h"
 #include "SoundIds.h"
 
-EnemyPlayerCollisionComponent::EnemyPlayerCollisionComponent(
-    dae::GameObject* owner,
-    dae::Scene& scene
-)
+EnemyPlayerCollisionComponent::EnemyPlayerCollisionComponent(dae::GameObject* owner, dae::Scene& scene, GalagaGameControllerComponent& gameController)
     : dae::Component(owner)
     , m_Scene(scene)
-{}
+    , m_GameController(gameController)
+{
+
+}
 
 void EnemyPlayerCollisionComponent::AddPlayer(dae::GameObject* player)
 {
@@ -36,9 +38,18 @@ void EnemyPlayerCollisionComponent::Update(float)
             continue;
         }
 
-        for (auto* player : m_Players)
+        for (size_t playerIndex{}; playerIndex < m_Players.size(); ++playerIndex)
         {
+            auto* player = m_Players[playerIndex];
+
             if (!player)
+            {
+                continue;
+            }
+
+            const PlayerIndex activePlayerIndex = playerIndex == 0 ? PlayerIndex::PlayerOne : PlayerIndex::PlayerTwo;
+
+            if (!m_GameController.IsPlayerActive(activePlayerIndex))
             {
                 continue;
             }

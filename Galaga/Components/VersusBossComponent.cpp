@@ -94,20 +94,25 @@ void VersusBossComponent::Update(float deltaTime)
 
 			m_TractorTimer = 0.f;
 			m_State = BossState::TractorBeam;
+
+			dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::TractorBeam), 1.0f);
 		}
+
 		break;
 
 	case BossState::TractorBeam:
 		SetBeamVisible(true);
+
 		m_TractorTimer += deltaTime;
 		TryCapturePlayerWithBeam();
 
 		if (m_TractorTimer >= 2.5f)
 		{
-			SetBeamVisible(false);
 			m_TractorTimer = 0.f;
+			SetBeamVisible(false);
 			m_State = BossState::ReturningFromBeam;
 		}
+
 		break;
 
 	case BossState::ReturningFromBeam:
@@ -142,14 +147,15 @@ void VersusBossComponent::StartDive()
 	}
 
 	const auto playerPosition = playerTransform->GetLocalPosition();
-	m_DiveTarget = glm::vec3{playerPosition.x, playerPosition.y - 20.f, 0.f};
+	m_DiveTarget = glm::vec3{ playerPosition.x, playerPosition.y - 20.f, 0.f };
 	m_HasDamagedPlayerThisAttack = false;
 	m_State = BossState::DivingToPlayer;
+
+	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::EnemyDive), 1.0f);
 }
 
 void VersusBossComponent::StartTractorBeam()
 {
-	SetBeamVisible(false);
 	if (m_GameController.GetState() != GameState::Playing || m_GameController.GetGameMode() != GameMode::Versus || m_State != BossState::Idle)
 	{
 		return;
@@ -157,7 +163,10 @@ void VersusBossComponent::StartTractorBeam()
 
 	m_TractorTimer = 0.f;
 	m_HasDamagedPlayerThisAttack = false;
+	SetBeamVisible(false);
 	m_State = BossState::MovingToBeamPosition;
+
+	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::EnemyDive), 1.0f);
 }
 
 void VersusBossComponent::TakeHit()

@@ -7,6 +7,8 @@
 #include "Scene.h"
 #include "TransformComponent.h"
 #include "BulletComponent.h"
+#include "EnemyShooterComponent.h"
+#include "GalagaGameControllerComponent.h"
 
 #include <fstream>
 #include <stdexcept>
@@ -114,7 +116,7 @@ namespace
 		return enemySpawns;
 	}
 
-	void SpawnEnemies(dae::Scene& scene, const std::vector<EnemySpawn>& enemySpawns)
+	void SpawnEnemies(dae::Scene& scene, const std::vector<EnemySpawn>& enemySpawns, GalagaGameControllerComponent& gameController)
 	{
 		for (size_t index = 0; index < enemySpawns.size(); ++index)
 		{
@@ -132,6 +134,7 @@ namespace
 			enemy->AddComponent<dae::RenderComponent>(GetEnemyTexture(spawn.type));
 			enemy->AddComponent<CollisionComponent>(32.f, 32.f);
 			enemy->AddComponent<EnemyComponent>(spawn.type);
+			enemy->AddComponent<EnemyShooterComponent>(scene, gameController);
 
 			auto* enemyComponent = enemy->GetComponent<EnemyComponent>();
 			enemyComponent->FlyIntoFormation(spawn.formationPosition);
@@ -141,12 +144,12 @@ namespace
 	}
 }
 
-void LevelLoader::LoadStage(dae::Scene& scene, int stageIndex)
+void LevelLoader::LoadStage(dae::Scene& scene, int stageIndex, GalagaGameControllerComponent& gameController)
 {
 	ClearStage(scene);
 
 	const auto enemySpawns = ReadEnemySpawns(stageIndex);
-	SpawnEnemies(scene, enemySpawns);
+	SpawnEnemies(scene, enemySpawns, gameController);
 }
 
 void LevelLoader::ClearStage(dae::Scene& scene)

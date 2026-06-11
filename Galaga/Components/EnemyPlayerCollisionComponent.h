@@ -9,10 +9,11 @@ namespace dae
     class Scene;
 }
 
+class GalagaGameControllerComponent;
 class EnemyPlayerCollisionComponent final : public dae::Component
 {
 public:
-    EnemyPlayerCollisionComponent(dae::GameObject* owner, dae::Scene& scene);
+    EnemyPlayerCollisionComponent(dae::GameObject* owner, dae::Scene& scene, GalagaGameControllerComponent& gameController);
 
     void Update(float deltaTime) override;
 
@@ -21,4 +22,5 @@ public:
 private:
     dae::Scene& m_Scene;
     std::vector<dae::GameObject*> m_Players;
+    GalagaGameControllerComponent& m_GameController;
 };

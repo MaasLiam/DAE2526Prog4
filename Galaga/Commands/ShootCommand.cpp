@@ -1,18 +1,21 @@
 #include "ShootCommand.h"
 
-#include "Scene.h"
-#include "TransformComponent.h"
-#include "RenderComponent.h"
 #include "BulletComponent.h"
-#include "CollisionComponent.h"
 #include "BulletEnemyCollisionComponent.h"
-#include "ScoreComponent.h"
+#include "CollisionComponent.h"
+#include "GameMode.h"
+#include "GameObject.h"
+#include "GameState.h"
+#include "HealthComponent.h"
 #include "MissileLimitComponent.h"
-
+#include "RenderComponent.h"
+#include "Scene.h"
+#include "ScoreComponent.h"
 #include "ServiceLocator.h"
 #include "SoundIds.h"
+#include "TransformComponent.h"
 #include "GalagaGameControllerComponent.h"
-#include "GameState.h"
+
 
 ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGameControllerComponent* gameController, ShootOwner owner)
 	: m_Shooter(shooter)
@@ -35,19 +38,26 @@ void ShootCommand::Execute(float)
 		return;
 	}
 
-	auto* shooterTransform = m_Shooter.GetComponent<dae::TransformComponent>();
-	if (!shooterTransform)
-		return;
+	if (m_GameController)
+	{
+		const PlayerIndex playerIndex = m_Owner == ShootOwner::PlayerOne ? PlayerIndex::PlayerOne : PlayerIndex::PlayerTwo;
+
+		if (!m_GameController->CanPlayerAct(playerIndex))
+		{
+			return;
+		}
+	}
 
 	auto* missileLimit = m_Shooter.GetComponent<MissileLimitComponent>();
-	if (missileLimit && !missileLimit->CanShoot())
+	if (!missileLimit || !missileLimit->CanShoot())
 	{
 		return;
 	}
 
-	if (m_GameController)
+	auto* shooterTransform = m_Shooter.GetComponent<dae::TransformComponent>();
+	if (!shooterTransform)
 	{
-		m_GameController->RegisterShotFired();
+		return;
 	}
 
 	auto position = shooterTransform->GetLocalPosition();
