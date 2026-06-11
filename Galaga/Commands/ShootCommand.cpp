@@ -14,10 +14,11 @@
 #include "GalagaGameControllerComponent.h"
 #include "GameState.h"
 
-ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGameControllerComponent* gameController)
+ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGameControllerComponent* gameController, ShootOwner owner)
 	: m_Shooter(shooter)
 	, m_Scene(scene)
 	, m_GameController(gameController)
+	, m_Owner(owner)
 {
 
 }
@@ -25,6 +26,11 @@ ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGa
 void ShootCommand::Execute(float)
 {
 	if (m_GameController && m_GameController->GetState() != GameState::Playing)
+	{
+		return;
+	}
+
+	if (m_GameController && m_Owner == ShootOwner::PlayerTwo && m_GameController->GetGameMode() == GameMode::Versus)
 	{
 		return;
 	}

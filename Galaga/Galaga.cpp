@@ -25,14 +25,20 @@
 #include "GalagaGameControllerComponent.h"
 #include "ScoreComponent.h"
 #include "HealthComponent.h"
+#include "PlayerBulletCollisionComponent.h"
+#include "VersusBossComponent.h"
 
 #include "MoveObjectCommand.h"
+#include "MovePlayerCommand.h"
 #include "SkipStageCommand.h"
 #include "ShootCommand.h"
 #include "ToggleMuteCommand.h"
 #include "ChangeInitialCommand.h"
 #include "ConfirmHighScoreNameCommand.h"
 #include "MoveInitialCursorCommand.h"
+#include "VersusBossShootCommand.h"
+#include "VersusBossDiveCommand.h"
+#include "VersusBossTractorBeamCommand.h"
 
 #include "ServiceLocator.h"
 #include "SoundIds.h"
@@ -87,7 +93,6 @@ void Galaga::Initialize()
 	scene.Add(std::move(go));
 	go = std::make_unique<dae::GameObject>();
 
-	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::TransformComponent>();
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(40, 280);
 	auto* instructionTextTransform = go->GetComponent<dae::TransformComponent>();
@@ -201,7 +206,7 @@ void Galaga::Initialize()
 	auto* gameControllerComponent = gameController->GetComponent<GalagaGameControllerComponent>();
 
 	gameControllerComponent->RegisterGameplayObject(controlsP1Object, glm::vec3{ 20.f, 520.f, 0.f });
-	gameControllerComponent->RegisterGameplayObject(controlsP2Object, glm::vec3{ 20.f, 550.f, 0.f });
+	gameControllerComponent->RegisterPlayerTwoGameplayObject(controlsP2Object, glm::vec3{ 20.f, 550.f, 0.f });
 	// Player 1
 	/*auto go = std::make_unique<dae::GameObject>();*/
 	go = std::make_unique<dae::GameObject>();
@@ -218,32 +223,32 @@ void Galaga::Initialize()
 	constexpr float player1Speed = 100.f;
 
 	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<dae::MoveObjectCommand>(*go, dae::MoveDirection::Up, player1Speed),
+		std::make_unique<MovePlayerCommand>(*go, dae::MoveDirection::Up, player1Speed, *gameControllerComponent, ControlledPlayer::PlayerOne),
 		dae::InputKey::ArrowUp,
 		dae::InputState::Pressed);
 
 	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<dae::MoveObjectCommand>(*go, dae::MoveDirection::Down, player1Speed),
+		std::make_unique<MovePlayerCommand>(*go, dae::MoveDirection::Down, player1Speed, *gameControllerComponent, ControlledPlayer::PlayerOne),
 		dae::InputKey::ArrowDown,
 		dae::InputState::Pressed);
 
 	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<dae::MoveObjectCommand>(*go, dae::MoveDirection::Left, player1Speed),
+		std::make_unique<MovePlayerCommand>(*go, dae::MoveDirection::Left, player1Speed, *gameControllerComponent, ControlledPlayer::PlayerOne),
 		dae::InputKey::ArrowLeft,
 		dae::InputState::Pressed);
 
 	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<dae::MoveObjectCommand>(*go, dae::MoveDirection::Right, player1Speed),
+		std::make_unique<MovePlayerCommand>(*go, dae::MoveDirection::Right, player1Speed, *gameControllerComponent, ControlledPlayer::PlayerOne),
 		dae::InputKey::ArrowRight,
 		dae::InputState::Pressed);
 
 	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<ShootCommand>(*go, scene, gameControllerComponent),
+		std::make_unique<ShootCommand>(*go, scene, gameControllerComponent, ShootOwner::PlayerOne),
 		dae::InputKey::C,
 		dae::InputState::Down);
 
 	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<ShootCommand>(*go, scene, gameControllerComponent),
+		std::make_unique<ShootCommand>(*go, scene, gameControllerComponent, ShootOwner::PlayerOne),
 		dae::InputKey::X,
 		dae::InputState::Down);
 
@@ -284,44 +289,61 @@ void Galaga::Initialize()
 	go->AddComponent<dae::HealthComponent>(4);
 	go->AddComponent<dae::ScoreComponent>();
 	go->AddComponent<MissileLimitComponent>();
+	go->AddComponent<VersusBossComponent>(*gameControllerComponent);
 	go->AddComponent<dae::RenderComponent>("Sprites/BossGalaga.png");
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 440, 500, 0 });
 
 	auto* player2Health = go->GetComponent<dae::HealthComponent>();
 	auto* player2Score = go->GetComponent<dae::ScoreComponent>();
+	auto* versusBossComponent = go->GetComponent<VersusBossComponent>();
 
 	constexpr float player2Speed = 200.f; // double speed
 
 	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<dae::MoveObjectCommand>(*go, dae::MoveDirection::Up, player2Speed),
+		std::make_unique<MovePlayerCommand>(*go, dae::MoveDirection::Up, player2Speed, *gameControllerComponent, ControlledPlayer::PlayerTwo),
 		dae::InputKey::DPadUp,
 		dae::InputState::Pressed);
 
 	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<dae::MoveObjectCommand>(*go, dae::MoveDirection::Down, player2Speed),
+		std::make_unique<MovePlayerCommand>(*go, dae::MoveDirection::Down, player2Speed, *gameControllerComponent, ControlledPlayer::PlayerTwo),
 		dae::InputKey::DPadDown,
 		dae::InputState::Pressed);
 
 	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<dae::MoveObjectCommand>(*go, dae::MoveDirection::Left, player2Speed),
+		std::make_unique<MovePlayerCommand>(*go, dae::MoveDirection::Left, player2Speed, *gameControllerComponent, ControlledPlayer::PlayerTwo),
 		dae::InputKey::DPadLeft,
 		dae::InputState::Pressed);
 
 	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<dae::MoveObjectCommand>(*go, dae::MoveDirection::Right, player2Speed),
+		std::make_unique<MovePlayerCommand>(*go, dae::MoveDirection::Right, player2Speed, *gameControllerComponent, ControlledPlayer::PlayerTwo),
 		dae::InputKey::DPadRight,
 		dae::InputState::Pressed);
 
 	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<ShootCommand>(*go, scene, gameControllerComponent),
+		std::make_unique<ShootCommand>(*go, scene, gameControllerComponent, ShootOwner::PlayerTwo),
 		dae::InputKey::ButtonA,
+		dae::InputState::Down);
+
+	inputManager.GetControllerInput(0)->AddBinding(
+		std::make_unique<VersusBossShootCommand>(*go, *player1Object, scene, *gameControllerComponent),
+		dae::InputKey::ButtonA,
+		dae::InputState::Down);
+
+	inputManager.GetControllerInput(0)->AddBinding(
+		std::make_unique<VersusBossDiveCommand>(*versusBossComponent),
+		dae::InputKey::ButtonB,
+		dae::InputState::Down);
+
+	inputManager.GetControllerInput(0)->AddBinding(
+		std::make_unique<VersusBossTractorBeamCommand>(*versusBossComponent),
+		dae::InputKey::ButtonY,
 		dae::InputState::Down);
 
 	auto* player2Object = go.get();
 	player2Object->AddComponent<CollisionComponent>(32.f, 32.f);
 	scene.Add(std::move(go));
 
-	gameControllerComponent->RegisterGameplayObject(player2Object, glm::vec3{ 440.f, 500.f, 0.f });
+	gameControllerComponent->RegisterPlayerTwoGameplayObject(player2Object, glm::vec3{ 440.f, 500.f, 0.f });
 
 	//player 2 health ui
 	go = std::make_unique<dae::GameObject>();
@@ -333,7 +355,7 @@ void Galaga::Initialize()
 	auto* player2LivesUiObject = go.get();
 	scene.Add(std::move(go));
 
-	gameControllerComponent->RegisterGameplayObject(player2LivesUiObject, glm::vec3{ 20.f, 90.f, 0.f });
+	gameControllerComponent->RegisterPlayerTwoGameplayObject(player2LivesUiObject, glm::vec3{ 20.f, 90.f, 0.f });
 
 	//player2 score ui
 	go = std::make_unique<dae::GameObject>();
@@ -345,7 +367,7 @@ void Galaga::Initialize()
 	auto* player2ScoreUiObject = go.get();
 	scene.Add(std::move(go));
 
-	gameControllerComponent->RegisterGameplayObject(player2ScoreUiObject, glm::vec3{ 120.f, 90.f, 0.f });
+	gameControllerComponent->RegisterPlayerTwoGameplayObject(player2ScoreUiObject, glm::vec3{ 120.f, 90.f, 0.f });
 	m_pSteamAchievements = std::make_unique<dae::SteamAchievements>();
 	m_pSteamAchievementObserver = std::make_unique<dae::SteamAchievementObserver>(*m_pSteamAchievements);
 

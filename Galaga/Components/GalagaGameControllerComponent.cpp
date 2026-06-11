@@ -119,6 +119,14 @@ void GalagaGameControllerComponent::RegisterGameplayObject(dae::GameObject* obje
 	}
 }
 
+void GalagaGameControllerComponent::RegisterPlayerTwoGameplayObject(dae::GameObject* object, const glm::vec3& gameplayPosition)
+{
+	if (object)
+	{
+		m_PlayerTwoGameplayObjects.push_back(GameplayObject{ object, gameplayPosition });
+	}
+}
+
 GameState GalagaGameControllerComponent::GetState() const
 {
 	return m_State;
@@ -576,24 +584,78 @@ void GalagaGameControllerComponent::RefreshModeSelectionText()
 
 void GalagaGameControllerComponent::HideGameplayObjects()
 {
+	auto hideObject = [](const GameplayObject& gameplayObject)
+		{
+			if (!gameplayObject.object)
+			{
+				return;
+			}
+
+			auto* transform = gameplayObject.object->GetComponent<dae::TransformComponent>();
+			if (transform)
+			{
+				transform->SetLocalPosition(-1000.f, -1000.f, 0.f);
+			}
+		};
+
 	for (const auto& gameplayObject : m_GameplayObjects)
 	{
-		if (!gameplayObject.object)
-		{
-			continue;
-		}
+		hideObject(gameplayObject);
+	}
 
-		auto* transform = gameplayObject.object->GetComponent<dae::TransformComponent>();
-		if (transform)
+	for (const auto& gameplayObject : m_PlayerTwoGameplayObjects)
+	{
+		hideObject(gameplayObject);
+	}
+}
+
+
+void GalagaGameControllerComponent::ShowGameplayObjects()
+{
+	auto showObject = [](const GameplayObject& gameplayObject)
 		{
-			transform->SetLocalPosition(-1000.f, -1000.f, 0.f);
+			if (!gameplayObject.object)
+			{
+				return;
+			}
+
+			auto* transform = gameplayObject.object->GetComponent<dae::TransformComponent>();
+			if (transform)
+			{
+				transform->SetLocalPosition(gameplayObject.gameplayPosition);
+			}
+		};
+
+	for (const auto& gameplayObject : m_GameplayObjects)
+	{
+		showObject(gameplayObject);
+	}
+
+	if (m_GameMode != GameMode::SinglePlayer)
+	{
+		ShowPlayerTwoObjects();
+	}
+	else
+	{
+		for (const auto& gameplayObject : m_PlayerTwoGameplayObjects)
+		{
+			if (!gameplayObject.object)
+			{
+				continue;
+			}
+
+			auto* transform = gameplayObject.object->GetComponent<dae::TransformComponent>();
+			if (transform)
+			{
+				transform->SetLocalPosition(-1000.f, -1000.f, 0.f);
+			}
 		}
 	}
 }
 
-void GalagaGameControllerComponent::ShowGameplayObjects()
+void GalagaGameControllerComponent::ShowPlayerTwoObjects()
 {
-	for (const auto& gameplayObject : m_GameplayObjects)
+	for (const auto& gameplayObject : m_PlayerTwoGameplayObjects)
 	{
 		if (!gameplayObject.object)
 		{
@@ -601,7 +663,27 @@ void GalagaGameControllerComponent::ShowGameplayObjects()
 		}
 
 		auto* transform = gameplayObject.object->GetComponent<dae::TransformComponent>();
-		if (transform)
+		if (!transform)
+		{
+			continue;
+		}
+
+		if (m_GameMode == GameMode::Versus)
+		{
+			const bool isPlayerTwoShip =
+				gameplayObject.gameplayPosition.x == 440.f &&
+				gameplayObject.gameplayPosition.y == 500.f;
+
+			if (isPlayerTwoShip)
+			{
+				transform->SetLocalPosition(460.f, 90.f, 0.f);
+			}
+			else
+			{
+				transform->SetLocalPosition(gameplayObject.gameplayPosition);
+			}
+		}
+		else
 		{
 			transform->SetLocalPosition(gameplayObject.gameplayPosition);
 		}

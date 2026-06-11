@@ -43,6 +43,7 @@ public:
 	void RegisterPlayer(dae::GameObject* player);
 	void RegisterObjectToHideOnResults(dae::GameObject* object);
 	void RegisterGameplayObject(dae::GameObject* object, const glm::vec3& gameplayPosition);
+	void RegisterPlayerTwoGameplayObject(dae::GameObject* object, const glm::vec3& gameplayPosition);
 
 	GameState GetState() const;
 	void ForceRefreshCurrentState();
@@ -88,6 +89,7 @@ private:
 	void RefreshModeSelectionText();
 	void HideGameplayObjects();
 	void ShowGameplayObjects();
+	void ShowPlayerTwoObjects();
 
 	dae::Scene& m_Scene;
 
@@ -107,6 +109,7 @@ private:
 	std::vector<dae::GameObject*> m_Players{};
 	std::vector<dae::GameObject*> m_ObjectsToHideOnResults{};
 	std::vector<GameplayObject> m_GameplayObjects{};
+	std::vector<GameplayObject> m_PlayerTwoGameplayObjects{};
 
 	HighScoreManager m_HighScoreManager{ "highscores.txt" };
 
