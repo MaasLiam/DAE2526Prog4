@@ -289,13 +289,23 @@ void Galaga::Initialize()
 	go->AddComponent<dae::HealthComponent>(4);
 	go->AddComponent<dae::ScoreComponent>();
 	go->AddComponent<MissileLimitComponent>();
-	go->AddComponent<VersusBossComponent>(*gameControllerComponent);
+	go->AddComponent<VersusBossComponent>(*gameControllerComponent, *player1Object);
 	go->AddComponent<dae::RenderComponent>("Sprites/BossGalaga.png");
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 440, 500, 0 });
 
 	auto* player2Health = go->GetComponent<dae::HealthComponent>();
 	auto* player2Score = go->GetComponent<dae::ScoreComponent>();
 	auto* versusBossComponent = go->GetComponent<VersusBossComponent>();
+
+	auto beamObject = std::make_unique<dae::GameObject>();
+	beamObject->AddComponent<dae::TransformComponent>();
+	beamObject->GetComponent<dae::TransformComponent>()->SetLocalPosition(-1000.f, -1000.f, 0.f);
+	beamObject->AddComponent<dae::RenderComponent>("Sprites/TractorBeam.png");
+
+	auto* tractorBeamObject = beamObject.get();
+	scene.Add(std::move(beamObject));
+
+	versusBossComponent->SetBeamVisual(tractorBeamObject);
 
 	constexpr float player2Speed = 200.f; // double speed
 
@@ -340,7 +350,7 @@ void Galaga::Initialize()
 		dae::InputState::Down);
 
 	auto* player2Object = go.get();
-	player2Object->AddComponent<CollisionComponent>(32.f, 32.f);
+	player2Object->AddComponent<CollisionComponent>(40.f, 32.f);
 	scene.Add(std::move(go));
 
 	gameControllerComponent->RegisterPlayerTwoGameplayObject(player2Object, glm::vec3{ 440.f, 500.f, 0.f });
@@ -381,7 +391,7 @@ void Galaga::Initialize()
 	auto* enemyPlayerCollisionComponent = collisionManager->GetComponent<EnemyPlayerCollisionComponent>();
 
 	enemyPlayerCollisionComponent->AddPlayer(player1Object);
-	enemyPlayerCollisionComponent->AddPlayer(player2Object);
+	//enemyPlayerCollisionComponent->AddPlayer(player2Object);
 
 
 	gameControllerComponent->RegisterPlayer(player1Object);

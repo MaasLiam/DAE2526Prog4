@@ -33,3 +33,9 @@ void dae::RenderComponent::SetTexture(Texture2D* texture)
 	m_pTexture = texture;
 }
 
+void dae::RenderComponent::SetTexture(const std::string& filename)
+{
+	const auto texture = ResourceManager::GetInstance().LoadTexture(filename);
+	m_pTexture = texture.get();
+}
+

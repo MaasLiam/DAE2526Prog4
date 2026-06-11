@@ -6,6 +6,9 @@
 #include "EnemyComponent.h"
 #include "ScoreComponent.h"
 #include "GalagaGameControllerComponent.h"
+#include "VersusBossComponent.h"
+#include "GameMode.h"
+#include "HealthComponent.h"
 
 BulletEnemyCollisionComponent::BulletEnemyCollisionComponent(dae::GameObject* owner, dae::Scene& scene, dae::ScoreComponent& scoreComponent, GalagaGameControllerComponent* gameController)
 	: dae::Component(owner)
@@ -18,15 +21,42 @@ void BulletEnemyCollisionComponent::Update(float)
 {
 	auto* bulletCollision = GetOwner()->GetComponent<CollisionComponent>();
 	if (!bulletCollision)
+	{
 		return;
+	}
 
 	for (const auto& object : m_Scene.GetObjects())
 	{
+		auto* versusBoss = object->GetComponent<VersusBossComponent>();
+		auto* versusBossCollision = object->GetComponent<CollisionComponent>();
+		auto* versusBossHealth = object->GetComponent<dae::HealthComponent>();
+
+		if (versusBoss && versusBossCollision && versusBossHealth)
+		{
+			if (m_GameController && m_GameController->GetGameMode() == GameMode::Versus && bulletCollision->Overlaps(*versusBossCollision))
+			{
+				m_GameController->RegisterHit();
+
+				versusBoss->TakeHit();
+
+				if (versusBoss->IsDead())
+				{
+					versusBossHealth->LoseLife();
+				}
+
+				m_Scene.Remove(*GetOwner());
+
+				return;
+			}
+		}
+
 		auto* enemy = object->GetComponent<EnemyComponent>();
 		auto* enemyCollision = object->GetComponent<CollisionComponent>();
 
 		if (!enemy || !enemyCollision || enemy->IsDead())
+		{
 			continue;
+		}
 
 		if (bulletCollision->Overlaps(*enemyCollision))
 		{

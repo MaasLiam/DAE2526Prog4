@@ -2,6 +2,7 @@
 
 #include "GameObject.h"
 #include "TransformComponent.h"
+#include "RenderComponent.h"
 
 #include <utility>
 #include <vector>
@@ -385,6 +386,17 @@ void EnemyComponent::TakeDamage()
 	}
 
 	--m_Health;
+
+	if (m_Type == EnemyType::BossGalaga && m_Health == 1)
+	{
+		auto* render = GetOwner()->GetComponent<dae::RenderComponent>();
+		if (render)
+		{
+			render->SetTexture("Sprites/BossGalagaDamaged.png");
+		}
+
+		return;
+	}
 
 	if (m_Health <= 0)
 	{

@@ -1,14 +1,20 @@
 #include "VersusBossComponent.h"
 
+#include "CollisionComponent.h"
 #include "GalagaGameControllerComponent.h"
 #include "GameMode.h"
 #include "GameObject.h"
 #include "GameState.h"
+#include "HealthComponent.h"
 #include "TransformComponent.h"
+#include "RenderComponent.h"
 
-VersusBossComponent::VersusBossComponent(dae::GameObject* owner, GalagaGameControllerComponent& gameController)
+#include <glm/geometric.hpp>
+
+VersusBossComponent::VersusBossComponent(dae::GameObject* owner, GalagaGameControllerComponent& gameController, dae::GameObject& targetPlayer)
 	: dae::Component(owner)
 	, m_GameController(gameController)
+	, m_TargetPlayer(targetPlayer)
 {
 
 }
@@ -20,6 +26,171 @@ void VersusBossComponent::Update(float deltaTime)
 		return;
 	}
 
+	switch (m_State)
+	{
+	case BossState::Idle:
+		break;
+
+	case BossState::DivingToPlayer:
+		MoveTowards(m_DiveTarget, 260.f, deltaTime);
+		TryDamagePlayerOnContact();
+
+		if (IsNear(m_DiveTarget, 12.f))
+		{
+			m_State = BossState::ExitingBottom;
+		}
+		break;
+
+	case BossState::ExitingBottom:
+	{
+		auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
+		if (!transform)
+		{
+			return;
+		}
+
+		auto position = transform->GetLocalPosition();
+		position.y += 300.f * deltaTime;
+		transform->SetLocalPosition(position);
+
+		TryDamagePlayerOnContact();
+
+		if (position.y > 620.f)
+		{
+			transform->SetLocalPosition(m_StartPosition.x, -80.f, 0.f);
+			m_State = BossState::Returning;
+		}
+
+		break;
+	}
+
+	case BossState::Returning:
+		MoveTowards(m_StartPosition, 220.f, deltaTime);
+
+		if (IsNear(m_StartPosition, 8.f))
+		{
+			auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
+			if (transform)
+			{
+				transform->SetLocalPosition(m_StartPosition);
+			}
+
+			m_State = BossState::Idle;
+		}
+		break;
+
+	case BossState::MovingToBeamPosition:
+		MoveTowards(m_BeamPosition, 180.f, deltaTime);
+
+		if (IsNear(m_BeamPosition, 8.f))
+		{
+			auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
+			if (transform)
+			{
+				transform->SetLocalPosition(m_BeamPosition);
+			}
+
+			m_TractorTimer = 0.f;
+			m_State = BossState::TractorBeam;
+		}
+		break;
+
+	case BossState::TractorBeam:
+		SetBeamVisible(true);
+		m_TractorTimer += deltaTime;
+		TryCapturePlayerWithBeam();
+
+		if (m_TractorTimer >= 2.5f)
+		{
+			SetBeamVisible(false);
+			m_TractorTimer = 0.f;
+			m_State = BossState::ReturningFromBeam;
+		}
+		break;
+
+	case BossState::ReturningFromBeam:
+		MoveTowards(m_StartPosition, 180.f, deltaTime);
+
+		if (IsNear(m_StartPosition, 8.f))
+		{
+			auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
+			if (transform)
+			{
+				transform->SetLocalPosition(m_StartPosition);
+			}
+
+			m_State = BossState::Idle;
+		}
+		break;
+	}
+}
+
+void VersusBossComponent::StartDive()
+{
+	SetBeamVisible(false);
+	if (m_GameController.GetState() != GameState::Playing || m_GameController.GetGameMode() != GameMode::Versus || m_State != BossState::Idle)
+	{
+		return;
+	}
+
+	auto* playerTransform = m_TargetPlayer.GetComponent<dae::TransformComponent>();
+	if (!playerTransform)
+	{
+		return;
+	}
+
+	const auto playerPosition = playerTransform->GetLocalPosition();
+	m_DiveTarget = glm::vec3{playerPosition.x, playerPosition.y - 20.f, 0.f};
+	m_HasDamagedPlayerThisAttack = false;
+	m_State = BossState::DivingToPlayer;
+}
+
+void VersusBossComponent::StartTractorBeam()
+{
+	SetBeamVisible(false);
+	if (m_GameController.GetState() != GameState::Playing || m_GameController.GetGameMode() != GameMode::Versus || m_State != BossState::Idle)
+	{
+		return;
+	}
+
+	m_TractorTimer = 0.f;
+	m_HasDamagedPlayerThisAttack = false;
+	m_State = BossState::MovingToBeamPosition;
+}
+
+void VersusBossComponent::TakeHit()
+{
+	if (m_HitPoints <= 0)
+	{
+		return;
+	}
+
+	--m_HitPoints;
+
+	if (!m_DamagedVisualApplied)
+	{
+		auto* render = GetOwner()->GetComponent<dae::RenderComponent>();
+		if (render)
+		{
+			render->SetTexture("Sprites/BossGalagaDamaged.png");
+		}
+
+		m_DamagedVisualApplied = true;
+	}
+}
+
+bool VersusBossComponent::IsDead() const
+{
+	return m_HitPoints <= 0;
+}
+
+void VersusBossComponent::SetBeamVisual(dae::GameObject* beamVisual)
+{
+	m_BeamVisual = beamVisual;
+}
+
+void VersusBossComponent::MoveTowards(const glm::vec3& target, float speed, float deltaTime)
+{
 	auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
 	if (!transform)
 	{
@@ -27,69 +198,123 @@ void VersusBossComponent::Update(float deltaTime)
 	}
 
 	auto position = transform->GetLocalPosition();
+	const glm::vec3 difference = target - position;
+	const float distance = glm::length(difference);
 
-	switch (m_State)
-	{
-	case BossState::Idle:
-		break;
-
-	case BossState::Diving:
-		position.y += 220.f * deltaTime;
-
-		if (position.y > 500.f)
-		{
-			m_State = BossState::Returning;
-		}
-
-		transform->SetLocalPosition(position);
-		break;
-
-	case BossState::Returning:
-		position.y -= 220.f * deltaTime;
-
-		if (position.y <= m_StartPosition.y)
-		{
-			position = m_StartPosition;
-			m_State = BossState::Idle;
-		}
-
-		transform->SetLocalPosition(position);
-		break;
-
-	case BossState::TractorBeam:
-		m_TractorTimer += deltaTime;
-
-		position.y += 45.f * deltaTime;
-
-		if (m_TractorTimer >= 2.5f)
-		{
-			m_TractorTimer = 0.f;
-			position = m_StartPosition;
-			m_State = BossState::Idle;
-		}
-
-		transform->SetLocalPosition(position);
-		break;
-	}
-}
-
-void VersusBossComponent::StartDive()
-{
-	if (m_GameController.GetState() != GameState::Playing || m_GameController.GetGameMode() != GameMode::Versus || m_State != BossState::Idle)
+	if (distance <= 0.001f)
 	{
 		return;
 	}
 
-	m_State = BossState::Diving;
+	const glm::vec3 direction = difference / distance;
+	const glm::vec3 movement = direction * speed * deltaTime;
+
+	if (glm::length(movement) >= distance)
+	{
+		transform->SetLocalPosition(target);
+		return;
+	}
+
+	transform->SetLocalPosition(position + movement);
 }
 
-void VersusBossComponent::StartTractorBeam()
+bool VersusBossComponent::IsNear(const glm::vec3& target, float distance) const
 {
-	if (m_GameController.GetState() != GameState::Playing || m_GameController.GetGameMode() != GameMode::Versus || m_State != BossState::Idle)
+	const auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
+	if (!transform)
+	{
+		return false;
+	}
+
+	return glm::length(transform->GetLocalPosition() - target) <= distance;
+}
+
+void VersusBossComponent::TryDamagePlayerOnContact()
+{
+	if (m_HasDamagedPlayerThisAttack)
 	{
 		return;
 	}
 
-	m_TractorTimer = 0.f;
-	m_State = BossState::TractorBeam;
+	auto* bossCollision = GetOwner()->GetComponent<CollisionComponent>();
+	auto* playerCollision = m_TargetPlayer.GetComponent<CollisionComponent>();
+	auto* playerHealth = m_TargetPlayer.GetComponent<dae::HealthComponent>();
+
+	if (!bossCollision || !playerCollision || !playerHealth || playerHealth->IsDead())
+	{
+		return;
+	}
+
+	if (!bossCollision->Overlaps(*playerCollision))
+	{
+		return;
+	}
+
+	playerHealth->LoseLife();
+	m_HasDamagedPlayerThisAttack = true;
+}
+
+void VersusBossComponent::TryCapturePlayerWithBeam()
+{
+	if (m_HasDamagedPlayerThisAttack)
+	{
+		return;
+	}
+
+	auto* bossTransform = GetOwner()->GetComponent<dae::TransformComponent>();
+	auto* playerTransform = m_TargetPlayer.GetComponent<dae::TransformComponent>();
+	auto* playerHealth = m_TargetPlayer.GetComponent<dae::HealthComponent>();
+
+	if (!bossTransform || !playerTransform || !playerHealth || playerHealth->IsDead())
+	{
+		return;
+	}
+
+	const auto bossPosition = bossTransform->GetLocalPosition();
+	const auto playerPosition = playerTransform->GetLocalPosition();
+	const float beamLeft = bossPosition.x + m_BeamHitboxLeftOffset;
+	const float beamRight = beamLeft + m_BeamHitboxWidth;
+	const float beamTop = bossPosition.y + m_BeamHitboxTopOffset;
+	const float beamBottom = beamTop + m_BeamHitboxHeight;
+
+	const bool playerInsideBeamX = playerPosition.x >= beamLeft && playerPosition.x <= beamRight;
+
+	const bool playerInsideBeamY = playerPosition.y >= beamTop && playerPosition.y <= beamBottom;
+
+	if (m_TractorTimer > 0.5f && playerInsideBeamX && playerInsideBeamY)
+	{
+		playerHealth->LoseLife();
+		playerTransform->SetLocalPosition(360.f, 500.f, 0.f);
+
+		m_HasDamagedPlayerThisAttack = true;
+	}
+}
+
+void VersusBossComponent::SetBeamVisible(bool isVisible)
+{
+	if (!m_BeamVisual)
+	{
+		return;
+	}
+
+	auto* beamTransform = m_BeamVisual->GetComponent<dae::TransformComponent>();
+	if (!beamTransform)
+	{
+		return;
+	}
+
+	if (!isVisible)
+	{
+		beamTransform->SetLocalPosition(-1000.f, -1000.f, 0.f);
+		return;
+	}
+
+	auto* bossTransform = GetOwner()->GetComponent<dae::TransformComponent>();
+	if (!bossTransform)
+	{
+		return;
+	}
+
+	const auto bossPosition = bossTransform->GetLocalPosition();
+	beamTransform->SetLocalPosition(bossPosition + m_BeamVisualOffset);
 }

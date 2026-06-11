@@ -35,10 +35,10 @@ void VersusBossShootCommand::Execute(float)
 
 	auto bullet = std::make_unique<dae::GameObject>();
 	bullet->AddComponent<dae::TransformComponent>();
-	bullet->GetComponent<dae::TransformComponent>()->SetLocalPosition(bossPosition.x + 14.f, bossPosition.y + 32.f, 0.f);
+	bullet->GetComponent<dae::TransformComponent>()->SetLocalPosition(bossPosition.x + 1.f, bossPosition.y + 32.f, 0.f);
 
 	bullet->AddComponent<dae::RenderComponent>("Sprites/BulletSprite.png");
-	bullet->AddComponent<CollisionComponent>(4.f, 12.f);
+	bullet->AddComponent<CollisionComponent>(8.f, 16.f);
 
 	// Negative speed means BulletComponent moves downward because it does y -= speed * dt.
 	bullet->AddComponent<BulletComponent>(m_Scene, -260.f);

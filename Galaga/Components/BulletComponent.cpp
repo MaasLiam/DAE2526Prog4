@@ -32,7 +32,7 @@ void BulletComponent::Update(float deltaTime)
 	position.y -= m_Speed * deltaTime;
 	transform->SetLocalPosition(position);
 
-	if (position.y < -32.f)
+	if (position.y < -32.f || position.y > 640.f)
 	{
 		m_Scene.Remove(*GetOwner());
 	}

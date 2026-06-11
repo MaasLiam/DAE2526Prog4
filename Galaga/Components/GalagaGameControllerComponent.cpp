@@ -676,7 +676,7 @@ void GalagaGameControllerComponent::ShowPlayerTwoObjects()
 
 			if (isPlayerTwoShip)
 			{
-				transform->SetLocalPosition(460.f, 90.f, 0.f);
+				transform->SetLocalPosition(400.f, 90.f, 0.f);
 			}
 			else
 			{
