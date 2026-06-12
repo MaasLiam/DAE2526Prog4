@@ -14,7 +14,7 @@
 
 #include <glm/geometric.hpp>
 
-VersusBossComponent::VersusBossComponent(dae::GameObject* owner, GalagaGameControllerComponent& gameController, dae::GameObject& targetPlayer)
+galaga::VersusBossComponent::VersusBossComponent(dae::GameObject* owner, GalagaGameControllerComponent& gameController, dae::GameObject& targetPlayer)
 	: dae::Component(owner)
 	, m_GameController(gameController)
 	, m_TargetPlayer(targetPlayer)
@@ -22,7 +22,7 @@ VersusBossComponent::VersusBossComponent(dae::GameObject* owner, GalagaGameContr
 
 }
 
-void VersusBossComponent::Update(float deltaTime)
+void galaga::VersusBossComponent::Update(float deltaTime)
 {
 	if (m_GameController.GetState() != galaga::GameState::Playing || m_GameController.GetGameMode() != galaga::GameMode::Versus)
 	{
@@ -133,7 +133,7 @@ void VersusBossComponent::Update(float deltaTime)
 	}
 }
 
-void VersusBossComponent::StartDive()
+void galaga::VersusBossComponent::StartDive()
 {
 	SetBeamVisible(false);
 	if (m_GameController.GetState() != galaga::GameState::Playing || m_GameController.GetGameMode() != galaga::GameMode::Versus || m_State != BossState::Idle)
@@ -155,7 +155,7 @@ void VersusBossComponent::StartDive()
 	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::EnemyDive), 1.0f);
 }
 
-void VersusBossComponent::StartTractorBeam()
+void galaga::VersusBossComponent::StartTractorBeam()
 {
 	if (m_GameController.GetState() != galaga::GameState::Playing || m_GameController.GetGameMode() != galaga::GameMode::Versus || m_State != BossState::Idle)
 	{
@@ -170,7 +170,7 @@ void VersusBossComponent::StartTractorBeam()
 	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::EnemyDive), 1.0f);
 }
 
-void VersusBossComponent::TakeHit()
+void galaga::VersusBossComponent::TakeHit()
 {
 	if (m_HitPoints <= 0)
 	{
@@ -191,17 +191,17 @@ void VersusBossComponent::TakeHit()
 	}
 }
 
-bool VersusBossComponent::IsDead() const
+bool galaga::VersusBossComponent::IsDead() const
 {
 	return m_HitPoints <= 0;
 }
 
-void VersusBossComponent::SetBeamVisual(dae::GameObject* beamVisual)
+void galaga::VersusBossComponent::SetBeamVisual(dae::GameObject* beamVisual)
 {
 	m_BeamVisual = beamVisual;
 }
 
-void VersusBossComponent::Reset()
+void galaga::VersusBossComponent::Reset()
 {
 	m_State = BossState::Idle;
 	m_TractorTimer = 0.f;
@@ -224,7 +224,7 @@ void VersusBossComponent::Reset()
 	}
 }
 
-void VersusBossComponent::MoveTowards(const glm::vec3& target, float speed, float deltaTime)
+void galaga::VersusBossComponent::MoveTowards(const glm::vec3& target, float speed, float deltaTime)
 {
 	auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
 	if (!transform)
@@ -253,7 +253,7 @@ void VersusBossComponent::MoveTowards(const glm::vec3& target, float speed, floa
 	transform->SetLocalPosition(position + movement);
 }
 
-bool VersusBossComponent::IsNear(const glm::vec3& target, float distance) const
+bool galaga::VersusBossComponent::IsNear(const glm::vec3& target, float distance) const
 {
 	const auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
 	if (!transform)
@@ -264,7 +264,7 @@ bool VersusBossComponent::IsNear(const glm::vec3& target, float distance) const
 	return glm::length(transform->GetLocalPosition() - target) <= distance;
 }
 
-void VersusBossComponent::TryDamagePlayerOnContact()
+void galaga::VersusBossComponent::TryDamagePlayerOnContact()
 {
 	if (m_HasDamagedPlayerThisAttack)
 	{
@@ -273,7 +273,7 @@ void VersusBossComponent::TryDamagePlayerOnContact()
 
 	auto* bossCollision = GetOwner()->GetComponent<CollisionComponent>();
 	auto* playerCollision = m_TargetPlayer.GetComponent<CollisionComponent>();
-	auto* playerHealth = m_TargetPlayer.GetComponent<dae::HealthComponent>();
+	auto* playerHealth = m_TargetPlayer.GetComponent<HealthComponent>();
 
 	if (!bossCollision || !playerCollision || !playerHealth || playerHealth->IsDead())
 	{
@@ -290,7 +290,7 @@ void VersusBossComponent::TryDamagePlayerOnContact()
 	m_HasDamagedPlayerThisAttack = true;
 }
 
-void VersusBossComponent::TryCapturePlayerWithBeam()
+void galaga::VersusBossComponent::TryCapturePlayerWithBeam()
 {
 	if (m_HasDamagedPlayerThisAttack)
 	{
@@ -299,7 +299,7 @@ void VersusBossComponent::TryCapturePlayerWithBeam()
 
 	auto* bossTransform = GetOwner()->GetComponent<dae::TransformComponent>();
 	auto* playerTransform = m_TargetPlayer.GetComponent<dae::TransformComponent>();
-	auto* playerHealth = m_TargetPlayer.GetComponent<dae::HealthComponent>();
+	auto* playerHealth = m_TargetPlayer.GetComponent<HealthComponent>();
 
 	if (!bossTransform || !playerTransform || !playerHealth || playerHealth->IsDead())
 	{
@@ -327,7 +327,7 @@ void VersusBossComponent::TryCapturePlayerWithBeam()
 	}
 }
 
-void VersusBossComponent::SetBeamVisible(bool isVisible)
+void galaga::VersusBossComponent::SetBeamVisible(bool isVisible)
 {
 	if (!m_BeamVisual)
 	{

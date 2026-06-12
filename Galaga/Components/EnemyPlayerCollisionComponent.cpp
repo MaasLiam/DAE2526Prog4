@@ -10,7 +10,7 @@
 #include "ServiceLocator.h"
 #include "SoundIds.h"
 
-EnemyPlayerCollisionComponent::EnemyPlayerCollisionComponent(dae::GameObject* owner, dae::Scene& scene, GalagaGameControllerComponent& gameController)
+galaga::EnemyPlayerCollisionComponent::EnemyPlayerCollisionComponent(dae::GameObject* owner, dae::Scene& scene, GalagaGameControllerComponent& gameController)
     : dae::Component(owner)
     , m_Scene(scene)
     , m_GameController(gameController)
@@ -18,7 +18,7 @@ EnemyPlayerCollisionComponent::EnemyPlayerCollisionComponent(dae::GameObject* ow
 
 }
 
-void EnemyPlayerCollisionComponent::AddPlayer(dae::GameObject* player)
+void galaga::EnemyPlayerCollisionComponent::AddPlayer(dae::GameObject* player)
 {
     if (player)
     {
@@ -26,7 +26,7 @@ void EnemyPlayerCollisionComponent::AddPlayer(dae::GameObject* player)
     }
 }
 
-void EnemyPlayerCollisionComponent::Update(float)
+void galaga::EnemyPlayerCollisionComponent::Update(float)
 {
     for (const auto& object : m_Scene.GetObjects())
     {
@@ -55,7 +55,7 @@ void EnemyPlayerCollisionComponent::Update(float)
             }
 
             auto* playerCollision = player->GetComponent<CollisionComponent>();
-            auto* playerHealth = player->GetComponent<dae::HealthComponent>();
+            auto* playerHealth = player->GetComponent<HealthComponent>();
 
             if (!playerCollision || !playerHealth || playerHealth->IsDead())
             {

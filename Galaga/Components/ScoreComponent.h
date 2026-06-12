@@ -3,20 +3,20 @@
 #include "Subject.h"
 #include "Observer.h"
 
-namespace dae
+namespace galaga
 {
-	class ScoreComponent final : public Component, public Observer
+	class ScoreComponent final : public dae::Component, public dae::Observer
 	{
 	public:
-		ScoreComponent(GameObject* owner);
-		void Notify(Event event, GameObject* gameObject) override;
+		ScoreComponent(dae::GameObject* owner);
+		void Notify(dae::Event event, dae::GameObject* gameObject) override;
 		void AddScore(int score);
 		void Reset();
 		int GetScore() const;
-		Subject& GetSubject();
+		dae::Subject& GetSubject();
 
 	private:
 		int m_Score{ 0 };
-		Subject m_Subject{};
+		dae::Subject m_Subject{};
 	};
 }

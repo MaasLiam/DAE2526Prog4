@@ -13,14 +13,14 @@
 #include "ServiceLocator.h"
 #include "SoundIds.h"
 
-VersusBossShootCommand::VersusBossShootCommand(dae::GameObject& boss, dae::GameObject& targetPlayer, dae::Scene& scene, GalagaGameControllerComponent& gameController)
+galaga::VersusBossShootCommand::VersusBossShootCommand(dae::GameObject& boss, dae::GameObject& targetPlayer, dae::Scene& scene, GalagaGameControllerComponent& gameController)
 	: m_Boss(boss)
 	, m_TargetPlayer(targetPlayer)
 	, m_Scene(scene)
 	, m_GameController(gameController)
 {}
 
-void VersusBossShootCommand::Execute(float)
+void galaga::VersusBossShootCommand::Execute(float)
 {
 	if (m_GameController.GetState() != galaga::GameState::Playing || m_GameController.GetGameMode() != galaga::GameMode::Versus)
 	{

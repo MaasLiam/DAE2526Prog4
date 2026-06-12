@@ -3,14 +3,14 @@
 #include "GameObject.h"
 #include "TransformComponent.h"
 
-CollisionComponent::CollisionComponent(dae::GameObject* owner, float width, float height)
+galaga::CollisionComponent::CollisionComponent(dae::GameObject* owner, float width, float height)
 	: dae::Component(owner)
 	, m_Width(width)
 	, m_Height(height)
 {
 }
 
-bool CollisionComponent::Overlaps(const CollisionComponent& other) const
+bool galaga::CollisionComponent::Overlaps(const CollisionComponent& other) const
 {
 	auto* myTransform = GetOwner()->GetComponent<dae::TransformComponent>();
 	auto* otherTransform = other.GetOwner()->GetComponent<dae::TransformComponent>();
@@ -27,12 +27,12 @@ bool CollisionComponent::Overlaps(const CollisionComponent& other) const
 		myPos.y + m_Height > otherPos.y;
 }
 
-float CollisionComponent::GetWidth() const
+float galaga::CollisionComponent::GetWidth() const
 {
 	return m_Width;
 }
 
-float CollisionComponent::GetHeight() const
+float galaga::CollisionComponent::GetHeight() const
 {
 	return m_Height;
 }

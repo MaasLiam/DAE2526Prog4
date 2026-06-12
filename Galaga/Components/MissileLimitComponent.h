@@ -2,16 +2,19 @@
 
 #include "Component.h"
 
-class MissileLimitComponent final : public dae::Component
+namespace galaga
 {
-public:
-    explicit MissileLimitComponent(dae::GameObject* owner);
+    class MissileLimitComponent final : public dae::Component
+    {
+    public:
+        explicit MissileLimitComponent(dae::GameObject* owner);
 
-    bool CanShoot() const;
-    void RegisterMissile();
-    void UnregisterMissile();
+        bool CanShoot() const;
+        void RegisterMissile();
+        void UnregisterMissile();
 
-private:
-    int m_ActiveMissiles{};
-    static constexpr int m_MaxMissiles{ 2 };
-};
+    private:
+        int m_ActiveMissiles{};
+        static constexpr int MaxMissiles{ 2 };
+    };
+}

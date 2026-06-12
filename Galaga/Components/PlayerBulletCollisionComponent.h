@@ -8,14 +8,17 @@ namespace dae
 	class Scene;
 }
 
-class PlayerBulletCollisionComponent final : public dae::Component
+namespace galaga
 {
-public:
-	PlayerBulletCollisionComponent(dae::GameObject* owner, dae::Scene& scene, dae::GameObject& player);
+	class PlayerBulletCollisionComponent final : public dae::Component
+	{
+	public:
+		PlayerBulletCollisionComponent(dae::GameObject* owner, dae::Scene& scene, dae::GameObject& player);
 
-	void Update(float deltaTime) override;
+		void Update(float deltaTime) override;
 
-private:
-	dae::Scene& m_Scene;
-	dae::GameObject& m_Player;
-};
+	private:
+		dae::Scene& m_Scene;
+		dae::GameObject& m_Player;
+	};
+}

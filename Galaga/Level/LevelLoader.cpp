@@ -72,7 +72,7 @@ namespace
 	{
 		for (const auto& object : scene.GetObjects())
 		{
-			if (object->GetComponent<EnemyComponent>() || object->GetComponent<BulletComponent>() || object->GetComponent<TractorBeamVisualComponent>() || object->GetComponent<CapturedFighterComponent>())
+			if (object->GetComponent<galaga::EnemyComponent>() || object->GetComponent<galaga::BulletComponent>() || object->GetComponent<galaga::TractorBeamVisualComponent>() || object->GetComponent<galaga::CapturedFighterComponent>())
 			{
 				scene.Remove(*object);
 			}
@@ -119,7 +119,7 @@ namespace
 		return enemySpawns;
 	}
 
-	void SpawnEnemies(dae::Scene& scene, const std::vector<EnemySpawn>& enemySpawns, GalagaGameControllerComponent& gameController)
+	void SpawnEnemies(dae::Scene& scene, const std::vector<EnemySpawn>& enemySpawns, galaga::GalagaGameControllerComponent& gameController)
 	{
 		for (size_t index = 0; index < enemySpawns.size(); ++index)
 		{
@@ -135,16 +135,16 @@ namespace
 			enemy->GetComponent<dae::TransformComponent>()->SetLocalPosition(spawnX, spawnY, 0.f);
 
 			enemy->AddComponent<dae::RenderComponent>(GetEnemyTexture(spawn.type));
-			enemy->AddComponent<CollisionComponent>(32.f, 32.f);
-			enemy->AddComponent<EnemyComponent>(spawn.type);
-			enemy->AddComponent<EnemyShooterComponent>(scene, gameController);
+			enemy->AddComponent<galaga::CollisionComponent>(32.f, 32.f);
+			enemy->AddComponent<galaga::EnemyComponent>(spawn.type);
+			enemy->AddComponent<galaga::EnemyShooterComponent>(scene, gameController);
 
 			if (spawn.type == galaga::EnemyType::BossGalaga)
 			{
-				enemy->AddComponent<BossTractorBeamComponent>(scene, gameController);
+				enemy->AddComponent<galaga::BossTractorBeamComponent>(scene, gameController);
 			}
 
-			auto* enemyComponent = enemy->GetComponent<EnemyComponent>();
+			auto* enemyComponent = enemy->GetComponent<galaga::EnemyComponent>();
 			enemyComponent->FlyIntoFormation(spawn.formationPosition);
 
 			scene.Add(std::move(enemy));
@@ -152,7 +152,7 @@ namespace
 	}
 }
 
-void LevelLoader::LoadStage(dae::Scene& scene, int stageIndex, GalagaGameControllerComponent& gameController)
+void galaga::LevelLoader::LoadStage(dae::Scene& scene, int stageIndex, galaga::GalagaGameControllerComponent& gameController)
 {
 	ClearStage(scene);
 
@@ -160,7 +160,7 @@ void LevelLoader::LoadStage(dae::Scene& scene, int stageIndex, GalagaGameControl
 	SpawnEnemies(scene, enemySpawns, gameController);
 }
 
-void LevelLoader::ClearStage(dae::Scene& scene)
+void galaga::LevelLoader::ClearStage(dae::Scene& scene)
 {
 	RemoveCurrentStageObjects(scene);
 }

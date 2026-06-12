@@ -5,7 +5,7 @@
 #include "Scene.h"
 #include "MissileLimitComponent.h"
 
-BulletComponent::BulletComponent(dae::GameObject* owner, dae::Scene& scene, float speed, MissileLimitComponent* missileLimit)
+galaga::BulletComponent::BulletComponent(dae::GameObject* owner, dae::Scene& scene, float speed, MissileLimitComponent* missileLimit)
 	: dae::Component(owner)
 	, m_Scene(scene)
 	, m_Speed(speed)
@@ -13,7 +13,7 @@ BulletComponent::BulletComponent(dae::GameObject* owner, dae::Scene& scene, floa
 {
 }
 
-BulletComponent::~BulletComponent()
+galaga::BulletComponent::~BulletComponent()
 {
 	if (m_MissileLimit)
 	{
@@ -21,7 +21,7 @@ BulletComponent::~BulletComponent()
 	}
 }
 
-void BulletComponent::Update(float deltaTime)
+void galaga::BulletComponent::Update(float deltaTime)
 {
 	auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
 	if (!transform)

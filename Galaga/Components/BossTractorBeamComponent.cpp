@@ -17,7 +17,7 @@
 
 #include <memory>
 
-BossTractorBeamComponent::BossTractorBeamComponent(dae::GameObject* owner, dae::Scene& scene, GalagaGameControllerComponent& gameController)
+galaga::BossTractorBeamComponent::BossTractorBeamComponent(dae::GameObject* owner, dae::Scene& scene, GalagaGameControllerComponent& gameController)
 	: dae::Component(owner)
 	, m_Scene(scene)
 	, m_GameController(gameController)
@@ -25,7 +25,7 @@ BossTractorBeamComponent::BossTractorBeamComponent(dae::GameObject* owner, dae::
 
 }
 
-void BossTractorBeamComponent::Update(float)
+void galaga::BossTractorBeamComponent::Update(float)
 {
 	auto* enemy = GetOwner()->GetComponent<EnemyComponent>();
 	if (!enemy || enemy->IsDead() || enemy->GetType() != galaga::EnemyType::BossGalaga)
@@ -67,7 +67,7 @@ void BossTractorBeamComponent::Update(float)
 	}
 }
 
-void BossTractorBeamComponent::CreateBeamVisual()
+void galaga::BossTractorBeamComponent::CreateBeamVisual()
 {
 	if (m_BeamVisual)
 	{
@@ -83,7 +83,7 @@ void BossTractorBeamComponent::CreateBeamVisual()
 	m_Scene.Add(std::move(beam));
 }
 
-void BossTractorBeamComponent::RemoveBeamVisual()
+void galaga::BossTractorBeamComponent::RemoveBeamVisual()
 {
 	if (!m_BeamVisual)
 	{
@@ -94,7 +94,7 @@ void BossTractorBeamComponent::RemoveBeamVisual()
 	m_BeamVisual = nullptr;
 }
 
-void BossTractorBeamComponent::UpdateBeamVisualPosition()
+void galaga::BossTractorBeamComponent::UpdateBeamVisualPosition()
 {
 	if (!m_BeamVisual)
 	{
@@ -112,7 +112,7 @@ void BossTractorBeamComponent::UpdateBeamVisualPosition()
 	beamTransform->SetLocalPosition(bossTransform->GetLocalPosition() + BeamVisualOffset);
 }
 
-bool BossTractorBeamComponent::TryCapturePlayer(galaga::PlayerIndex playerIndex)
+bool galaga::BossTractorBeamComponent::TryCapturePlayer(galaga::PlayerIndex playerIndex)
 {
 	if (!m_GameController.IsPlayerActive(playerIndex) || !m_GameController.IsPlayerAlive(playerIndex))
 	{
@@ -127,7 +127,7 @@ bool BossTractorBeamComponent::TryCapturePlayer(galaga::PlayerIndex playerIndex)
 
 	auto* bossTransform = GetOwner()->GetComponent<dae::TransformComponent>();
 	auto* playerTransform = player->GetComponent<dae::TransformComponent>();
-	auto* playerHealth = player->GetComponent<dae::HealthComponent>();
+	auto* playerHealth = player->GetComponent<HealthComponent>();
 
 	if (!bossTransform || !playerTransform || !playerHealth)
 	{
@@ -161,7 +161,7 @@ bool BossTractorBeamComponent::TryCapturePlayer(galaga::PlayerIndex playerIndex)
 	return true;
 }
 
-void BossTractorBeamComponent::SpawnCapturedFighter(galaga::PlayerIndex playerIndex)
+void galaga::BossTractorBeamComponent::SpawnCapturedFighter(galaga::PlayerIndex playerIndex)
 {
 	auto* bossTransform = GetOwner()->GetComponent<dae::TransformComponent>();
 	if (!bossTransform)

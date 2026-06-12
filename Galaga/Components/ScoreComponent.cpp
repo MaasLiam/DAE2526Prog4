@@ -1,40 +1,36 @@
 #include "ScoreComponent.h"
 #include "Event.h"
 
-namespace dae
+galaga::ScoreComponent::ScoreComponent(dae::GameObject* owner)
+	: Component(owner)
+{}
+
+void galaga::ScoreComponent::Notify(dae::Event event, dae::GameObject*)
 {
-	ScoreComponent::ScoreComponent(GameObject* owner)
-		: Component(owner)
+	if (event == dae::Event::EnemyKilled)
 	{
+		AddScore(100);
 	}
+}
 
-	void ScoreComponent::Notify(Event event, GameObject*)
-	{
-		if (event == Event::EnemyKilled)
-		{
-			AddScore(100);
-		}
-	}
+void galaga::ScoreComponent::AddScore(int score)
+{
+	m_Score += score;
+	m_Subject.Notify(dae::Event::ScoreChanged, GetOwner());
+}
 
-	void ScoreComponent::AddScore(int score)
-	{
-		m_Score += score;
-		m_Subject.Notify(Event::ScoreChanged, GetOwner());
-	}
+void galaga::ScoreComponent::Reset()
+{
+	m_Score = 0;
+	m_Subject.Notify(dae::Event::ScoreChanged, GetOwner());
+}
 
-	void ScoreComponent::Reset()
-	{
-		m_Score = 0;
-		m_Subject.Notify(Event::ScoreChanged, GetOwner());
-	}
+int galaga::ScoreComponent::GetScore() const
+{
+	return m_Score;
+}
 
-	int ScoreComponent::GetScore() const
-	{
-		return m_Score;
-	}
-
-	Subject& ScoreComponent::GetSubject()
-	{
-		return m_Subject;
-	}
+dae::Subject& galaga::ScoreComponent::GetSubject()
+{
+	return m_Subject;
 }

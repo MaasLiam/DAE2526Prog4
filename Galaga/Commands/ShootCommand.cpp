@@ -17,7 +17,7 @@
 #include "GalagaGameControllerComponent.h"
 
 
-ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGameControllerComponent* gameController, ShootOwner owner)
+galaga::ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGameControllerComponent* gameController, ShootOwner owner)
 	: m_Shooter(shooter)
 	, m_Scene(scene)
 	, m_GameController(gameController)
@@ -26,7 +26,7 @@ ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGa
 
 }
 
-void ShootCommand::Execute(float)
+void galaga::ShootCommand::Execute(float)
 {
 	if (m_GameController && m_GameController->GetState() != galaga::GameState::Playing)
 	{
@@ -69,7 +69,7 @@ void ShootCommand::Execute(float)
 	bullet->AddComponent<CollisionComponent>(4.f, 12.f);
 	bullet->AddComponent<BulletComponent>(m_Scene, 400.f, missileLimit);
 
-	auto* scoreComponent = m_Shooter.GetComponent<dae::ScoreComponent>();
+	auto* scoreComponent = m_Shooter.GetComponent<galaga::ScoreComponent>();
 	if (scoreComponent)
 	{
 		bullet->AddComponent<BulletEnemyCollisionComponent>(m_Scene, *scoreComponent, m_GameController);

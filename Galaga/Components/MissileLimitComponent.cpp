@@ -1,15 +1,15 @@
 #include "MissileLimitComponent.h"
 
-MissileLimitComponent::MissileLimitComponent(dae::GameObject* owner)
+galaga::MissileLimitComponent::MissileLimitComponent(dae::GameObject* owner)
     : dae::Component(owner)
 {}
 
-bool MissileLimitComponent::CanShoot() const
+bool galaga::MissileLimitComponent::CanShoot() const
 {
-    return m_ActiveMissiles < m_MaxMissiles;
+    return m_ActiveMissiles < MaxMissiles;
 }
 
-void MissileLimitComponent::RegisterMissile()
+void galaga::MissileLimitComponent::RegisterMissile()
 {
     if (CanShoot())
     {
@@ -17,7 +17,7 @@ void MissileLimitComponent::RegisterMissile()
     }
 }
 
-void MissileLimitComponent::UnregisterMissile()
+void galaga::MissileLimitComponent::UnregisterMissile()
 {
     if (m_ActiveMissiles > 0)
     {

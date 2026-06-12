@@ -13,7 +13,7 @@
 #include "SoundIds.h"
 #include "CapturedFighterComponent.h"
 
-BulletEnemyCollisionComponent::BulletEnemyCollisionComponent(dae::GameObject* owner, dae::Scene& scene, dae::ScoreComponent& scoreComponent, GalagaGameControllerComponent* gameController)
+galaga::BulletEnemyCollisionComponent::BulletEnemyCollisionComponent(dae::GameObject* owner, dae::Scene& scene, ScoreComponent& scoreComponent, GalagaGameControllerComponent* gameController)
 	: dae::Component(owner)
 	, m_Scene(scene)
 	, m_ScoreComponent(scoreComponent)
@@ -22,7 +22,7 @@ BulletEnemyCollisionComponent::BulletEnemyCollisionComponent(dae::GameObject* ow
 
 }
 
-void BulletEnemyCollisionComponent::Update(float)
+void galaga::BulletEnemyCollisionComponent::Update(float)
 {
 	auto* bulletCollision = GetOwner()->GetComponent<CollisionComponent>();
 	if (!bulletCollision)
@@ -34,7 +34,7 @@ void BulletEnemyCollisionComponent::Update(float)
 	{
 		auto* versusBoss = object->GetComponent<VersusBossComponent>();
 		auto* versusBossCollision = object->GetComponent<CollisionComponent>();
-		auto* versusBossHealth = object->GetComponent<dae::HealthComponent>();
+		auto* versusBossHealth = object->GetComponent<HealthComponent>();
 
 		if (versusBoss && versusBossCollision && versusBossHealth)
 		{

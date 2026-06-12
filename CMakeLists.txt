@@ -55,8 +55,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Galaga/Components/BulletComponent.cpp
   Galaga/Components/CollisionComponent.cpp
 
-  Galaga/Commands/DamagePlayerCommand.cpp
-  Galaga/Commands/AddScoreCommand.cpp
+ 
   Galaga/Commands/ShootCommand.cpp
 
   Galaga/Achievements/SteamAchievements.cpp

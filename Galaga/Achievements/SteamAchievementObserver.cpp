@@ -19,7 +19,7 @@ void SteamAchievementObserver::Notify(Event event, GameObject* gameObject)
     if (!gameObject)
         return;
 
-    auto* scoreComponent = gameObject->GetComponent<ScoreComponent>();
+    auto* scoreComponent = gameObject->GetComponent<galaga::ScoreComponent>();
     if (!scoreComponent)
         return;
 

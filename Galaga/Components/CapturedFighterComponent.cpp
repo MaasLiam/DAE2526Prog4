@@ -20,13 +20,13 @@ namespace
 	constexpr float BulletOffsetY{ 28.f };
 }
 
-CapturedFighterComponent::CapturedFighterComponent(dae::GameObject* owner, dae::Scene& scene, GalagaGameControllerComponent& gameController)
+galaga::CapturedFighterComponent::CapturedFighterComponent(dae::GameObject* owner, dae::Scene& scene, GalagaGameControllerComponent& gameController)
 	: dae::Component(owner)
 	, m_Scene(scene)
 	, m_GameController(gameController)
 {}
 
-void CapturedFighterComponent::Update(float deltaTime)
+void galaga::CapturedFighterComponent::Update(float deltaTime)
 {
 	if (m_GameController.GetState() != galaga::GameState::Playing)
 	{
@@ -44,7 +44,7 @@ void CapturedFighterComponent::Update(float deltaTime)
 	Shoot();
 }
 
-void CapturedFighterComponent::Shoot()
+void galaga::CapturedFighterComponent::Shoot()
 {
 	auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
 	if (!transform)

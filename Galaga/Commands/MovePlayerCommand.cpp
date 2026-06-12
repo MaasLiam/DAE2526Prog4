@@ -7,7 +7,7 @@
 #include "HealthComponent.h"
 #include "TransformComponent.h"
 
-MovePlayerCommand::MovePlayerCommand(dae::GameObject& object, dae::MoveDirection direction, float speed, GalagaGameControllerComponent& gameController, ControlledPlayer controlledPlayer)
+galaga::MovePlayerCommand::MovePlayerCommand(dae::GameObject& object, dae::MoveDirection direction, float speed, GalagaGameControllerComponent& gameController, ControlledPlayer controlledPlayer)
 	: m_Object(object)
 	, m_Direction(direction)
 	, m_Speed(speed)
@@ -15,7 +15,7 @@ MovePlayerCommand::MovePlayerCommand(dae::GameObject& object, dae::MoveDirection
 	, m_ControlledPlayer(controlledPlayer)
 {}
 
-void MovePlayerCommand::Execute(float deltaTime)
+void galaga::MovePlayerCommand::Execute(float deltaTime)
 {
 	const galaga::PlayerIndex playerIndex = m_ControlledPlayer == ControlledPlayer::PlayerOne ? galaga::PlayerIndex::PlayerOne : galaga::PlayerIndex::PlayerTwo;
 

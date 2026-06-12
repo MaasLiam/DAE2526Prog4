@@ -2,12 +2,17 @@
 
 #include "GalagaGameControllerComponent.h"
 
-SelectGameModeCommand::SelectGameModeCommand(GalagaGameControllerComponent& gameController, galaga::GameMode gameMode)
-	: m_GameController(gameController)
-	, m_GameMode(gameMode)
-{}
-
-void SelectGameModeCommand::Execute(float)
+namespace galaga
 {
-	m_GameController.SelectGameMode(m_GameMode);
+	SelectGameModeCommand::SelectGameModeCommand(GalagaGameControllerComponent& gameController, GameMode gameMode)
+		: m_GameController(gameController)
+		, m_GameMode(gameMode)
+	{
+	
+	}
+
+	void SelectGameModeCommand::Execute(float)
+	{
+		m_GameController.SelectGameMode(m_GameMode);
+	}
 }

@@ -23,7 +23,7 @@ namespace
 	constexpr float BulletOffsetY{ 28.f };
 }
 
-EnemyShooterComponent::EnemyShooterComponent(dae::GameObject* owner, dae::Scene& scene, GalagaGameControllerComponent& gameController)
+galaga::EnemyShooterComponent::EnemyShooterComponent(dae::GameObject* owner, dae::Scene& scene, GalagaGameControllerComponent& gameController)
 	: dae::Component(owner)
 	, m_Scene(scene)
 	, m_GameController(gameController)
@@ -31,7 +31,7 @@ EnemyShooterComponent::EnemyShooterComponent(dae::GameObject* owner, dae::Scene&
 
 }
 
-void EnemyShooterComponent::Update(float deltaTime)
+void galaga::EnemyShooterComponent::Update(float deltaTime)
 {
 	if (m_GameController.GetState() != galaga::GameState::Playing)
 	{
@@ -68,7 +68,7 @@ void EnemyShooterComponent::Update(float deltaTime)
 	m_HasShotDuringCurrentDive = true;
 }
 
-void EnemyShooterComponent::Shoot()
+void galaga::EnemyShooterComponent::Shoot()
 {
 	auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
 	if (!transform)

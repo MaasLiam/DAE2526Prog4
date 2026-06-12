@@ -2,13 +2,16 @@
 
 #include "VersusBossComponent.h"
 
-VersusBossTractorBeamCommand::VersusBossTractorBeamCommand(VersusBossComponent& boss)
-	: m_Boss(boss)
+namespace galaga
 {
+	VersusBossTractorBeamCommand::VersusBossTractorBeamCommand(VersusBossComponent& boss)
+		: m_Boss(boss)
+	{
+	
+	}
 
-}
-
-void VersusBossTractorBeamCommand::Execute(float)
-{
-	m_Boss.StartTractorBeam();
+	void VersusBossTractorBeamCommand::Execute(float)
+	{
+		m_Boss.StartTractorBeam();
+	}
 }

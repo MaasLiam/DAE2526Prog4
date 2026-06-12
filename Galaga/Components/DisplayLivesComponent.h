@@ -1,24 +1,31 @@
 #pragma once
-#include <string>
+
 #include "Component.h"
 #include "Observer.h"
 
+#include <string>
+
 namespace dae
 {
-	class HealthComponent;
 	class TextComponent;
 	enum class Event;
-	class DisplayLivesComponent final : public Component, public Observer
+}
+
+namespace galaga
+{
+	class HealthComponent;
+
+	class DisplayLivesComponent final : public dae::Component, public dae::Observer
 	{
 	public:
-		DisplayLivesComponent(GameObject* owner, HealthComponent& targetHealth, std::string label);
-		void Notify(Event event, GameObject* sender) override;
+		DisplayLivesComponent(dae::GameObject* owner, HealthComponent& targetHealth, std::string label);
+		void Notify(dae::Event event, dae::GameObject* sender) override;
 
 	private:
 		void UpdateText();
 
 		HealthComponent* m_TargetHealth{ nullptr };
-		TextComponent* m_TextComponent{ nullptr };
+		dae::TextComponent* m_TextComponent{ nullptr };
 		std::string m_Label;
 	};
 }

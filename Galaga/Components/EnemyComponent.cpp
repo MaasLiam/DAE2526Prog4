@@ -88,10 +88,10 @@ class EnemyState
 public:
 	virtual ~EnemyState() = default;
 
-	virtual void OnEnter(EnemyComponent&) {}
-	virtual void OnExit(EnemyComponent&) {}
+	virtual void OnEnter(galaga::EnemyComponent&) {}
+	virtual void OnExit(galaga::EnemyComponent&) {}
 
-	virtual std::unique_ptr<EnemyState> Update(EnemyComponent&, float)
+	virtual std::unique_ptr<EnemyState> Update(galaga::EnemyComponent&, float)
 	{
 		return nullptr;
 	}
@@ -101,14 +101,14 @@ public:
 		return false;
 	}
 
-	virtual int GetScoreValue(const EnemyComponent& enemy) const = 0;
+	virtual int GetScoreValue(const galaga::EnemyComponent& enemy) const = 0;
 };
 
 class InFormationEnemyState final : public EnemyState
 {
 public:
 
-	int GetScoreValue(const EnemyComponent& enemy) const override
+	int GetScoreValue(const galaga::EnemyComponent& enemy) const override
 	{
 		switch (enemy.GetType())
 		{
@@ -130,7 +130,7 @@ class DivingEnemyState final : public EnemyState
 {
 public:
 
-	std::unique_ptr<EnemyState> Update(EnemyComponent& enemy, float deltaTime) override
+	std::unique_ptr<EnemyState> Update(galaga::EnemyComponent& enemy, float deltaTime) override
 	{
 		auto* transform = enemy.GetOwner()->GetComponent<dae::TransformComponent>();
 		if (!transform)
@@ -162,7 +162,7 @@ public:
 		return nullptr;
 	}
 
-	int GetScoreValue(const EnemyComponent& enemy) const override
+	int GetScoreValue(const galaga::EnemyComponent& enemy) const override
 	{
 		switch (enemy.GetType())
 		{
@@ -182,7 +182,7 @@ private:
 class TractorBeamEnemyState final : public EnemyState
 {
 public:
-	void OnEnter(EnemyComponent& enemy) override
+	void OnEnter(galaga::EnemyComponent& enemy) override
 	{
 		enemy.SetTractorBeamActive(false);
 
@@ -196,12 +196,12 @@ public:
 		m_BeamPosition = glm::vec3{ currentPosition.x, galaga::gameplay::TractorBeamY, 0.f };
 	}
 
-	void OnExit(EnemyComponent& enemy) override
+	void OnExit(galaga::EnemyComponent& enemy) override
 	{
 		enemy.SetTractorBeamActive(false);
 	}
 
-	std::unique_ptr<EnemyState> Update(EnemyComponent& enemy, float deltaTime) override
+	std::unique_ptr<EnemyState> Update(galaga::EnemyComponent& enemy, float deltaTime) override
 	{
 		auto* transform = enemy.GetOwner()->GetComponent<dae::TransformComponent>();
 		if (!transform)
@@ -252,7 +252,7 @@ public:
 		return nullptr;
 	}
 
-	int GetScoreValue(const EnemyComponent&) const override
+	int GetScoreValue(const galaga::EnemyComponent&) const override
 	{
 		return 400;
 	}
@@ -302,7 +302,7 @@ class DeadEnemyState final : public EnemyState
 {
 public:
 
-	int GetScoreValue(const EnemyComponent&) const override
+	int GetScoreValue(const galaga::EnemyComponent&) const override
 	{
 		return 0;
 	}
@@ -315,7 +315,7 @@ public:
 		: m_Waypoints(std::move(waypoints))
 	{}
 
-	std::unique_ptr<EnemyState> Update(EnemyComponent& enemy, float deltaTime) override
+	std::unique_ptr<EnemyState> Update(galaga::EnemyComponent& enemy, float deltaTime) override
 	{
 		auto* transform = enemy.GetOwner()->GetComponent<dae::TransformComponent>();
 		if (!transform)
@@ -366,7 +366,7 @@ public:
 		return nullptr;
 	}
 
-	int GetScoreValue(const EnemyComponent& enemy) const override
+	int GetScoreValue(const galaga::EnemyComponent& enemy) const override
 	{
 		switch (enemy.GetType())
 		{
@@ -405,7 +405,7 @@ private:
 	size_t m_CurrentWaypoint{};
 };
 
-EnemyComponent::EnemyComponent(dae::GameObject* owner, galaga::EnemyType type)
+galaga::EnemyComponent::EnemyComponent(dae::GameObject* owner, galaga::EnemyType type)
 	: dae::Component(owner)
 	, m_Type(type)
 {
@@ -417,9 +417,9 @@ EnemyComponent::EnemyComponent(dae::GameObject* owner, galaga::EnemyType type)
 	ChangeState(std::make_unique<InFormationEnemyState>());
 }
 
-EnemyComponent::~EnemyComponent() = default;
+galaga::EnemyComponent::~EnemyComponent() = default;
 
-void EnemyComponent::Update(float deltaTime)
+void galaga::EnemyComponent::Update(float deltaTime)
 {
 	if (!m_State)
 	{
@@ -432,17 +432,17 @@ void EnemyComponent::Update(float deltaTime)
 	}
 }
 
-int EnemyComponent::GetScoreValue() const
+int galaga::EnemyComponent::GetScoreValue() const
 {
 	return m_State ? m_State->GetScoreValue(*this) : 0;
 }
 
-galaga::EnemyType EnemyComponent::GetType() const
+galaga::EnemyType galaga::EnemyComponent::GetType() const
 {
 	return m_Type;
 }
 
-galaga::EnemyStateId EnemyComponent::GetStateId() const
+galaga::EnemyStateId galaga::EnemyComponent::GetStateId() const
 {
 	if (!m_State)
 	{
@@ -477,14 +477,14 @@ galaga::EnemyStateId EnemyComponent::GetStateId() const
 	return galaga::EnemyStateId::Dead;
 }
 
-void EnemyComponent::StartDiving()
+void galaga::EnemyComponent::StartDiving()
 {
 	ChangeState(std::make_unique<DivingEnemyState>());
 
 	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::EnemyDive), 1.0f);
 }
 
-void EnemyComponent::StartTractorBeam()
+void galaga::EnemyComponent::StartTractorBeam()
 {
 	if (m_Type != galaga::EnemyType::BossGalaga)
 	{
@@ -496,7 +496,7 @@ void EnemyComponent::StartTractorBeam()
 	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::EnemyDive), 1.0f);
 }
 
-void EnemyComponent::ReturnToFormation()
+void galaga::EnemyComponent::ReturnToFormation()
 {
 	auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
 	if (transform)
@@ -507,7 +507,7 @@ void EnemyComponent::ReturnToFormation()
 	ChangeState(std::make_unique<InFormationEnemyState>());
 }
 
-void EnemyComponent::TakeDamage()
+void galaga::EnemyComponent::TakeDamage()
 {
 	if (IsDead())
 	{
@@ -533,12 +533,12 @@ void EnemyComponent::TakeDamage()
 	}
 }
 
-bool EnemyComponent::IsDead() const
+bool galaga::EnemyComponent::IsDead() const
 {
 	return m_Health <= 0;
 }
 
-void EnemyComponent::ChangeState(std::unique_ptr<EnemyState> newState)
+void galaga::EnemyComponent::ChangeState(std::unique_ptr<EnemyState> newState)
 {
 	if (m_State)
 	{
@@ -555,7 +555,7 @@ void EnemyComponent::ChangeState(std::unique_ptr<EnemyState> newState)
 	}
 }
 
-void EnemyComponent::FlyIntoFormation(const glm::vec3& targetPosition)
+void galaga::EnemyComponent::FlyIntoFormation(const glm::vec3& targetPosition)
 {
 	m_FormationPosition = targetPosition;
 
@@ -572,27 +572,27 @@ void EnemyComponent::FlyIntoFormation(const glm::vec3& targetPosition)
 	ChangeState(std::make_unique<FlyingIntoFormationEnemyState>(std::move(path)));
 }
 
-const glm::vec3& EnemyComponent::GetFormationPosition() const
+const glm::vec3& galaga::EnemyComponent::GetFormationPosition() const
 {
 	return m_FormationPosition;
 }
 
-void EnemyComponent::SetFormationPosition(const glm::vec3& position)
+void galaga::EnemyComponent::SetFormationPosition(const glm::vec3& position)
 {
 	m_FormationPosition = position;
 }
 
-bool EnemyComponent::IsInFormation() const
+bool galaga::EnemyComponent::IsInFormation() const
 {
 	return m_IsInFormation;
 }
 
-bool EnemyComponent::IsTractorBeamActive() const
+bool galaga::EnemyComponent::IsTractorBeamActive() const
 {
 	return m_IsTractorBeamActive;
 }
 
-void EnemyComponent::SetTractorBeamActive(bool isActive)
+void galaga::EnemyComponent::SetTractorBeamActive(bool isActive)
 {
 	m_IsTractorBeamActive = isActive;
 }

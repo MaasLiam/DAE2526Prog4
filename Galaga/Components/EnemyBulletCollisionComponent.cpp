@@ -7,11 +7,7 @@
 #include "ServiceLocator.h"
 #include "SoundIds.h"
 
-EnemyBulletCollisionComponent::EnemyBulletCollisionComponent(
-	dae::GameObject* owner,
-	dae::Scene& scene,
-	GalagaGameControllerComponent& gameController
-)
+galaga::EnemyBulletCollisionComponent::EnemyBulletCollisionComponent(dae::GameObject* owner, dae::Scene& scene, GalagaGameControllerComponent& gameController)
 	: dae::Component(owner)
 	, m_Scene(scene)
 	, m_GameController(gameController)
@@ -19,7 +15,7 @@ EnemyBulletCollisionComponent::EnemyBulletCollisionComponent(
 
 }
 
-void EnemyBulletCollisionComponent::Update(float)
+void galaga::EnemyBulletCollisionComponent::Update(float)
 {
 	if (TryHitPlayer(galaga::PlayerIndex::PlayerOne))
 	{
@@ -29,7 +25,7 @@ void EnemyBulletCollisionComponent::Update(float)
 	TryHitPlayer(galaga::PlayerIndex::PlayerTwo);
 }
 
-bool EnemyBulletCollisionComponent::TryHitPlayer(galaga::PlayerIndex playerIndex)
+bool galaga::EnemyBulletCollisionComponent::TryHitPlayer(galaga::PlayerIndex playerIndex)
 {
 	if (!m_GameController.IsPlayerActive(playerIndex) || !m_GameController.IsPlayerAlive(playerIndex))
 	{
@@ -44,7 +40,7 @@ bool EnemyBulletCollisionComponent::TryHitPlayer(galaga::PlayerIndex playerIndex
 
 	auto* bulletCollision = GetOwner()->GetComponent<CollisionComponent>();
 	auto* playerCollision = player->GetComponent<CollisionComponent>();
-	auto* playerHealth = player->GetComponent<dae::HealthComponent>();
+	auto* playerHealth = player->GetComponent<HealthComponent>();
 
 	if (!bulletCollision || !playerCollision || !playerHealth)
 	{

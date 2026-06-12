@@ -2,15 +2,17 @@
 
 #include "Command.h"
 
-class GalagaGameControllerComponent;
-
-class SkipStageCommand final : public dae::Command
+namespace galaga
 {
-public:
-	explicit SkipStageCommand(GalagaGameControllerComponent& gameController);
+	class GalagaGameControllerComponent;
+	class SkipStageCommand final : public dae::Command
+	{
+	public:
+		explicit SkipStageCommand(GalagaGameControllerComponent& gameController);
 
-	void Execute(float deltaTime) override;
+		void Execute(float deltaTime) override;
 
-private:
-	GalagaGameControllerComponent& m_GameController;
-};
+	private:
+		GalagaGameControllerComponent& m_GameController;
+	};
+}

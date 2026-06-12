@@ -7,12 +7,15 @@ namespace dae
 	class SoundSystem;
 }
 
-class ToggleMuteCommand final : public dae::Command
+namespace galaga
 {
-public:
-	explicit ToggleMuteCommand(dae::SoundSystem& soundSystem);
-	void Execute(float deltaTime) override;
+	class ToggleMuteCommand final : public dae::Command
+	{
+	public:
+		explicit ToggleMuteCommand(dae::SoundSystem& soundSystem);
+		void Execute(float deltaTime) override;
 
-private:
-	dae::SoundSystem& m_SoundSystem;
-};
+	private:
+		dae::SoundSystem& m_SoundSystem;
+	};
+}

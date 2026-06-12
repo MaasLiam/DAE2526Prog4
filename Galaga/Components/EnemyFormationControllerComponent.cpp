@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <vector>
 
-EnemyFormationControllerComponent::EnemyFormationControllerComponent(
+galaga::EnemyFormationControllerComponent::EnemyFormationControllerComponent(
     dae::GameObject* owner,
     dae::Scene& scene
 )
@@ -15,7 +15,7 @@ EnemyFormationControllerComponent::EnemyFormationControllerComponent(
     , m_Scene(scene)
 {}
 
-void EnemyFormationControllerComponent::Update(float deltaTime)
+void galaga::EnemyFormationControllerComponent::Update(float deltaTime)
 {
     m_DiveTimer += deltaTime;
 

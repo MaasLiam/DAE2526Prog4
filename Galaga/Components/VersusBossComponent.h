@@ -10,57 +10,59 @@ namespace dae
 	class GameObject;
 }
 
-class GalagaGameControllerComponent;
-
-class VersusBossComponent final : public dae::Component
+namespace galaga
 {
-public:
-	VersusBossComponent(dae::GameObject* owner, GalagaGameControllerComponent& gameController, dae::GameObject& targetPlayer);
-
-	void Update(float deltaTime) override;
-	void StartDive();
-	void StartTractorBeam();
-	void TakeHit();
-	bool IsDead() const;
-	void SetBeamVisual(dae::GameObject* beamVisual);
-	void Reset();
-
-private:
-	enum class BossState
+	class GalagaGameControllerComponent;
+	class VersusBossComponent final : public dae::Component
 	{
-		Idle,
-		DivingToPlayer,
-		ExitingBottom,
-		Returning,
-		MovingToBeamPosition,
-		TractorBeam,
-		ReturningFromBeam
+	public:
+		VersusBossComponent(dae::GameObject* owner, GalagaGameControllerComponent& gameController, dae::GameObject& targetPlayer);
+
+		void Update(float deltaTime) override;
+		void StartDive();
+		void StartTractorBeam();
+		void TakeHit();
+		bool IsDead() const;
+		void SetBeamVisual(dae::GameObject* beamVisual);
+		void Reset();
+
+	private:
+		enum class BossState
+		{
+			Idle,
+			DivingToPlayer,
+			ExitingBottom,
+			Returning,
+			MovingToBeamPosition,
+			TractorBeam,
+			ReturningFromBeam
+		};
+
+		void MoveTowards(const glm::vec3& target, float speed, float deltaTime);
+		bool IsNear(const glm::vec3& target, float distance) const;
+		void TryDamagePlayerOnContact();
+		void TryCapturePlayerWithBeam();
+		void SetBeamVisible(bool isVisible);
+
+		GalagaGameControllerComponent& m_GameController;
+		dae::GameObject& m_TargetPlayer;
+
+		BossState m_State{ BossState::Idle };
+
+		glm::vec3 m_StartPosition{ galaga::gameplay::VersusBossStartPosition };
+		glm::vec3 m_BeamPosition{ galaga::gameplay::VersusBossStartX, galaga::gameplay::TractorBeamY, 0.f };
+		glm::vec3 m_BeamVisualOffset{ galaga::gameplay::TractorBeamVisualOffset };
+		glm::vec3 m_DiveTarget{ galaga::gameplay::VersusBossStartX, galaga::gameplay::PlayerStartY, 0.f };
+
+		float m_BeamHitboxLeftOffset{ galaga::gameplay::TractorBeamHitboxLeftOffset };
+		float m_BeamHitboxTopOffset{ galaga::gameplay::TractorBeamHitboxTopOffset };
+		float m_BeamHitboxWidth{ galaga::gameplay::TractorBeamHitboxWidth };
+		float m_BeamHitboxHeight{ galaga::gameplay::TractorBeamHitboxHeight };
+
+		float m_TractorTimer{};
+		bool m_HasDamagedPlayerThisAttack{};
+		int m_HitPoints{ 4 };
+		bool m_DamagedVisualApplied{};
+		dae::GameObject* m_BeamVisual{};
 	};
-
-	void MoveTowards(const glm::vec3& target, float speed, float deltaTime);
-	bool IsNear(const glm::vec3& target, float distance) const;
-	void TryDamagePlayerOnContact();
-	void TryCapturePlayerWithBeam();
-	void SetBeamVisible(bool isVisible);
-
-	GalagaGameControllerComponent& m_GameController;
-	dae::GameObject& m_TargetPlayer;
-
-	BossState m_State{ BossState::Idle };
-
-	glm::vec3 m_StartPosition{ galaga::gameplay::VersusBossStartPosition };
-	glm::vec3 m_BeamPosition{ galaga::gameplay::VersusBossStartX, galaga::gameplay::TractorBeamY, 0.f };
-	glm::vec3 m_BeamVisualOffset{ galaga::gameplay::TractorBeamVisualOffset };
-	glm::vec3 m_DiveTarget{ galaga::gameplay::VersusBossStartX, galaga::gameplay::PlayerStartY, 0.f };
-
-	float m_BeamHitboxLeftOffset{ galaga::gameplay::TractorBeamHitboxLeftOffset };
-	float m_BeamHitboxTopOffset{ galaga::gameplay::TractorBeamHitboxTopOffset };
-	float m_BeamHitboxWidth{ galaga::gameplay::TractorBeamHitboxWidth };
-	float m_BeamHitboxHeight{ galaga::gameplay::TractorBeamHitboxHeight };
-
-	float m_TractorTimer{};
-	bool m_HasDamagedPlayerThisAttack{};
-	int m_HitPoints{ 4 };
-	bool m_DamagedVisualApplied{};
-	dae::GameObject* m_BeamVisual{};
-};
+}

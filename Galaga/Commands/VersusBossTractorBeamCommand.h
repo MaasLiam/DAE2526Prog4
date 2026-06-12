@@ -2,15 +2,18 @@
 
 #include "Command.h"
 
-class VersusBossComponent;
-
-class VersusBossTractorBeamCommand final : public dae::Command
+namespace galaga
 {
-public:
-	explicit VersusBossTractorBeamCommand(VersusBossComponent& boss);
+	class VersusBossComponent;
 
-	void Execute(float deltaTime) override;
+	class VersusBossTractorBeamCommand final : public dae::Command
+	{
+	public:
+		explicit VersusBossTractorBeamCommand(VersusBossComponent& boss);
 
-private:
-	VersusBossComponent& m_Boss;
-};
+		void Execute(float deltaTime) override;
+
+	private:
+		VersusBossComponent& m_Boss;
+	};
+}

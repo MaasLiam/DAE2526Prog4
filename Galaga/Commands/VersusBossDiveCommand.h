@@ -2,15 +2,18 @@
 
 #include "Command.h"
 
-class VersusBossComponent;
-
-class VersusBossDiveCommand final : public dae::Command
+namespace galaga
 {
-public:
-	explicit VersusBossDiveCommand(VersusBossComponent& boss);
+	class VersusBossComponent;
 
-	void Execute(float deltaTime) override;
+	class VersusBossDiveCommand final : public dae::Command
+	{
+	public:
+		explicit VersusBossDiveCommand(VersusBossComponent& boss);
 
-private:
-	VersusBossComponent& m_Boss;
-};
+		void Execute(float deltaTime) override;
+
+	private:
+		VersusBossComponent& m_Boss;
+	};
+}

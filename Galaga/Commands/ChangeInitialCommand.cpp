@@ -2,12 +2,12 @@
 
 #include "GalagaGameControllerComponent.h"
 
-ChangeInitialCommand::ChangeInitialCommand(GalagaGameControllerComponent& gameController, int direction)
+galaga::ChangeInitialCommand::ChangeInitialCommand(GalagaGameControllerComponent& gameController, int direction)
 	: m_GameController(gameController)
 	, m_Direction(direction)
 {}
 
-void ChangeInitialCommand::Execute(float)
+void galaga::ChangeInitialCommand::Execute(float)
 {
 	m_GameController.ChangeSelectedInitial(m_Direction);
 }

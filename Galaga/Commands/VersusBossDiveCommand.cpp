@@ -2,13 +2,14 @@
 
 #include "VersusBossComponent.h"
 
-VersusBossDiveCommand::VersusBossDiveCommand(VersusBossComponent& boss)
-	: m_Boss(boss)
+namespace galaga
 {
+	VersusBossDiveCommand::VersusBossDiveCommand(VersusBossComponent& boss)
+		: m_Boss(boss)
+	{}
 
-}
-
-void VersusBossDiveCommand::Execute(float)
-{
-	m_Boss.StartDive();
+	void VersusBossDiveCommand::Execute(float)
+	{
+		m_Boss.StartDive();
+	}
 }

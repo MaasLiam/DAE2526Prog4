@@ -2,11 +2,11 @@
 
 #include "GalagaGameControllerComponent.h"
 
-ConfirmHighScoreNameCommand::ConfirmHighScoreNameCommand(GalagaGameControllerComponent& gameController)
+galaga::ConfirmHighScoreNameCommand::ConfirmHighScoreNameCommand(GalagaGameControllerComponent& gameController)
 	: m_GameController(gameController)
 {}
 
-void ConfirmHighScoreNameCommand::Execute(float)
+void galaga::ConfirmHighScoreNameCommand::Execute(float)
 {
 	m_GameController.ConfirmCurrentSelection();
 }

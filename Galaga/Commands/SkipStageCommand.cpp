@@ -2,11 +2,11 @@
 
 #include "GalagaGameControllerComponent.h"
 
-SkipStageCommand::SkipStageCommand(GalagaGameControllerComponent& gameController)
+galaga::SkipStageCommand::SkipStageCommand(GalagaGameControllerComponent& gameController)
 	: m_GameController(gameController)
 {}
 
-void SkipStageCommand::Execute(float)
+void galaga::SkipStageCommand::Execute(float)
 {
 	m_GameController.SkipStage();
 }

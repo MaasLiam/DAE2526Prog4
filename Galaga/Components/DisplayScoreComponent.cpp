@@ -5,34 +5,29 @@
 #include "Event.h"
 
 
-
-namespace dae
+galaga::DisplayScoreComponent::DisplayScoreComponent(dae::GameObject* owner, galaga::ScoreComponent& targetScore, std::string label)
+	: Component(owner)
+	, m_TargetScore(&targetScore)
+	, m_Label(std::move(label))
 {
-	DisplayScoreComponent::DisplayScoreComponent(GameObject* owner, ScoreComponent& targetScore, std::string label)
-		: Component(owner)
-		, m_targetScore(&targetScore)
-		, m_Label(std::move(label))
+	m_TextComponent = GetOwner()->GetComponent<dae::TextComponent>();
+	m_TargetScore->GetSubject().AddObserver(this);
+	UpdateText();
+}
+
+void galaga::DisplayScoreComponent::Notify(dae::Event event, dae::GameObject*)
+{
+	if (event == dae::Event::ScoreChanged)
 	{
-		m_TextComponent = GetOwner()->GetComponent<TextComponent>();
-		m_targetScore->GetSubject().AddObserver(this);
 		UpdateText();
 	}
+}
 
-	void DisplayScoreComponent::Notify(Event event, GameObject*)
+void galaga::DisplayScoreComponent::UpdateText()
+{
+	if (m_TextComponent == nullptr || m_TargetScore == nullptr)
 	{
-		if (event == Event::ScoreChanged)
-		{
-			UpdateText();
-		}
+		return;
 	}
-
-	void DisplayScoreComponent::UpdateText()
-	{
-		if (m_TextComponent == nullptr || m_targetScore == nullptr)
-		{
-			return;
-		}
-		m_TextComponent->SetText(m_Label + " Score: " + std::to_string(m_targetScore->GetScore()));
-	}
-
+	m_TextComponent->SetText(m_Label + " Score: " + std::to_string(m_TargetScore->GetScore()));
 }

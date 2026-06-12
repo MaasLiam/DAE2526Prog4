@@ -8,18 +8,20 @@ namespace dae
 	class Scene;
 }
 
-class GalagaGameControllerComponent;
-
-class VersusBossShootCommand final : public dae::Command
+namespace galaga
 {
-public:
-	VersusBossShootCommand(dae::GameObject& boss, dae::GameObject& targetPlayer, dae::Scene& scene, GalagaGameControllerComponent& gameController);
+	class GalagaGameControllerComponent;
+	class VersusBossShootCommand final : public dae::Command
+	{
+	public:
+		VersusBossShootCommand(dae::GameObject& boss, dae::GameObject& targetPlayer, dae::Scene& scene, GalagaGameControllerComponent& gameController);
 
-	void Execute(float deltaTime) override;
+		void Execute(float deltaTime) override;
 
-private:
-	dae::GameObject& m_Boss;
-	dae::GameObject& m_TargetPlayer;
-	dae::Scene& m_Scene;
-	GalagaGameControllerComponent& m_GameController;
-};
+	private:
+		dae::GameObject& m_Boss;
+		dae::GameObject& m_TargetPlayer;
+		dae::Scene& m_Scene;
+		GalagaGameControllerComponent& m_GameController;
+	};
+}
