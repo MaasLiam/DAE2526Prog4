@@ -1,35 +1,60 @@
 #include "Subject.h"
+
 #include "Observer.h"
 
 #include <algorithm>
-namespace dae
+
+dae::Subject::~Subject()
 {
-	dae::Subject::~Subject()
+	for (auto* observer : m_Observers)
 	{
-		for (auto* observer : m_Observers)
+		if (observer == nullptr)
 		{
-			if (observer)
-			{
-				observer->OnSubjectDestroyed(this);
-			}
+			continue;
 		}
+
+		observer->OnSubjectDestroyed(this);
+	}
+}
+
+void dae::Subject::AddObserver(Observer* observer)
+{
+	if (observer == nullptr)
+	{
+		return;
 	}
 
-	void Subject::AddObserver(Observer* observer)
+	const auto isAlreadyRegistered = std::find(
+		m_Observers.begin(),
+		m_Observers.end(),
+		observer
+	) != m_Observers.end();
+
+	if (isAlreadyRegistered)
 	{
-		m_Observers.push_back(observer);
+		return;
 	}
 
-	void Subject::RemoveObserver(Observer* observer)
-	{
-		m_Observers.erase(std::remove(m_Observers.begin(), m_Observers.end(), observer), m_Observers.end());
-	}
+	m_Observers.emplace_back(observer);
+}
 
-	void Subject::Notify(Event event, GameObject* sender)
+void dae::Subject::RemoveObserver(Observer* observer)
+{
+	m_Observers.erase(
+		std::remove(m_Observers.begin(), m_Observers.end(), observer),
+		m_Observers.end()
+	);
+}
+
+void dae::Subject::Notify(Event event, GameObject* sender)
+{
+	for (auto* observer : m_Observers)
 	{
-		for (Observer* observer : m_Observers)
+		if (observer == nullptr)
 		{
-			observer->Notify(event, sender);
+			continue;
 		}
+
+		observer->Notify(event, sender);
 	}
 }

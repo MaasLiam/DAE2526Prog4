@@ -19,38 +19,23 @@
 
 #include <string>
 
-galaga::GalagaGameControllerComponent::GalagaGameControllerComponent(
-	dae::GameObject* owner,
-	dae::Scene& scene,
-	dae::TextComponent& titleText,
-	dae::TextComponent& scoreText,
-	dae::TransformComponent& scoreTextTransform,
-	dae::TextComponent& initialsText,
-	dae::TransformComponent& initialsTextTransform,
-	dae::TextComponent& instructionText,
-	dae::TransformComponent& instructionTextTransform,
-	dae::TextComponent& tableTitleText,
-	dae::TransformComponent& tableTitleTextTransform,
-	std::array<dae::TextComponent*, 5> highScoreRows,
-	dae::TextComponent& controlsP1Text,
-	dae::TextComponent& controlsP2Text
-)
-	: dae::Component(owner)
+galaga::GalagaGameControllerComponent::GalagaGameControllerComponent(dae::GameObject* owner, dae::Scene& scene, GameControllerUi ui)
+	: Component(owner)
 	, m_Scene(scene)
-	, m_TitleText(titleText)
-	, m_ScoreText(scoreText)
-	, m_ScoreTextTransform(scoreTextTransform)
-	, m_InitialsText(initialsText)
-	, m_InitialsTextTransform(initialsTextTransform)
-	, m_InstructionText(instructionText)
-	, m_InstructionTextTransform(instructionTextTransform)
-	, m_TableTitleText(tableTitleText)
-	, m_TableTitleTextTransform(tableTitleTextTransform)
-	, m_HighScoreRows(highScoreRows)
-	, m_ControlsP1Text(controlsP1Text)
-	, m_ControlsP2Text(controlsP2Text)
+	, m_TitleText(ui.titleText)
+	, m_ScoreText(ui.scoreText)
+	, m_ScoreTextTransform(ui.scoreTextTransform)
+	, m_InitialsText(ui.initialsText)
+	, m_InitialsTextTransform(ui.initialsTextTransform)
+	, m_InstructionText(ui.instructionText)
+	, m_InstructionTextTransform(ui.instructionTextTransform)
+	, m_TableTitleText(ui.tableTitleText)
+	, m_TableTitleTextTransform(ui.tableTitleTextTransform)
+	, m_HighScoreRows(ui.highScoreRows)
+	, m_ControlsP1Text(ui.controlsP1Text)
+	, m_ControlsP2Text(ui.controlsP2Text)
 {
-	SetState(galaga::GameState::StartScreen);
+	ForceRefreshCurrentState();
 }
 
 void galaga::GalagaGameControllerComponent::Update(float deltaTime)

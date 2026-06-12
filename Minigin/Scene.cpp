@@ -1,100 +1,112 @@
-#include <algorithm>
 #include "Scene.h"
-#include <assert.h>
 
-using namespace dae;
+#include "GameObject.h"
 
-void Scene::Add(std::unique_ptr<GameObject> object)
+#include <algorithm>
+
+void dae::Scene::Add(std::unique_ptr<GameObject> object)
 {
-	assert(object != nullptr && "Cannot add a null GameObject to the scene.");
-
-	if (m_IsUpdating)
+	if (object == nullptr)
 	{
-		m_objectsToAdd.emplace_back(std::move(object));
 		return;
 	}
 
-	m_objects.emplace_back(std::move(object));
+	if (m_IsUpdating)
+	{
+		m_ObjectsToAdd.emplace_back(std::move(object));
+		return;
+	}
+
+	m_Objects.emplace_back(std::move(object));
 }
 
-void Scene::Remove(const GameObject& object)
+void dae::Scene::Remove(const GameObject& object)
 {
-	const auto alreadyMarkedForRemoval = std::find(m_objectsToRemove.begin(), m_objectsToRemove.end(), &object) != m_objectsToRemove.end();
+	const auto alreadyMarkedForRemoval = std::find(m_ObjectsToRemove.begin(), m_ObjectsToRemove.end(), &object) != m_ObjectsToRemove.end();
 
 	if (alreadyMarkedForRemoval)
 	{
 		return;
 	}
 
-	m_objectsToRemove.push_back(&object);
+	m_ObjectsToRemove.emplace_back(&object);
 }
 
-void Scene::RemoveAll()
+void dae::Scene::RemoveAll()
 {
-	if (m_IsUpdating)
-	{
-		for (const auto& object : m_objects)
-		{
-			Remove(*object);
-		}
-
-		m_objectsToAdd.clear();
-		return;
-	}
-
-	m_objects.clear();
-	m_objectsToAdd.clear();
-	m_objectsToRemove.clear();
+	m_Objects.clear();
+	m_ObjectsToAdd.clear();
+	m_ObjectsToRemove.clear();
 }
 
-const std::vector<std::unique_ptr<GameObject>>& dae::Scene::GetObjects() const
+const std::vector<std::unique_ptr<dae::GameObject>>& dae::Scene::GetObjects() const
 {
-	return m_objects;
+	return m_Objects;
 }
 
-void Scene::Update(float deltaTime)
+void dae::Scene::Update(float deltaTime)
 {
 	m_IsUpdating = true;
 
-	for (auto& object : m_objects)
+	for (const auto& object : m_Objects)
 	{
 		object->Update(deltaTime);
 	}
 
 	m_IsUpdating = false;
+
+	RemovePendingObjects();
+	AddPendingObjects();
 }
 
 void dae::Scene::LateUpdate()
+{}
+
+void dae::Scene::Render() const
 {
-	for (auto const objectToRemove : m_objectsToRemove)
-	{
-		m_objects.erase(
-			std::remove_if(
-				m_objects.begin(),
-				m_objects.end(),
-				[objectToRemove](const auto& ptr)
-				{
-					return ptr.get() == objectToRemove;
-				}
-			),
-			m_objects.end()
-		);
-	}
-
-	m_objectsToRemove.clear();
-
-	for (auto& objectToAdd : m_objectsToAdd)
-	{
-		m_objects.emplace_back(std::move(objectToAdd));
-	}
-
-	m_objectsToAdd.clear();
-}
-void Scene::Render() const
-{
-	for (const auto& object : m_objects)
+	for (const auto& object : m_Objects)
 	{
 		object->Render();
 	}
 }
 
+void dae::Scene::AddPendingObjects()
+{
+	if (m_ObjectsToAdd.empty())
+	{
+		return;
+	}
+
+	for (auto& object : m_ObjectsToAdd)
+	{
+		m_Objects.emplace_back(std::move(object));
+	}
+
+	m_ObjectsToAdd.clear();
+}
+
+void dae::Scene::RemovePendingObjects()
+{
+	if (m_ObjectsToRemove.empty())
+	{
+		return;
+	}
+
+	m_Objects.erase(
+		std::remove_if(
+			m_Objects.begin(),
+			m_Objects.end(),
+			[this](const std::unique_ptr<GameObject>& object)
+			{
+				return std::find(
+					m_ObjectsToRemove.begin(),
+					m_ObjectsToRemove.end(),
+					object.get()
+				) != m_ObjectsToRemove.end();
+			}
+		),
+		m_Objects.end()
+	);
+
+	m_ObjectsToRemove.clear();
+}

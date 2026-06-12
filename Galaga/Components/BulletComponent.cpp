@@ -8,9 +8,11 @@
 galaga::BulletComponent::BulletComponent(dae::GameObject* owner, dae::Scene& scene, float speed, MissileLimitComponent* missileLimit)
 	: dae::Component(owner)
 	, m_Scene(scene)
-	, m_Speed(speed)
+	, m_Transform(owner->GetComponent<dae::TransformComponent>())
 	, m_MissileLimit(missileLimit)
+	, m_Speed(speed)
 {
+
 }
 
 galaga::BulletComponent::~BulletComponent()
@@ -23,14 +25,15 @@ galaga::BulletComponent::~BulletComponent()
 
 void galaga::BulletComponent::Update(float deltaTime)
 {
-	auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
-	if (!transform)
+	if (m_Transform == nullptr)
+	{
 		return;
+	}
 
-	auto position = transform->GetLocalPosition();
+	auto position = m_Transform->GetLocalPosition();
 
 	position.y -= m_Speed * deltaTime;
-	transform->SetLocalPosition(position);
+	m_Transform->SetLocalPosition(position);
 
 	if (position.y < -32.f || position.y > 640.f)
 	{

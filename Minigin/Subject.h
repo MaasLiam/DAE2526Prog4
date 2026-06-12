@@ -1,11 +1,15 @@
 #pragma once
+
+#include "Event.h"
+
 #include <vector>
 
 namespace dae
 {
-	enum class Event;
+	class GameObject;
 	class Observer;
-	class Subject
+
+	class Subject final
 	{
 	public:
 		Subject() = default;
@@ -16,10 +20,11 @@ namespace dae
 		Subject& operator=(const Subject&) = delete;
 		Subject& operator=(Subject&&) = delete;
 
-		void AddObserver(class Observer* observer);
-		void RemoveObserver(class Observer* observer);
-		void Notify(Event event, class GameObject* sender);
+		void AddObserver(Observer* observer);
+		void RemoveObserver(Observer* observer);
+		void Notify(Event event, GameObject* sender);
+
 	private:
-		std::vector<class Observer*> m_Observers;
+		std::vector<Observer*> m_Observers{};
 	};
 }

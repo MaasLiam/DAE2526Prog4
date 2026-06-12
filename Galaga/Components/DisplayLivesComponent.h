@@ -32,9 +32,9 @@ namespace galaga
 	private:
 		void UpdateText();
 
-		HealthComponent* m_TargetHealth{ nullptr };
-		dae::TextComponent* m_TextComponent{ nullptr };
-		std::string m_Label;
+		HealthComponent* m_TargetHealth{};
+		dae::TextComponent* m_TextComponent{};
 		dae::Subject* m_TargetSubject{};
+		std::string m_Label{};
 	};
 }

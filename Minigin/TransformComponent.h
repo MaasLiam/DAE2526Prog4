@@ -1,21 +1,17 @@
 #pragma once
-#include <glm/glm.hpp>
+
 #include "Component.h"
 
+#include <glm/vec3.hpp>
 
 namespace dae
 {
 	class GameObject;
+
 	class TransformComponent final : public Component
 	{
 	public:
-		TransformComponent(GameObject* parent);
-		void Update(float) override {};
-		const glm::vec3& GetLocalPosition() const { return m_LocalPosition; }
-		void SetLocalPosition(float x, float y, float z = 0);
-		void SetLocalPosition(const glm::vec3& position);
-		const glm::vec3& GetWorldPosition() const;
-		void SetDirtyWorldPosition();
+		explicit TransformComponent(GameObject* parent);
 
 		~TransformComponent() override = default;
 
@@ -23,9 +19,18 @@ namespace dae
 		TransformComponent(TransformComponent&&) = delete;
 		TransformComponent& operator=(const TransformComponent&) = delete;
 		TransformComponent& operator=(TransformComponent&&) = delete;
+
+		const glm::vec3& GetLocalPosition() const;
+		const glm::vec3& GetWorldPosition() const;
+
+		void SetLocalPosition(float x, float y, float z = 0.f);
+		void SetLocalPosition(const glm::vec3& position);
+
+		void SetDirtyWorldPosition();
+
 	private:
 		glm::vec3 m_LocalPosition{};
 		mutable glm::vec3 m_WorldPosition{};
-		mutable bool m_DirtyWorldPosition{true};
+		mutable bool m_IsWorldPositionDirty{ true };
 	};
 }

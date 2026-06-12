@@ -26,6 +26,8 @@ galaga::EnemyShooterComponent::EnemyShooterComponent(dae::GameObject* owner, dae
 	: dae::Component(owner)
 	, m_Scene(scene)
 	, m_GameController(gameController)
+	, m_Enemy(owner->GetComponent<EnemyComponent>())
+	, m_Transform(owner->GetComponent<dae::TransformComponent>())
 {
 
 }
@@ -37,13 +39,12 @@ void galaga::EnemyShooterComponent::Update(float deltaTime)
 		return;
 	}
 
-	auto* enemy = GetOwner()->GetComponent<EnemyComponent>();
-	if (!enemy || enemy->IsDead())
+	if (m_Enemy == nullptr || m_Enemy->IsDead())
 	{
 		return;
 	}
 
-	if (enemy->GetStateId() != galaga::EnemyStateId::Diving)
+	if (m_Enemy->GetStateId() != galaga::EnemyStateId::Diving)
 	{
 		m_ShootTimer = 0.f;
 		m_HasShotDuringCurrentDive = false;
@@ -69,17 +70,16 @@ void galaga::EnemyShooterComponent::Update(float deltaTime)
 
 void galaga::EnemyShooterComponent::Shoot()
 {
-	auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
-	if (!transform)
+	if (m_Transform == nullptr)
 	{
 		return;
 	}
 
-	const auto enemyPosition = transform->GetLocalPosition();
+	const auto enemyPosition = m_Transform->GetLocalPosition();
 
 	auto bullet = std::make_unique<dae::GameObject>();
-	bullet->AddComponent<dae::TransformComponent>();
-	bullet->GetComponent<dae::TransformComponent>()->SetLocalPosition(enemyPosition.x + galaga::gameplay::EnemyBulletSpawnOffsetX, enemyPosition.y + galaga::gameplay::EnemyBulletSpawnOffsetY, 0.f);
+	auto& bulletTransform = bullet->AddComponent<dae::TransformComponent>();
+	bulletTransform.SetLocalPosition(enemyPosition.x + galaga::gameplay::EnemyBulletSpawnOffsetX, enemyPosition.y + galaga::gameplay::EnemyBulletSpawnOffsetY, 0.f);
 	bullet->AddComponent<dae::RenderComponent>("Sprites/BulletSprite.png");
 	bullet->AddComponent<CollisionComponent>(8.f, 16.f, galaga::gameplay::BulletHitboxOffsetX, galaga::gameplay::BulletHitboxOffsetY);
 	bullet->AddComponent<BulletComponent>(m_Scene, EnemyBulletSpeed);

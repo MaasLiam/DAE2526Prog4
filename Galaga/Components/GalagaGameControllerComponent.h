@@ -26,26 +26,31 @@ namespace galaga
 		PlayerTwo = 1
 	};
 
+	struct GameControllerUi
+	{
+		dae::TextComponent& titleText;
+		dae::TextComponent& scoreText;
+		dae::TransformComponent& scoreTextTransform;
+
+		dae::TextComponent& initialsText;
+		dae::TransformComponent& initialsTextTransform;
+
+		dae::TextComponent& instructionText;
+		dae::TransformComponent& instructionTextTransform;
+
+		dae::TextComponent& tableTitleText;
+		dae::TransformComponent& tableTitleTextTransform;
+
+		std::array<dae::TextComponent*, 5> highScoreRows{};
+
+		dae::TextComponent& controlsP1Text;
+		dae::TextComponent& controlsP2Text;
+	};
+
 	class GalagaGameControllerComponent final : public dae::Component
 	{
 	public:
-		GalagaGameControllerComponent(
-			dae::GameObject* owner,
-			dae::Scene& scene,
-			dae::TextComponent& titleText,
-			dae::TextComponent& scoreText,
-			dae::TransformComponent& scoreTextTransform,
-			dae::TextComponent& initialsText,
-			dae::TransformComponent& initialsTextTransform,
-			dae::TextComponent& instructionText,
-			dae::TransformComponent& instructionTextTransform,
-			dae::TextComponent& tableTitleText,
-			dae::TransformComponent& tableTitleTextTransform,
-			std::array<dae::TextComponent*, 5> highScoreRows,
-			dae::TextComponent& controlsP1Text,
-			dae::TextComponent& controlsP2Text
-		);
-
+		GalagaGameControllerComponent(dae::GameObject* owner, dae::Scene& scene, GameControllerUi ui);
 		~GalagaGameControllerComponent() override = default;
 
 		GalagaGameControllerComponent(const GalagaGameControllerComponent&) = delete;

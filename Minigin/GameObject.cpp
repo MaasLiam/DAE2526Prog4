@@ -1,11 +1,8 @@
-#include <string>
 #include "GameObject.h"
-#include "ResourceManager.h"
-#include "Renderer.h"
-#include <assert.h>
-#include <algorithm>
+
 #include "TransformComponent.h"
 
+#include <algorithm>
 
 void dae::GameObject::Update(float deltaTime)
 {
@@ -14,27 +11,33 @@ void dae::GameObject::Update(float deltaTime)
 		component->Update(deltaTime);
 	}
 
-	//remove components that were marked for removal
-	if (!m_ComponentsToRemove.empty())
+	if (m_ComponentsToRemove.empty())
 	{
-		m_Components.erase(
-			std::remove_if(
-				m_Components.begin(),
-				m_Components.end(),
-				[&](const std::unique_ptr<Component>& ptr)
-				{
-					return std::find(m_ComponentsToRemove.begin(), m_ComponentsToRemove.end(), ptr.get()) != m_ComponentsToRemove.end();
-				}
-			),
-			m_Components.end()
-		);
-		m_ComponentsToRemove.clear();
+		return;
 	}
+
+	m_Components.erase(
+		std::remove_if(
+			m_Components.begin(),
+			m_Components.end(),
+			[this](const std::unique_ptr<Component>& component)
+			{
+				return std::find(
+					m_ComponentsToRemove.begin(),
+					m_ComponentsToRemove.end(),
+					component.get()
+				) != m_ComponentsToRemove.end();
+			}
+		),
+		m_Components.end()
+	);
+
+	m_ComponentsToRemove.clear();
 }
 
 void dae::GameObject::Render() const
 {
-	for (auto const& component : m_Components)
+	for (const auto& component : m_Components)
 	{
 		component->Render();
 	}
@@ -42,15 +45,16 @@ void dae::GameObject::Render() const
 
 dae::GameObject* dae::GameObject::GetParent() const
 {
-	return m_pParent;
+	return m_Parent;
 }
 
 void dae::GameObject::SetParent(GameObject* parent, bool keepWorldPosition)
 {
-	if (IsChild(parent) || parent == this || m_pParent == parent)
+	if (IsChild(parent) || parent == this || m_Parent == parent)
 	{
 		return;
 	}
+
 	if (parent == nullptr)
 	{
 		SetLocalPosition(GetWorldPos());
@@ -61,17 +65,21 @@ void dae::GameObject::SetParent(GameObject* parent, bool keepWorldPosition)
 		{
 			SetLocalPosition(GetWorldPos() - parent->GetWorldPos());
 		}
+
 		SetDirtyWorldPosition();
 	}
-	if (m_pParent)
+
+	if (m_Parent != nullptr)
 	{
-		auto child = m_pParent->RemoveChild(this);
-		if (parent)
+		auto child = m_Parent->RemoveChild(this);
+
+		if (parent != nullptr)
 		{
 			parent->AddChild(std::move(child));
 		}
 	}
-	m_pParent = parent;
+
+	m_Parent = parent;
 }
 
 size_t dae::GameObject::GetChildCount() const
@@ -81,46 +89,66 @@ size_t dae::GameObject::GetChildCount() const
 
 dae::GameObject* dae::GameObject::GetChildAt(size_t index) const
 {
-	if (index >= m_Children.size()) return nullptr;
+	if (index >= m_Children.size())
+	{
+		return nullptr;
+	}
+
 	return m_Children[index].get();
 }
 
 std::unique_ptr<dae::GameObject> dae::GameObject::AddChild(std::unique_ptr<GameObject> child)
 {
-	m_Children.push_back(std::move(child));
+	m_Children.emplace_back(std::move(child));
+
 	return nullptr;
 }
 
-std::unique_ptr<dae::GameObject> dae::GameObject::RemoveChild(GameObject* child)
+std::unique_ptr<dae::GameObject> dae::GameObject::RemoveChild(const GameObject* child)
 {
-	auto it = std::find_if(m_Children.begin(), m_Children.end(),
-		[child](const std::unique_ptr<GameObject>& ptr) { return ptr.get() == child; });
-	if (it != m_Children.end())
+	const auto iterator = std::find_if(
+		m_Children.begin(),
+		m_Children.end(),
+		[child](const std::unique_ptr<GameObject>& currentChild)
+		{
+			return currentChild.get() == child;
+		}
+	);
+
+	if (iterator == m_Children.end())
 	{
-		auto removed = std::move(*it);
-		m_Children.erase(it);
-		return removed;
+		return nullptr;
 	}
-	return nullptr;
+
+	auto removedChild = std::move(*iterator);
+	m_Children.erase(iterator);
+
+	return removedChild;
 }
 
-bool dae::GameObject::IsChild(GameObject* gameObject)
+bool dae::GameObject::IsChild(const GameObject* gameObject) const
 {
-	return std::find_if(m_Children.begin(), m_Children.end(),
-		[gameObject](const std::unique_ptr<GameObject>& ptr) { return ptr.get() == gameObject; }) != m_Children.end();
+	return std::find_if(
+		m_Children.begin(),
+		m_Children.end(),
+		[gameObject](const std::unique_ptr<GameObject>& child)
+		{
+			return child.get() == gameObject;
+		}
+	) != m_Children.end();
 }
 
-void dae::GameObject::SetLocalPosition(glm::vec3 pos)
+void dae::GameObject::SetLocalPosition(const glm::vec3& position)
 {
 	if (auto* transform = GetComponent<TransformComponent>())
 	{
-		transform->SetLocalPosition(pos);
+		transform->SetLocalPosition(position);
 	}
 }
 
 glm::vec3 dae::GameObject::GetWorldPos() const
 {
-	if (auto* transform = GetComponent<TransformComponent>())
+	if (const auto* transform = GetComponent<TransformComponent>())
 	{
 		return transform->GetWorldPosition();
 	}
@@ -130,6 +158,8 @@ glm::vec3 dae::GameObject::GetWorldPos() const
 
 void dae::GameObject::SetDirtyWorldPosition()
 {
-	if (auto* t = GetComponent<TransformComponent>())
-		t->SetDirtyWorldPosition();
+	if (auto* transform = GetComponent<TransformComponent>())
+	{
+		transform->SetDirtyWorldPosition();
+	}
 }

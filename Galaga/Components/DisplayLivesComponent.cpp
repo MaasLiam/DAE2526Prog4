@@ -7,11 +7,10 @@
 galaga::DisplayLivesComponent::DisplayLivesComponent(dae::GameObject* owner, HealthComponent& targetHealth, std::string label)
 	: Component(owner)
 	, m_TargetHealth(&targetHealth)
+	, m_TextComponent(owner->GetComponent<dae::TextComponent>())
+	, m_TargetSubject(&targetHealth.GetSubject())
 	, m_Label(std::move(label))
 {
-
-	m_TextComponent = GetOwner()->GetComponent<dae::TextComponent>();
-	m_TargetSubject = &m_TargetHealth->GetSubject();
 	m_TargetSubject->AddObserver(this);
 	UpdateText();
 }
@@ -28,19 +27,23 @@ void galaga::DisplayLivesComponent::Notify(dae::Event event, dae::GameObject*)
 
 galaga::DisplayLivesComponent::~DisplayLivesComponent()
 {
-	if (m_TargetSubject)
+	if (m_TargetSubject == nullptr)
 	{
-		m_TargetSubject->RemoveObserver(this);
+		return;
 	}
+
+	m_TargetSubject->RemoveObserver(this);
 }
 
 void galaga::DisplayLivesComponent::OnSubjectDestroyed(dae::Subject* subject)
 {
-	if (subject == m_TargetSubject)
+	if (subject != m_TargetSubject)
 	{
-		m_TargetSubject = nullptr;
-		m_TargetHealth = nullptr;
+		return;
 	}
+
+	m_TargetSubject = nullptr;
+	m_TargetHealth = nullptr;
 }
 
 void galaga::DisplayLivesComponent::UpdateText()

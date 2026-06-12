@@ -5,11 +5,11 @@ namespace dae
 {
 	class TextComponent;
 	class GameObject;
+
 	class FPSComponent final : public Component
 	{
 	public:
-		FPSComponent(GameObject* parent); 
-		void Update(float deltaTime);
+		explicit FPSComponent(GameObject* parent);
 
 		~FPSComponent() override = default;
 
@@ -18,10 +18,13 @@ namespace dae
 		FPSComponent& operator=(const FPSComponent&) = delete;
 		FPSComponent& operator=(FPSComponent&&) = delete;
 
-		private:
-			TextComponent* m_pTextComponent{};
-			float m_AccumulatedTime{};
-			int m_FrameCount{};
-			const float m_UpdateInterval{};
+		void Update(float deltaTime) override;
+
+	private:
+		static constexpr float UpdateInterval{ 0.1f };
+
+		TextComponent* m_TextComponent{};
+		float m_AccumulatedTime{};
+		int m_FrameCount{};
 	};
 }

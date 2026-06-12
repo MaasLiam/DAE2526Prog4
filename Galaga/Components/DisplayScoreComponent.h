@@ -31,9 +31,9 @@ namespace galaga
 	private:
 		void UpdateText();
 
-		ScoreComponent* m_TargetScore{ nullptr };
-		dae::TextComponent* m_TextComponent{ nullptr };
-		std::string m_Label;
+		ScoreComponent* m_TargetScore{};
+		dae::TextComponent* m_TextComponent{};
 		dae::Subject* m_TargetSubject{};
+		std::string m_Label{};
 	};
 }

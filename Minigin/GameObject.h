@@ -1,17 +1,26 @@
 #pragma once
+
 #include "Component.h"
-#include <string>
+
+#include <algorithm>
 #include <memory>
 #include <vector>
+
 #include <glm/vec3.hpp>
-#include <algorithm>
 
 namespace dae
 {
-	class Texture2D;
 	class GameObject final
 	{
 	public:
+		GameObject() = default;
+		~GameObject() = default;
+
+		GameObject(const GameObject&) = delete;
+		GameObject(GameObject&&) = delete;
+		GameObject& operator=(const GameObject&) = delete;
+		GameObject& operator=(GameObject&&) = delete;
+
 		void Update(float deltaTime);
 		void Render() const;
 
@@ -20,20 +29,23 @@ namespace dae
 		{
 			auto component = std::make_unique<T>(this, std::forward<Args>(args)...);
 			auto& componentReference = *component;
+
 			m_Components.emplace_back(std::move(component));
+
 			return componentReference;
 		}
 
-		template<typename T>
+		template <typename T>
 		T* GetComponent() const
 		{
 			for (const auto& component : m_Components)
 			{
-				if (auto casted = dynamic_cast<T*>(component.get()))
+				if (auto* castedComponent = dynamic_cast<T*>(component.get()))
 				{
-					return casted;
+					return castedComponent;
 				}
 			}
+
 			return nullptr;
 		}
 
@@ -43,19 +55,18 @@ namespace dae
 			return GetComponent<T>() != nullptr;
 		}
 
-		template<typename T>
+		template <typename T>
 		void RemoveComponent()
 		{
 			if (auto* component = GetComponent<T>())
 			{
 				const auto alreadyMarkedForRemoval = std::find(m_ComponentsToRemove.begin(), m_ComponentsToRemove.end(), component) != m_ComponentsToRemove.end();
-
 				if (alreadyMarkedForRemoval)
 				{
 					return;
 				}
 
-				m_ComponentsToRemove.push_back(component);
+				m_ComponentsToRemove.emplace_back(component);
 			}
 		}
 
@@ -64,31 +75,21 @@ namespace dae
 
 		size_t GetChildCount() const;
 		GameObject* GetChildAt(size_t index) const;
+
 		glm::vec3 GetWorldPos() const;
 		void SetDirtyWorldPosition();
-		
-		
-		GameObject() = default;
-		~GameObject() = default;
-		GameObject(const GameObject& other) = delete;
-		GameObject(GameObject&& other) = delete;
-		GameObject& operator=(const GameObject& other) = delete;
-		GameObject& operator=(GameObject&& other) = delete;
-		
 
 	private:
+		std::unique_ptr<GameObject> AddChild(std::unique_ptr<GameObject> child);
+		std::unique_ptr<GameObject> RemoveChild(const GameObject* child);
+
+		bool IsChild(const GameObject* gameObject) const;
+		void SetLocalPosition(const glm::vec3& position);
+
 		std::vector<std::unique_ptr<Component>> m_Components{};
 		std::vector<Component*> m_ComponentsToRemove{};
 
-		GameObject* m_pParent{ nullptr };
+		GameObject* m_Parent{};
 		std::vector<std::unique_ptr<GameObject>> m_Children{};
-
-		std::unique_ptr<GameObject> AddChild(std::unique_ptr<GameObject> child);
-		std::unique_ptr<GameObject> RemoveChild(GameObject* child);
-		bool IsChild(GameObject* gameObject);
-		void SetLocalPosition(glm::vec3 pos);
-		
-		
-		
 	};
 }

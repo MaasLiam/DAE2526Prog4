@@ -1,33 +1,35 @@
 #include "FPSComponent.h"
-#include "TextComponent.h"
+
 #include "GameObject.h"
-//#include <format>
+#include "TextComponent.h"
+
+#include <string>
 
 dae::FPSComponent::FPSComponent(GameObject* parent)
 	: Component(parent)
-	, m_UpdateInterval(0.1f)
+	, m_TextComponent(parent->GetComponent<TextComponent>())
 {
+
 }
 
 void dae::FPSComponent::Update(float deltaTime)
 {
-    if (!m_pTextComponent)
-        m_pTextComponent = GetOwner()->GetComponent<TextComponent>();
+	if (m_TextComponent == nullptr || deltaTime <= 0.f)
+	{
+		return;
+	}
 
-    if (!m_pTextComponent)
-        return;
+	m_AccumulatedTime += deltaTime;
+	++m_FrameCount;
 
-    if (deltaTime <= 0.f)
-        return;
+	if (m_AccumulatedTime < UpdateInterval)
+	{
+		return;
+	}
 
-    m_AccumulatedTime += deltaTime;
-    ++m_FrameCount;
+	const float fps = static_cast<float>(m_FrameCount) / m_AccumulatedTime;
+	m_TextComponent->SetText(std::to_string(static_cast<int>(fps)) + " FPS");
 
-    if (m_AccumulatedTime >= m_UpdateInterval)
-    {
-        const float fps = static_cast<float>(m_FrameCount) / m_AccumulatedTime;
-        m_pTextComponent->SetText(std::to_string(static_cast<int>(fps)) + " FPS");
-        m_AccumulatedTime = 0.f;
-        m_FrameCount = 0;
-    }
+	m_AccumulatedTime = 0.f;
+	m_FrameCount = 0;
 }

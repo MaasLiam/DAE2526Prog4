@@ -1,77 +1,88 @@
-﻿#include <stdexcept>
-#include <SDL3_ttf/SDL_ttf.h>
-#include "TextComponent.h"
-#include "Renderer.h"
+﻿#include "TextComponent.h"
+
 #include "Font.h"
+#include "GameObject.h"
+#include "RenderComponent.h"
+#include "Renderer.h"
 #include "Texture2D.h"
 
-#include "GameObject.h"
-#include "TransformComponent.h"
-#include "RenderComponent.h"
+#include <stdexcept>
+
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_render.h>
+#include <SDL3_ttf/SDL_ttf.h>
 
 dae::TextComponent::TextComponent(GameObject* parent, std::string text, std::shared_ptr<Font> font, SDL_Color color)
-	:Component(parent), 
-	m_needsUpdate(true), 
-	m_text(text), 
-	m_color(color), 
-	m_font(std::move(font)), 
-	m_textTexture(nullptr)
-{ 
-}
-
+	: Component(parent)
+	, m_RenderComponent(parent->GetComponent<RenderComponent>())
+	, m_Text(std::move(text))
+	, m_Color(color)
+	, m_Font(std::move(font))
+{}
 
 void dae::TextComponent::Update(float)
 {
-	if (!m_needsUpdate)
+	if (!m_NeedsUpdate)
 	{
 		return;
 	}
 
-	auto* render = GetOwner()->GetComponent<RenderComponent>();
-	if (!render)
+	if (m_RenderComponent == nullptr)
 	{
 		return;
 	}
 
-	if (m_text.empty())
+	if (m_Text.empty())
 	{
-		m_textTexture.reset();
-		render->SetTexture(nullptr);
-		m_needsUpdate = false;
+		m_TextTexture.reset();
+		m_RenderComponent->SetTexture(nullptr);
+		m_NeedsUpdate = false;
 		return;
 	}
 
-	const auto surf = TTF_RenderText_Blended(m_font->GetFont(), m_text.c_str(), m_text.length(), m_color);
+	const auto surface = TTF_RenderText_Blended(
+		m_Font->GetFont(),
+		m_Text.c_str(),
+		m_Text.length(),
+		m_Color
+	);
 
-	if (surf == nullptr)
+	if (surface == nullptr)
 	{
 		throw std::runtime_error(std::string("Render text failed: ") + SDL_GetError());
 	}
 
-	auto texture = SDL_CreateTextureFromSurface(Renderer::GetInstance().GetSDLRenderer(), surf);
+	auto* texture = SDL_CreateTextureFromSurface(
+		Renderer::GetInstance().GetSDLRenderer(),
+		surface
+	);
 
-	SDL_DestroySurface(surf);
+	SDL_DestroySurface(surface);
 
 	if (texture == nullptr)
 	{
 		throw std::runtime_error(std::string("Create text texture from surface failed: ") + SDL_GetError());
 	}
 
-	m_textTexture = std::make_shared<Texture2D>(texture);
-	render->SetTexture(m_textTexture.get());
-	m_needsUpdate = false;
+	m_TextTexture = std::make_shared<Texture2D>(texture);
+	m_RenderComponent->SetTexture(m_TextTexture.get());
+
+	m_NeedsUpdate = false;
 }
 
 void dae::TextComponent::SetText(const std::string& text)
 {
-	m_text = text;
-	m_needsUpdate = true;
+	if (m_Text == text)
+	{
+		return;
+	}
+
+	m_Text = text;
+	m_NeedsUpdate = true;
 }
 
 void dae::TextComponent::SetColor(const SDL_Color& color)
-{ 
-	m_color = color; 
-	m_needsUpdate = true; 
+{
+	m_Color = color;
+	m_NeedsUpdate = true;
 }
-
-

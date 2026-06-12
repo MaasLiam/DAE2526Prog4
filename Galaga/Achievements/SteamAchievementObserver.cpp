@@ -4,14 +4,12 @@
 #include "GameObject.h"
 #include "Event.h"  
 
-using namespace dae;
-
-SteamAchievementObserver::SteamAchievementObserver(SteamAchievements& achievements)
+dae::SteamAchievementObserver::SteamAchievementObserver(SteamAchievements& achievements)
     : m_SteamAchievements{ achievements }
 {
 }
 
-void SteamAchievementObserver::Notify(Event event, GameObject* gameObject)
+void dae::SteamAchievementObserver::Notify(Event event, GameObject* gameObject)
 {
     if (event != Event::ScoreChanged)
         return;

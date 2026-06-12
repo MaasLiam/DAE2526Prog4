@@ -37,10 +37,19 @@ namespace
 	}
 }
 
-galaga::ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGameControllerComponent* gameController, ShootOwner owner, ControlContext controlContext)
+galaga::ShootCommand::ShootCommand(
+	dae::GameObject& shooter,
+	dae::Scene& scene,
+	GalagaGameControllerComponent* gameController,
+	ShootOwner owner,
+	ControlContext controlContext
+)
 	: m_Shooter(shooter)
 	, m_Scene(scene)
 	, m_GameController(gameController)
+	, m_MissileLimit(shooter.GetComponent<MissileLimitComponent>())
+	, m_ShooterTransform(shooter.GetComponent<dae::TransformComponent>())
+	, m_ScoreComponent(shooter.GetComponent<galaga::ScoreComponent>())
 	, m_Owner(owner)
 	, m_ControlContext(controlContext)
 {
@@ -49,65 +58,69 @@ galaga::ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, 
 
 void galaga::ShootCommand::Execute(float)
 {
-	if (m_GameController && m_GameController->GetState() != galaga::GameState::Playing)
+	if (!CanShootForCurrentState())
 	{
 		return;
 	}
 
-	if (m_GameController && !CanExecuteForContext(m_ControlContext, m_GameController->GetGameMode()))
-	{
-		return;
-	}
+	SpawnBullet();
 
-	if (m_GameController && m_Owner == ShootOwner::PlayerTwo && m_GameController->GetGameMode() == galaga::GameMode::Versus)
-	{
-		return;
-	}
+	m_MissileLimit->RegisterMissile();
 
-	if (m_GameController)
-	{
-		const galaga::PlayerIndex playerIndex = m_Owner == ShootOwner::PlayerOne ? galaga::PlayerIndex::PlayerOne : galaga::PlayerIndex::PlayerTwo;
-
-		if (!m_GameController->CanPlayerAct(playerIndex))
-		{
-			return;
-		}
-	}
-
-	auto* missileLimit = m_Shooter.GetComponent<MissileLimitComponent>();
-	if (!missileLimit || !missileLimit->CanShoot())
-	{
-		return;
-	}
-
-	auto* shooterTransform = m_Shooter.GetComponent<dae::TransformComponent>();
-	if (!shooterTransform)
-	{
-		return;
-	}
-
-	auto position = shooterTransform->GetLocalPosition();
-	auto bullet = std::make_unique<dae::GameObject>();
-	bullet->AddComponent<dae::TransformComponent>();
-	bullet->GetComponent<dae::TransformComponent>()->SetLocalPosition(position.x + galaga::gameplay::PlayerBulletSpawnOffsetX, position.y + galaga::gameplay::PlayerBulletSpawnOffsetY, 0.f);
-
-	bullet->AddComponent<dae::RenderComponent>("Sprites/BulletSprite.png");
-	bullet->AddComponent<CollisionComponent>(4.f, 12.f);
-	bullet->AddComponent<BulletComponent>(m_Scene, 400.f, missileLimit);
-
-	auto* scoreComponent = m_Shooter.GetComponent<galaga::ScoreComponent>();
-	if (scoreComponent)
-	{
-		bullet->AddComponent<BulletEnemyCollisionComponent>(m_Scene, *scoreComponent, m_GameController);
-	}
-
-	missileLimit->RegisterMissile();
-
-	if (m_GameController)
+	if (m_GameController != nullptr)
 	{
 		m_GameController->RegisterShotFired();
 	}
 
-	m_Scene.Add(std::move(bullet));
 	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::Shoot), 1.0f);
+}
+
+bool galaga::ShootCommand::CanShootForCurrentState() const
+{
+	if (m_GameController != nullptr && m_GameController->GetState() != galaga::GameState::Playing)
+	{
+		return false;
+	}
+
+	if (m_GameController != nullptr && !CanExecuteForContext(m_ControlContext, m_GameController->GetGameMode()))
+	{
+		return false;
+	}
+
+	if (m_GameController != nullptr && m_Owner == ShootOwner::PlayerTwo && m_GameController->GetGameMode() == galaga::GameMode::Versus)
+	{
+		return false;
+	}
+
+	if (m_GameController != nullptr)
+	{
+		const auto playerIndex = m_Owner == ShootOwner::PlayerOne ? galaga::PlayerIndex::PlayerOne : galaga::PlayerIndex::PlayerTwo;
+
+		if (!m_GameController->CanPlayerAct(playerIndex))
+		{
+			return false;
+		}
+	}
+
+	return m_MissileLimit != nullptr && m_MissileLimit->CanShoot() && m_ShooterTransform != nullptr;
+}
+
+void galaga::ShootCommand::SpawnBullet()
+{
+	const auto position = m_ShooterTransform->GetLocalPosition();
+
+	auto bullet = std::make_unique<dae::GameObject>();
+
+	auto& bulletTransform = bullet->AddComponent<dae::TransformComponent>();
+	bulletTransform.SetLocalPosition(position.x + galaga::gameplay::PlayerBulletSpawnOffsetX, position.y + galaga::gameplay::PlayerBulletSpawnOffsetY, 0.f);
+	bullet->AddComponent<dae::RenderComponent>("Sprites/BulletSprite.png");
+	bullet->AddComponent<CollisionComponent>(4.f, 12.f);
+	bullet->AddComponent<BulletComponent>(m_Scene, 400.f, m_MissileLimit);
+
+	if (m_ScoreComponent != nullptr)
+	{
+		bullet->AddComponent<BulletEnemyCollisionComponent>(m_Scene, *m_ScoreComponent, m_GameController);
+	}
+
+	m_Scene.Add(std::move(bullet));
 }

@@ -1,14 +1,24 @@
 #pragma once
+
 #include <memory>
-#include <string>
 #include <vector>
+
 #include "GameObject.h"
 
 namespace dae
 {
+
 	class Scene final
 	{
 	public:
+		Scene() = default;
+		~Scene() = default;
+
+		Scene(const Scene&) = delete;
+		Scene(Scene&&) = delete;
+		Scene& operator=(const Scene&) = delete;
+		Scene& operator=(Scene&&) = delete;
+
 		void Add(std::unique_ptr<GameObject> object);
 		void Remove(const GameObject& object);
 		void RemoveAll();
@@ -19,21 +29,14 @@ namespace dae
 		void LateUpdate();
 		void Render() const;
 
-		~Scene() = default;
-		Scene(const Scene& other) = delete;
-		Scene(Scene&& other) = delete;
-		Scene& operator=(const Scene& other) = delete;
-		Scene& operator=(Scene&& other) = delete;
-
 	private:
-		friend class SceneManager;
-		explicit Scene() = default;
+		void AddPendingObjects();
+		void RemovePendingObjects();
 
-		std::vector<std::unique_ptr<GameObject>> m_objects{};
-		std::vector<const GameObject*> m_objectsToRemove{};
-		std::vector<std::unique_ptr<GameObject>> m_objectsToAdd{};
+		std::vector<std::unique_ptr<GameObject>> m_Objects{};
+		std::vector<std::unique_ptr<GameObject>> m_ObjectsToAdd{};
+		std::vector<const GameObject*> m_ObjectsToRemove{};
 
 		bool m_IsUpdating{};
 	};
-
 }
