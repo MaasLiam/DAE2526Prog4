@@ -14,6 +14,9 @@
 #include "VersusBossComponent.h"
 #include "GameplayConstants.h"
 
+#include "ServiceLocator.h"
+#include "SoundIds.h"
+
 #include <string>
 
 galaga::GalagaGameControllerComponent::GalagaGameControllerComponent(
@@ -532,6 +535,7 @@ void galaga::GalagaGameControllerComponent::EnterHighScoreScreen()
 {
 	m_FinalScore = GetTotalScore();
 
+	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::GameOver), 1.0f);
 	galaga::LevelLoader::ClearStage(m_Scene);
 	HideGameplayObjects();
 

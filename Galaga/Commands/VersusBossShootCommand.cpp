@@ -12,6 +12,7 @@
 #include "TransformComponent.h"
 #include "ServiceLocator.h"
 #include "SoundIds.h"
+#include "GameplayConstants.h"
 
 galaga::VersusBossShootCommand::VersusBossShootCommand(dae::GameObject& boss, dae::GameObject& targetPlayer, dae::Scene& scene, GalagaGameControllerComponent& gameController)
 	: m_Boss(boss)
@@ -37,10 +38,10 @@ void galaga::VersusBossShootCommand::Execute(float)
 
 	auto bullet = std::make_unique<dae::GameObject>();
 	bullet->AddComponent<dae::TransformComponent>();
-	bullet->GetComponent<dae::TransformComponent>()->SetLocalPosition(bossPosition.x + 1.f, bossPosition.y + 32.f, 0.f);
+	bullet->GetComponent<dae::TransformComponent>()->SetLocalPosition(bossPosition.x + galaga::gameplay::EnemyBulletSpawnOffsetX, bossPosition.y + galaga::gameplay::EnemyBulletSpawnOffsetY, 0.f);
 
 	bullet->AddComponent<dae::RenderComponent>("Sprites/BulletSprite.png");
-	bullet->AddComponent<CollisionComponent>(8.f, 16.f);
+	bullet->AddComponent<CollisionComponent>(8.f, 16.f, galaga::gameplay::BulletHitboxOffsetX, galaga::gameplay::BulletHitboxOffsetY);
 
 	// Negative speed means BulletComponent moves downward because it does y -= speed * dt.
 	bullet->AddComponent<BulletComponent>(m_Scene, -260.f);

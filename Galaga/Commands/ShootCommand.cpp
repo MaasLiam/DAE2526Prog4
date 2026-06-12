@@ -15,13 +15,34 @@
 #include "SoundIds.h"
 #include "TransformComponent.h"
 #include "GalagaGameControllerComponent.h"
+#include "GameplayConstants.h"
 
+namespace
+{
+	bool CanExecuteForContext(galaga::ControlContext controlContext, galaga::GameMode gameMode)
+	{
+		switch (controlContext)
+		{
+		case galaga::ControlContext::Always:
+			return true;
 
-galaga::ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGameControllerComponent* gameController, ShootOwner owner)
+		case galaga::ControlContext::SinglePlayerOnly:
+			return gameMode == galaga::GameMode::SinglePlayer;
+
+		case galaga::ControlContext::MultiplayerOnly:
+			return gameMode != galaga::GameMode::SinglePlayer;
+		}
+
+		return false;
+	}
+}
+
+galaga::ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGameControllerComponent* gameController, ShootOwner owner, ControlContext controlContext)
 	: m_Shooter(shooter)
 	, m_Scene(scene)
 	, m_GameController(gameController)
 	, m_Owner(owner)
+	, m_ControlContext(controlContext)
 {
 
 }
@@ -29,6 +50,11 @@ galaga::ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, 
 void galaga::ShootCommand::Execute(float)
 {
 	if (m_GameController && m_GameController->GetState() != galaga::GameState::Playing)
+	{
+		return;
+	}
+
+	if (m_GameController && !CanExecuteForContext(m_ControlContext, m_GameController->GetGameMode()))
 	{
 		return;
 	}
@@ -63,7 +89,7 @@ void galaga::ShootCommand::Execute(float)
 	auto position = shooterTransform->GetLocalPosition();
 	auto bullet = std::make_unique<dae::GameObject>();
 	bullet->AddComponent<dae::TransformComponent>();
-	bullet->GetComponent<dae::TransformComponent>()->SetLocalPosition(position.x + 2.f, position.y - 10.f);
+	bullet->GetComponent<dae::TransformComponent>()->SetLocalPosition(position.x + galaga::gameplay::PlayerBulletSpawnOffsetX, position.y + galaga::gameplay::PlayerBulletSpawnOffsetY, 0.f);
 
 	bullet->AddComponent<dae::RenderComponent>("Sprites/BulletSprite.png");
 	bullet->AddComponent<CollisionComponent>(4.f, 12.f);
@@ -75,12 +101,13 @@ void galaga::ShootCommand::Execute(float)
 		bullet->AddComponent<BulletEnemyCollisionComponent>(m_Scene, *scoreComponent, m_GameController);
 	}
 
-	if (missileLimit)
+	missileLimit->RegisterMissile();
+
+	if (m_GameController)
 	{
-		missileLimit->RegisterMissile();
+		m_GameController->RegisterShotFired();
 	}
 
 	m_Scene.Add(std::move(bullet));
-
 	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::Shoot), 1.0f);
 }

@@ -2,6 +2,7 @@
 
 #include "Command.h"
 #include "GameObject.h"
+#include "ControlContext.h"
 
 namespace dae
 {
@@ -20,7 +21,7 @@ namespace galaga
 	class ShootCommand final : public dae::Command
 	{
 	public:
-		ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGameControllerComponent* gameController = nullptr, ShootOwner owner = ShootOwner::PlayerOne);
+		ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGameControllerComponent* gameController = nullptr, ShootOwner owner = ShootOwner::PlayerOne, ControlContext controlContext = ControlContext::Always);
 		void Execute(float deltaTime) override;
 
 	private:
@@ -28,5 +29,6 @@ namespace galaga
 		dae::Scene& m_Scene;
 		GalagaGameControllerComponent* m_GameController{};
 		ShootOwner m_Owner{ ShootOwner::PlayerOne };
+		ControlContext m_ControlContext{ ControlContext::Always };
 	};
 }

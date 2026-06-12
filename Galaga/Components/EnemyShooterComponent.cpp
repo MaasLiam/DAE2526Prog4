@@ -12,6 +12,7 @@
 #include "TransformComponent.h"
 #include "ServiceLocator.h"
 #include "SoundIds.h"
+#include "GameplayConstants.h"
 
 #include <memory>
 
@@ -19,8 +20,6 @@ namespace
 {
 	constexpr float ShootDelayDuringDive{ 0.45f };
 	constexpr float EnemyBulletSpeed{ -260.f };
-	constexpr float BulletOffsetX{ 14.f };
-	constexpr float BulletOffsetY{ 28.f };
 }
 
 galaga::EnemyShooterComponent::EnemyShooterComponent(dae::GameObject* owner, dae::Scene& scene, GalagaGameControllerComponent& gameController)
@@ -80,9 +79,9 @@ void galaga::EnemyShooterComponent::Shoot()
 
 	auto bullet = std::make_unique<dae::GameObject>();
 	bullet->AddComponent<dae::TransformComponent>();
-	bullet->GetComponent<dae::TransformComponent>()->SetLocalPosition(enemyPosition.x + BulletOffsetX, enemyPosition.y + BulletOffsetY, 0.f);
+	bullet->GetComponent<dae::TransformComponent>()->SetLocalPosition(enemyPosition.x + galaga::gameplay::EnemyBulletSpawnOffsetX, enemyPosition.y + galaga::gameplay::EnemyBulletSpawnOffsetY, 0.f);
 	bullet->AddComponent<dae::RenderComponent>("Sprites/BulletSprite.png");
-	bullet->AddComponent<CollisionComponent>(8.f, 16.f);
+	bullet->AddComponent<CollisionComponent>(8.f, 16.f, galaga::gameplay::BulletHitboxOffsetX, galaga::gameplay::BulletHitboxOffsetY);
 	bullet->AddComponent<BulletComponent>(m_Scene, EnemyBulletSpeed);
 	bullet->AddComponent<EnemyBulletCollisionComponent>(m_Scene, m_GameController);
 

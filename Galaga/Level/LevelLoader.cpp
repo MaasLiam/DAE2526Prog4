@@ -135,7 +135,7 @@ namespace
 			enemy->GetComponent<dae::TransformComponent>()->SetLocalPosition(spawnX, spawnY, 0.f);
 
 			enemy->AddComponent<dae::RenderComponent>(GetEnemyTexture(spawn.type));
-			enemy->AddComponent<galaga::CollisionComponent>(32.f, 32.f);
+			enemy->AddComponent<galaga::CollisionComponent>(32.f, 32.f, galaga::gameplay::EnemyHitboxOffsetX, galaga::gameplay::EnemyHitboxOffsetY);
 			enemy->AddComponent<galaga::EnemyComponent>(spawn.type);
 			enemy->AddComponent<galaga::EnemyShooterComponent>(scene, gameController);
 

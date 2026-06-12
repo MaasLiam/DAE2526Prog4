@@ -3,36 +3,29 @@
 #include "GameObject.h"
 #include "TransformComponent.h"
 
-galaga::CollisionComponent::CollisionComponent(dae::GameObject* owner, float width, float height)
+galaga::CollisionComponent::CollisionComponent(dae::GameObject* owner, float width, float height, float offsetX, float offsetY)
 	: dae::Component(owner)
 	, m_Width(width)
 	, m_Height(height)
+	, m_OffsetX(offsetX)
+	, m_OffsetY(offsetY)
+{}
+
+SDL_FRect galaga::CollisionComponent::GetBounds() const
 {
+	const auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
+	const auto position = transform->GetLocalPosition();
+
+	return SDL_FRect{ position.x + m_OffsetX, position.y + m_OffsetY, m_Width, m_Height };
 }
 
 bool galaga::CollisionComponent::Overlaps(const CollisionComponent& other) const
 {
-	auto* myTransform = GetOwner()->GetComponent<dae::TransformComponent>();
-	auto* otherTransform = other.GetOwner()->GetComponent<dae::TransformComponent>();
+	const SDL_FRect a = GetBounds();
+	const SDL_FRect b = other.GetBounds();
 
-	if (!myTransform || !otherTransform)
-		return false;
-
-	const auto myPos = myTransform->GetWorldPosition();
-	const auto otherPos = otherTransform->GetWorldPosition();
-
-	return myPos.x < otherPos.x + other.m_Width &&
-		myPos.x + m_Width > otherPos.x &&
-		myPos.y < otherPos.y + other.m_Height &&
-		myPos.y + m_Height > otherPos.y;
-}
-
-float galaga::CollisionComponent::GetWidth() const
-{
-	return m_Width;
-}
-
-float galaga::CollisionComponent::GetHeight() const
-{
-	return m_Height;
+	return a.x < b.x + b.w &&
+		a.x + a.w > b.x &&
+		a.y < b.y + b.h &&
+		a.y + a.h > b.y;
 }

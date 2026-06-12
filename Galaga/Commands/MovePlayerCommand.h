@@ -2,6 +2,7 @@
 
 #include "Command.h"
 #include "MoveObjectCommand.h"
+#include "ControlContext.h"
 
 namespace dae
 {
@@ -20,7 +21,7 @@ namespace galaga
 	class MovePlayerCommand final : public dae::Command
 	{
 	public:
-		MovePlayerCommand(dae::GameObject& object, dae::MoveDirection direction, float speed, GalagaGameControllerComponent& gameController, ControlledPlayer controlledPlayer);
+		MovePlayerCommand(dae::GameObject& object, dae::MoveDirection direction, float speed, GalagaGameControllerComponent& gameController, ControlledPlayer controlledPlayer, ControlContext controlContext = ControlContext::Always);
 
 		void Execute(float deltaTime) override;
 
@@ -30,5 +31,6 @@ namespace galaga
 		float m_Speed{};
 		GalagaGameControllerComponent& m_GameController;
 		ControlledPlayer m_ControlledPlayer{};
+		ControlContext m_ControlContext{ ControlContext::Always };
 	};
 }
