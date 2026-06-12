@@ -11,27 +11,32 @@ galaga::PlayerBulletCollisionComponent::PlayerBulletCollisionComponent(dae::Game
 	: dae::Component(owner)
 	, m_Scene(scene)
 	, m_Player(player)
+	, m_BulletCollision(owner->GetComponent<CollisionComponent>())
+	, m_PlayerCollision(player.GetComponent<CollisionComponent>())
+	, m_PlayerHealth(player.GetComponent<HealthComponent>())
 {
 
 }
 
 void galaga::PlayerBulletCollisionComponent::Update(float)
 {
-	auto* bulletCollision = GetOwner()->GetComponent<CollisionComponent>();
-	auto* playerCollision = m_Player.GetComponent<CollisionComponent>();
-	auto* playerHealth = m_Player.GetComponent<HealthComponent>();
-
-	if (!bulletCollision || !playerCollision || !playerHealth || playerHealth->IsDead())
+	if (m_BulletCollision == nullptr || m_PlayerCollision == nullptr || m_PlayerHealth == nullptr)
 	{
 		return;
 	}
 
-	if (!bulletCollision->Overlaps(*playerCollision))
+	if (m_PlayerHealth->IsDead())
 	{
 		return;
 	}
 
-	playerHealth->LoseLife();
+	if (!m_BulletCollision->Overlaps(*m_PlayerCollision))
+	{
+		return;
+	}
+
+	m_PlayerHealth->LoseLife();
 	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::PlayerHit), 1.0f);
+
 	m_Scene.Remove(*GetOwner());
 }

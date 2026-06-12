@@ -18,11 +18,7 @@ namespace dae
 		Observer& operator=(const Observer&) = delete;
 		Observer& operator=(Observer&&) = delete;
 
-		virtual void Notify(Event event, GameObject* gameObject) = 0;
-
-		virtual void OnSubjectDestroyed(Subject* subject)
-		{
-			(void)subject;
-		}
+		virtual void Notify(Event event, GameObject* sender) = 0;
+		virtual void OnSubjectDestroyed(Subject* subject);
 	};
 }

@@ -4,24 +4,28 @@
 
 namespace galaga
 {
-    class MissileLimitComponent final : public dae::Component
-    {
-    public:
-        explicit MissileLimitComponent(dae::GameObject* owner);
+	class MissileLimitComponent final : public dae::Component
+	{
+	public:
+		explicit MissileLimitComponent(dae::GameObject* owner);
 
-        ~MissileLimitComponent() override = default;
+		~MissileLimitComponent() override = default;
 
-        MissileLimitComponent(const MissileLimitComponent&) = delete;
-        MissileLimitComponent(MissileLimitComponent&&) = delete;
-        MissileLimitComponent& operator=(const MissileLimitComponent&) = delete;
-        MissileLimitComponent& operator=(MissileLimitComponent&&) = delete;
+		MissileLimitComponent(const MissileLimitComponent&) = delete;
+		MissileLimitComponent(MissileLimitComponent&&) = delete;
+		MissileLimitComponent& operator=(const MissileLimitComponent&) = delete;
+		MissileLimitComponent& operator=(MissileLimitComponent&&) = delete;
 
-        bool CanShoot() const;
-        void RegisterMissile();
-        void UnregisterMissile();
+		[[nodiscard]] bool CanShoot() const;
+		[[nodiscard]] int GetActiveMissileCount() const;
 
-    private:
-        int m_ActiveMissiles{};
-        static constexpr int MaxMissiles{ 2 };
-    };
+		void RegisterMissile();
+		void UnregisterMissile();
+		void Reset();
+
+	private:
+		static constexpr int MaxMissileCount{ 2 };
+
+		int m_ActiveMissileCount{};
+	};
 }

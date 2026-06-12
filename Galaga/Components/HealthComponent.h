@@ -1,6 +1,6 @@
 #pragma once
+
 #include "Component.h"
-#include <memory>
 #include "Subject.h"
 
 namespace galaga
@@ -8,7 +8,7 @@ namespace galaga
 	class HealthComponent final : public dae::Component
 	{
 	public:
-		HealthComponent(dae::GameObject* parent, int startLives = 3);
+		HealthComponent(dae::GameObject* owner, int startLives = 3);
 
 		~HealthComponent() override = default;
 
@@ -19,13 +19,15 @@ namespace galaga
 
 		void LoseLife();
 		void Reset(int lives);
-		int GetLives() const;
-		bool IsDead() const;
 
-		dae::Subject& GetSubject();
+		[[nodiscard]] int GetLives() const;
+		[[nodiscard]] bool IsDead() const;
+
+		[[nodiscard]] dae::Subject& GetSubject();
+
 	private:
-		int m_Lives;
-		bool m_IsDead{ false };
+		int m_Lives{};
+		bool m_IsDead{};
 		dae::Subject m_Subject{};
 	};
 }

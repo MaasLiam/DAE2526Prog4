@@ -3,20 +3,27 @@
 #include "GameObject.h"
 #include "TransformComponent.h"
 
-galaga::CollisionComponent::CollisionComponent(dae::GameObject* owner, float width, float height, float offsetX, float offsetY)
+galaga::CollisionComponent::CollisionComponent(dae::GameObject* owner,float width, float height, float offsetX, float offsetY)
 	: dae::Component(owner)
+	, m_Transform(owner->GetComponent<dae::TransformComponent>())
 	, m_Width(width)
 	, m_Height(height)
 	, m_OffsetX(offsetX)
 	, m_OffsetY(offsetY)
-{}
+{
+
+}
 
 SDL_FRect galaga::CollisionComponent::GetBounds() const
 {
-	const auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
-	const auto position = transform->GetLocalPosition();
+	if (m_Transform == nullptr)
+	{
+		return SDL_FRect{ 0.f, 0.f, 0.f, 0.f };
+	}
 
-	return SDL_FRect{ position.x + m_OffsetX, position.y + m_OffsetY, m_Width, m_Height };
+	const auto position = m_Transform->GetLocalPosition();
+
+	return SDL_FRect{position.x + m_OffsetX, position.y + m_OffsetY, m_Width, m_Height};
 }
 
 bool galaga::CollisionComponent::Overlaps(const CollisionComponent& other) const

@@ -89,6 +89,7 @@ namespace galaga
 		bool IsPlayerActive(galaga::PlayerIndex playerIndex) const;
 		bool IsPlayerAlive(galaga::PlayerIndex playerIndex) const;
 		bool CanPlayerAct(galaga::PlayerIndex playerIndex) const;
+		void RespawnPlayer(galaga::PlayerIndex playerIndex);
 
 		dae::GameObject* GetPlayer(galaga::PlayerIndex playerIndex) const;
 

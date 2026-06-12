@@ -2,82 +2,115 @@
 
 #include "CollisionComponent.h"
 #include "EnemyComponent.h"
-#include "GalagaGameControllerComponent.h"
-#include "GameMode.h"
 #include "GameObject.h"
 #include "HealthComponent.h"
 #include "Scene.h"
 #include "ServiceLocator.h"
 #include "SoundIds.h"
 
+#include <algorithm>
+
 galaga::EnemyPlayerCollisionComponent::EnemyPlayerCollisionComponent(dae::GameObject* owner, dae::Scene& scene, GalagaGameControllerComponent& gameController)
-    : dae::Component(owner)
-    , m_Scene(scene)
-    , m_GameController(gameController)
+	: dae::Component(owner)
+	, m_Scene(scene)
+	, m_GameController(gameController)
 {
 
 }
 
 void galaga::EnemyPlayerCollisionComponent::AddPlayer(dae::GameObject* player)
 {
-    if (player)
-    {
-        m_Players.push_back(player);
-    }
+	if (player == nullptr)
+	{
+		return;
+	}
+
+	const auto isAlreadyRegistered = std::find(m_Players.begin(), m_Players.end(), player) != m_Players.end();
+
+	if (isAlreadyRegistered)
+	{
+		return;
+	}
+
+	m_Players.emplace_back(player);
 }
 
 void galaga::EnemyPlayerCollisionComponent::Update(float)
 {
-    for (const auto& object : m_Scene.GetObjects())
-    {
-        auto* enemy = object->GetComponent<EnemyComponent>();
-        auto* enemyCollision = object->GetComponent<CollisionComponent>();
+	for (const auto& object : m_Scene.GetObjects())
+	{
+		if (object == nullptr)
+		{
+			continue;
+		}
 
-        if (!enemy || !enemyCollision || enemy->IsDead())
-        {
-            continue;
-        }
+		if (TryHandleEnemyCollision(*object))
+		{
+			return;
+		}
+	}
+}
 
-        for (size_t playerIndex{}; playerIndex < m_Players.size(); ++playerIndex)
-        {
-            auto* player = m_Players[playerIndex];
+bool galaga::EnemyPlayerCollisionComponent::TryHandleEnemyCollision(dae::GameObject& object)
+{
+	auto* enemy = object.GetComponent<EnemyComponent>();
+	auto* enemyCollision = object.GetComponent<CollisionComponent>();
 
-            if (!player)
-            {
-                continue;
-            }
+	if (enemy == nullptr || enemyCollision == nullptr || enemy->IsDead())
+	{
+		return false;
+	}
 
-            const galaga::PlayerIndex activePlayerIndex = playerIndex == 0 ? galaga::PlayerIndex::PlayerOne : galaga::PlayerIndex::PlayerTwo;
+	for (size_t playerIndex{}; playerIndex < m_Players.size(); ++playerIndex)
+	{
+		auto* player = m_Players[playerIndex];
 
-            if (!m_GameController.IsPlayerActive(activePlayerIndex))
-            {
-                continue;
-            }
+		if (player == nullptr)
+		{
+			continue;
+		}
 
-            auto* playerCollision = player->GetComponent<CollisionComponent>();
-            auto* playerHealth = player->GetComponent<HealthComponent>();
+		const auto activePlayerIndex = playerIndex == 0 ? galaga::PlayerIndex::PlayerOne : galaga::PlayerIndex::PlayerTwo;
 
-            if (!playerCollision || !playerHealth || playerHealth->IsDead())
-            {
-                continue;
-            }
+		if (TryHandlePlayerCollision(*enemy, *enemyCollision, *player, activePlayerIndex, object))
+		{
+			return true;
+		}
+	}
 
-            if (!enemyCollision->Overlaps(*playerCollision))
-            {
-                continue;
-            }
+	return false;
+}
 
-            playerHealth->LoseLife();
-            dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::PlayerHit), 1.0f);
+bool galaga::EnemyPlayerCollisionComponent::TryHandlePlayerCollision(EnemyComponent& enemy, CollisionComponent& enemyCollision, dae::GameObject& player, PlayerIndex playerIndex, dae::GameObject& enemyObject)
+{
+	if (!m_GameController.IsPlayerActive(playerIndex))
+	{
+		return false;
+	}
 
-            enemy->TakeDamage();
+	auto* playerCollision = player.GetComponent<CollisionComponent>();
+	auto* playerHealth = player.GetComponent<HealthComponent>();
 
-            if (enemy->IsDead())
-            {
-                m_Scene.Remove(*object);
-            }
+	if (playerCollision == nullptr || playerHealth == nullptr || playerHealth->IsDead())
+	{
+		return false;
+	}
 
-            return;
-        }
-    }
+	if (!enemyCollision.Overlaps(*playerCollision))
+	{
+		return false;
+	}
+
+	playerHealth->LoseLife();
+	m_GameController.RespawnPlayer(playerIndex);
+	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::PlayerHit), 1.0f);
+
+	enemy.TakeDamage();
+
+	if (enemy.IsDead())
+	{
+		m_Scene.Remove(enemyObject);
+	}
+
+	return true;
 }

@@ -1,19 +1,15 @@
 #pragma once
+
 #include "Component.h"
-#include "Subject.h"
 #include "Observer.h"
+#include "Subject.h"
 
 namespace galaga
 {
 	class ScoreComponent final : public dae::Component, public dae::Observer
 	{
 	public:
-		ScoreComponent(dae::GameObject* owner);
-		void Notify(dae::Event event, dae::GameObject* gameObject) override;
-		void AddScore(int score);
-		void Reset();
-		int GetScore() const;
-		dae::Subject& GetSubject();
+		explicit ScoreComponent(dae::GameObject* owner);
 
 		~ScoreComponent() override = default;
 
@@ -22,8 +18,16 @@ namespace galaga
 		ScoreComponent& operator=(const ScoreComponent&) = delete;
 		ScoreComponent& operator=(ScoreComponent&&) = delete;
 
+		void Notify(dae::Event event, dae::GameObject* sender) override;
+
+		void AddScore(int score);
+		void Reset();
+
+		[[nodiscard]] int GetScore() const;
+		[[nodiscard]] dae::Subject& GetSubject();
+
 	private:
-		int m_Score{ 0 };
+		int m_Score{};
 		dae::Subject m_Subject{};
 	};
 }

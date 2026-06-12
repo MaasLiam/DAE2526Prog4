@@ -26,6 +26,11 @@ namespace galaga
 		void Update(float deltaTime) override;
 
 	private:
+		static constexpr float MinimumYPosition{ -32.f };
+		static constexpr float MaximumYPosition{ 640.f };
+
+		[[nodiscard]] bool IsOutOfBounds(float yPosition) const;
+
 		dae::Scene& m_Scene;
 		dae::TransformComponent* m_Transform{};
 		MissileLimitComponent* m_MissileLimit{};

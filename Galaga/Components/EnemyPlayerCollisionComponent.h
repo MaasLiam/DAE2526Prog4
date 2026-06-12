@@ -1,36 +1,42 @@
 #pragma once
 
 #include "Component.h"
+#include "GalagaGameControllerComponent.h"
+
 #include <vector>
 
 namespace dae
 {
-    class GameObject;
-    class Scene;
+	class GameObject;
+	class Scene;
 }
 
 namespace galaga
 {
-    class GalagaGameControllerComponent;
-    class EnemyPlayerCollisionComponent final : public dae::Component
-    {
-    public:
-        EnemyPlayerCollisionComponent(dae::GameObject* owner, dae::Scene& scene, GalagaGameControllerComponent& gameController);
+	class CollisionComponent;
+	class EnemyComponent;
+	class HealthComponent;
 
-        void Update(float deltaTime) override;
+	class EnemyPlayerCollisionComponent final : public dae::Component
+	{
+	public:
+		EnemyPlayerCollisionComponent(dae::GameObject* owner, dae::Scene& scene, GalagaGameControllerComponent& gameController);
+		~EnemyPlayerCollisionComponent() override = default;
 
-        void AddPlayer(dae::GameObject* player);
+		EnemyPlayerCollisionComponent(const EnemyPlayerCollisionComponent&) = delete;
+		EnemyPlayerCollisionComponent(EnemyPlayerCollisionComponent&&) = delete;
+		EnemyPlayerCollisionComponent& operator=(const EnemyPlayerCollisionComponent&) = delete;
+		EnemyPlayerCollisionComponent& operator=(EnemyPlayerCollisionComponent&&) = delete;
 
-        ~EnemyPlayerCollisionComponent() override = default;
+		void Update(float deltaTime) override;
 
-        EnemyPlayerCollisionComponent(const EnemyPlayerCollisionComponent&) = delete;
-        EnemyPlayerCollisionComponent(EnemyPlayerCollisionComponent&&) = delete;
-        EnemyPlayerCollisionComponent& operator=(const EnemyPlayerCollisionComponent&) = delete;
-        EnemyPlayerCollisionComponent& operator=(EnemyPlayerCollisionComponent&&) = delete;
+		void AddPlayer(dae::GameObject* player);
 
-    private:
-        dae::Scene& m_Scene;
-        std::vector<dae::GameObject*> m_Players;
-        GalagaGameControllerComponent& m_GameController;
-    };
+	private:
+		bool TryHandleEnemyCollision(dae::GameObject& object);
+		bool TryHandlePlayerCollision(EnemyComponent& enemy, CollisionComponent& enemyCollision, dae::GameObject& player, PlayerIndex playerIndex, dae::GameObject& enemyObject);
+		dae::Scene& m_Scene;
+		GalagaGameControllerComponent& m_GameController;
+		std::vector<dae::GameObject*> m_Players{};
+	};
 }

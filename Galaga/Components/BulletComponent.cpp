@@ -1,9 +1,9 @@
 #include "BulletComponent.h"
 
 #include "GameObject.h"
-#include "TransformComponent.h"
-#include "Scene.h"
 #include "MissileLimitComponent.h"
+#include "Scene.h"
+#include "TransformComponent.h"
 
 galaga::BulletComponent::BulletComponent(dae::GameObject* owner, dae::Scene& scene, float speed, MissileLimitComponent* missileLimit)
 	: dae::Component(owner)
@@ -17,10 +17,12 @@ galaga::BulletComponent::BulletComponent(dae::GameObject* owner, dae::Scene& sce
 
 galaga::BulletComponent::~BulletComponent()
 {
-	if (m_MissileLimit)
+	if (m_MissileLimit == nullptr)
 	{
-		m_MissileLimit->UnregisterMissile();
+		return;
 	}
+
+	m_MissileLimit->UnregisterMissile();
 }
 
 void galaga::BulletComponent::Update(float deltaTime)
@@ -35,8 +37,13 @@ void galaga::BulletComponent::Update(float deltaTime)
 	position.y -= m_Speed * deltaTime;
 	m_Transform->SetLocalPosition(position);
 
-	if (position.y < -32.f || position.y > 640.f)
+	if (IsOutOfBounds(position.y))
 	{
 		m_Scene.Remove(*GetOwner());
 	}
+}
+
+bool galaga::BulletComponent::IsOutOfBounds(float yPosition) const
+{
+	return yPosition < MinimumYPosition || yPosition > MaximumYPosition;
 }

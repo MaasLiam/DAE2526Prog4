@@ -823,6 +823,38 @@ bool galaga::GalagaGameControllerComponent::CanPlayerAct(galaga::PlayerIndex pla
 	return m_State == galaga::GameState::Playing && IsPlayerActive(playerIndex) && IsPlayerAlive(playerIndex);
 }
 
+void galaga::GalagaGameControllerComponent::RespawnPlayer(galaga::PlayerIndex playerIndex)
+{
+	const auto index = static_cast<size_t>(playerIndex);
+
+	if (index >= m_Players.size() || m_Players[index] == nullptr)
+	{
+		return;
+	}
+
+	if (!IsPlayerActive(playerIndex) || !IsPlayerAlive(playerIndex))
+	{
+		return;
+	}
+
+	auto* transform = m_Players[index]->GetComponent<dae::TransformComponent>();
+
+	if (transform == nullptr)
+	{
+		return;
+	}
+
+	const auto startPosition = playerIndex == galaga::PlayerIndex::PlayerOne ? galaga::gameplay::PlayerOneStartPosition : galaga::gameplay::PlayerTwoStartPosition;
+
+	if (m_GameMode == galaga::GameMode::Versus && playerIndex == galaga::PlayerIndex::PlayerTwo)
+	{
+		transform->SetLocalPosition(galaga::gameplay::VersusBossStartPosition);
+		return;
+	}
+
+	transform->SetLocalPosition(startPosition);
+}
+
 dae::GameObject* galaga::GalagaGameControllerComponent::GetPlayer(galaga::PlayerIndex playerIndex) const
 {
 	const auto index = static_cast<size_t>(playerIndex);

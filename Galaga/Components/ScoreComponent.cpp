@@ -1,5 +1,7 @@
 #include "ScoreComponent.h"
+
 #include "Event.h"
+#include "GameObject.h"
 
 galaga::ScoreComponent::ScoreComponent(dae::GameObject* owner)
 	: Component(owner)
@@ -7,14 +9,21 @@ galaga::ScoreComponent::ScoreComponent(dae::GameObject* owner)
 
 void galaga::ScoreComponent::Notify(dae::Event event, dae::GameObject*)
 {
-	if (event == dae::Event::EnemyKilled)
+	if (event != dae::Event::EnemyKilled)
 	{
-		AddScore(100);
+		return;
 	}
+
+	AddScore(100);
 }
 
 void galaga::ScoreComponent::AddScore(int score)
 {
+	if (score <= 0)
+	{
+		return;
+	}
+
 	m_Score += score;
 	m_Subject.Notify(dae::Event::ScoreChanged, GetOwner());
 }
