@@ -112,13 +112,20 @@ bool dae::GameObject::IsChild(GameObject* gameObject)
 
 void dae::GameObject::SetLocalPosition(glm::vec3 pos)
 {
-	TransformComponent* transform = GetComponent<TransformComponent>();
-	transform->SetLocalPosition(pos);
+	if (auto* transform = GetComponent<TransformComponent>())
+	{
+		transform->SetLocalPosition(pos);
+	}
 }
 
 glm::vec3 dae::GameObject::GetWorldPos() const
 {
-	return GetComponent<TransformComponent>()->GetWorldPosition();
+	if (auto* transform = GetComponent<TransformComponent>())
+	{
+		return transform->GetWorldPosition();
+	}
+
+	return {};
 }
 
 void dae::GameObject::SetDirtyWorldPosition()

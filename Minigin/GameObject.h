@@ -1,9 +1,10 @@
 #pragma once
+#include "Component.h"
 #include <string>
 #include <memory>
-#include "Component.h"
 #include <vector>
 #include <glm/vec3.hpp>
+#include <algorithm>
 
 namespace dae
 {
@@ -45,9 +46,15 @@ namespace dae
 		template<typename T>
 		void RemoveComponent()
 		{
-			//mark for removal
 			if (auto* component = GetComponent<T>())
 			{
+				const auto alreadyMarkedForRemoval = std::find(m_ComponentsToRemove.begin(), m_ComponentsToRemove.end(), component) != m_ComponentsToRemove.end();
+
+				if (alreadyMarkedForRemoval)
+				{
+					return;
+				}
+
 				m_ComponentsToRemove.push_back(component);
 			}
 		}

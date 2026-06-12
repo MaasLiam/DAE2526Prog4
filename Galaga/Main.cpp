@@ -7,7 +7,6 @@
 
 #include "Minigin.h"
 #include "Galaga.h"
-#include "ThrashTheCache.h"
 
 #include "ServiceLocator.h"
 #include "SDLSoundSystem.h"

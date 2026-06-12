@@ -46,7 +46,6 @@ add_library(${ENGINE_TARGET} STATIC
 add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Galaga/Main.cpp
   Galaga/Galaga.cpp
-  Galaga/ThrashTheCache.cpp 
 
   Galaga/Components/HealthComponent.cpp
   Galaga/Components/DisplayLivesComponent.cpp
@@ -195,7 +194,6 @@ add_library(imgui STATIC
   ${imgui_SOURCE_DIR}/imgui_draw.cpp
   ${imgui_SOURCE_DIR}/imgui_tables.cpp
   ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-  ${imgui_SOURCE_DIR}/imgui_demo.cpp
   ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
   ${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer3.cpp
 )
@@ -251,7 +249,6 @@ target_include_directories(${ENGINE_TARGET} PUBLIC
   ${CMAKE_SOURCE_DIR}/Minigin/
   ${glm_SOURCE_DIR}
   ${sdl3_SOURCE_DIR}/include
-  ${sdl3_image_SOURCE_DIR}/include
   ${sdl3_ttf_SOURCE_DIR}/include
   ${imgui_SOURCE_DIR}
   ${VLD_INCLUDE_DIR}
@@ -370,7 +367,7 @@ elseif(APPLE)
   if(Steamworks_FOUND)
     target_link_libraries("${TARGET_NAME}" PUBLIC Steamworks::Steamworks)
     target_compile_definitions(${TARGET_NAME} PRIVATE USE_STEAMWORKS)
-    add_custom_command(TARGET ${TARGET_NAME} POST_BUIL D
+    add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
       COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${Steamworks_LIBRARIES}" "$<TARGET_BUNDLE_DIR:${TARGET_NAME}>/Contents/Frameworks/"
     )
     add_custom_command(TARGET ${TARGET_NAME} POST_BUILD

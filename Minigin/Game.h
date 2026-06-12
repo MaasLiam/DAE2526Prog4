@@ -3,9 +3,15 @@
 class Game
 {
 public:
-    virtual ~Game() = default;
+	Game() = default;
+	virtual ~Game() = default;
 
-    virtual void Initialize() = 0;
-    virtual void Update(float) {}
-    virtual void Render() {}
+	Game(const Game&) = delete;
+	Game(Game&&) = delete;
+	Game& operator=(const Game&) = delete;
+	Game& operator=(Game&&) = delete;
+
+	virtual void Initialize() = 0;
+	virtual void Update(float) {}
+	virtual void Render() {}
 };

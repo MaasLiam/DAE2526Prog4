@@ -11,7 +11,13 @@ namespace dae
 	class InputDevice
 	{
 	public:
+		InputDevice() = default;
 		virtual ~InputDevice() = default;
+
+		InputDevice(const InputDevice&) = delete;
+		InputDevice(InputDevice&&) = delete;
+		InputDevice& operator=(const InputDevice&) = delete;
+		InputDevice& operator=(InputDevice&&) = delete;
 
 		void AddBinding(std::unique_ptr<Command> command, InputKey key, InputState state)
 		{

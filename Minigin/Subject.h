@@ -8,7 +8,13 @@ namespace dae
 	class Subject
 	{
 	public:
+		Subject() = default;
 		~Subject();
+
+		Subject(const Subject&) = delete;
+		Subject(Subject&&) = delete;
+		Subject& operator=(const Subject&) = delete;
+		Subject& operator=(Subject&&) = delete;
 
 		void AddObserver(class Observer* observer);
 		void RemoveObserver(class Observer* observer);
