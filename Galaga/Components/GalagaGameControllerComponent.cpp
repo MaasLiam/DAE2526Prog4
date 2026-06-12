@@ -92,7 +92,7 @@ void GalagaGameControllerComponent::Update(float deltaTime)
 			return;
 		}
 
-		if (m_StageIndex >= m_MaxStageIndex)
+		if (m_StageIndex >= MaxStageIndex)
 		{
 			EnterHighScoreScreen();
 			return;
@@ -201,7 +201,7 @@ void GalagaGameControllerComponent::SkipStage()
 		return;
 	}
 
-	if (m_StageIndex >= m_MaxStageIndex)
+	if (m_StageIndex >= MaxStageIndex)
 	{
 		EnterHighScoreScreen();
 		return;
@@ -802,24 +802,24 @@ void GalagaGameControllerComponent::SetVersusWinner(int playerIndex)
 	EnterHighScoreScreen();
 }
 
-bool GalagaGameControllerComponent::IsPlayerActive(PlayerIndex playerIndex) const
+bool GalagaGameControllerComponent::IsPlayerActive(galaga::PlayerIndex playerIndex) const
 {
 	switch (m_GameMode)
 	{
 	case galaga::GameMode::SinglePlayer:
-		return playerIndex == PlayerIndex::PlayerOne;
+		return playerIndex == galaga::PlayerIndex::PlayerOne;
 
 	case galaga::GameMode::Coop:
-		return playerIndex == PlayerIndex::PlayerOne || playerIndex == PlayerIndex::PlayerTwo;
+		return playerIndex == galaga::PlayerIndex::PlayerOne || playerIndex == galaga::PlayerIndex::PlayerTwo;
 
 	case galaga::GameMode::Versus:
-		return playerIndex == PlayerIndex::PlayerOne;
+		return playerIndex == galaga::PlayerIndex::PlayerOne;
 	}
 
 	return false;
 }
 
-bool GalagaGameControllerComponent::IsPlayerAlive(PlayerIndex playerIndex) const
+bool GalagaGameControllerComponent::IsPlayerAlive(galaga::PlayerIndex playerIndex) const
 {
 	const auto index = static_cast<size_t>(playerIndex);
 
@@ -832,12 +832,12 @@ bool GalagaGameControllerComponent::IsPlayerAlive(PlayerIndex playerIndex) const
 	return health && !health->IsDead();
 }
 
-bool GalagaGameControllerComponent::CanPlayerAct(PlayerIndex playerIndex) const
+bool GalagaGameControllerComponent::CanPlayerAct(galaga::PlayerIndex playerIndex) const
 {
 	return m_State == galaga::GameState::Playing && IsPlayerActive(playerIndex) && IsPlayerAlive(playerIndex);
 }
 
-dae::GameObject* GalagaGameControllerComponent::GetPlayer(PlayerIndex playerIndex) const
+dae::GameObject* GalagaGameControllerComponent::GetPlayer(galaga::PlayerIndex playerIndex) const
 {
 	const auto index = static_cast<size_t>(playerIndex);
 

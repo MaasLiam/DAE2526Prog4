@@ -17,7 +17,7 @@ public:
 	void Update(float deltaTime) override;
 
 private:
-	bool TryHitPlayer(PlayerIndex playerIndex);
+	bool TryHitPlayer(galaga::PlayerIndex playerIndex);
 
 	dae::Scene& m_Scene;
 	GalagaGameControllerComponent& m_GameController;

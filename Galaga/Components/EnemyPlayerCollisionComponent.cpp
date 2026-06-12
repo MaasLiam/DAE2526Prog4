@@ -47,7 +47,7 @@ void EnemyPlayerCollisionComponent::Update(float)
                 continue;
             }
 
-            const PlayerIndex activePlayerIndex = playerIndex == 0 ? PlayerIndex::PlayerOne : PlayerIndex::PlayerTwo;
+            const galaga::PlayerIndex activePlayerIndex = playerIndex == 0 ? galaga::PlayerIndex::PlayerOne : galaga::PlayerIndex::PlayerTwo;
 
             if (!m_GameController.IsPlayerActive(activePlayerIndex))
             {

@@ -21,8 +21,8 @@ private:
 	void CreateBeamVisual();
 	void RemoveBeamVisual();
 	void UpdateBeamVisualPosition();
-	bool TryCapturePlayer(PlayerIndex playerIndex);
-	void SpawnCapturedFighter(PlayerIndex playerIndex);
+	bool TryCapturePlayer(galaga::PlayerIndex playerIndex);
+	void SpawnCapturedFighter(galaga::PlayerIndex playerIndex);
 
 	dae::Scene& m_Scene;
 	GalagaGameControllerComponent& m_GameController;

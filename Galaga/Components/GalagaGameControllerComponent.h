@@ -18,11 +18,14 @@ namespace dae
 	class TransformComponent;
 }
 
-enum class PlayerIndex
+namespace galaga
 {
-	PlayerOne = 0,
-	PlayerTwo = 1
-};
+	enum class PlayerIndex
+	{
+		PlayerOne = 0,
+		PlayerTwo = 1
+	};
+}
 
 class GalagaGameControllerComponent final : public dae::Component
 {
@@ -72,11 +75,11 @@ public:
 	galaga::GameMode GetGameMode() const;
 	void SetVersusWinner(int playerIndex);
 
-	bool IsPlayerActive(PlayerIndex playerIndex) const;
-	bool IsPlayerAlive(PlayerIndex playerIndex) const;
-	bool CanPlayerAct(PlayerIndex playerIndex) const;
+	bool IsPlayerActive(galaga::PlayerIndex playerIndex) const;
+	bool IsPlayerAlive(galaga::PlayerIndex playerIndex) const;
+	bool CanPlayerAct(galaga::PlayerIndex playerIndex) const;
 
-	dae::GameObject* GetPlayer(PlayerIndex playerIndex) const;
+	dae::GameObject* GetPlayer(galaga::PlayerIndex playerIndex) const;
 
 private:
 	struct GameplayObject
@@ -139,7 +142,7 @@ private:
 	std::array<char, 3> m_Initials{ 'A', 'A', 'A' };
 	int m_SelectedInitialIndex{};
 
-	static constexpr int m_MaxStageIndex{ 3 };
+	static constexpr int MaxStageIndex{ 3 };
 	galaga::GameMode m_GameMode{ galaga::GameMode::SinglePlayer };
 	int m_SelectedGameModeIndex{};
 	std::string m_ResultMessage{};

@@ -17,7 +17,7 @@ MovePlayerCommand::MovePlayerCommand(dae::GameObject& object, dae::MoveDirection
 
 void MovePlayerCommand::Execute(float deltaTime)
 {
-	const PlayerIndex playerIndex = m_ControlledPlayer == ControlledPlayer::PlayerOne ? PlayerIndex::PlayerOne : PlayerIndex::PlayerTwo;
+	const galaga::PlayerIndex playerIndex = m_ControlledPlayer == ControlledPlayer::PlayerOne ? galaga::PlayerIndex::PlayerOne : galaga::PlayerIndex::PlayerTwo;
 
 	if (!m_GameController.CanPlayerAct(playerIndex))
 	{

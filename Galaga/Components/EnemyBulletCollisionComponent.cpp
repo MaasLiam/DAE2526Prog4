@@ -21,15 +21,15 @@ EnemyBulletCollisionComponent::EnemyBulletCollisionComponent(
 
 void EnemyBulletCollisionComponent::Update(float)
 {
-	if (TryHitPlayer(PlayerIndex::PlayerOne))
+	if (TryHitPlayer(galaga::PlayerIndex::PlayerOne))
 	{
 		return;
 	}
 
-	TryHitPlayer(PlayerIndex::PlayerTwo);
+	TryHitPlayer(galaga::PlayerIndex::PlayerTwo);
 }
 
-bool EnemyBulletCollisionComponent::TryHitPlayer(PlayerIndex playerIndex)
+bool EnemyBulletCollisionComponent::TryHitPlayer(galaga::PlayerIndex playerIndex)
 {
 	if (!m_GameController.IsPlayerActive(playerIndex) || !m_GameController.IsPlayerAlive(playerIndex))
 	{

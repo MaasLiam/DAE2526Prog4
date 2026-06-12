@@ -40,7 +40,7 @@ void ShootCommand::Execute(float)
 
 	if (m_GameController)
 	{
-		const PlayerIndex playerIndex = m_Owner == ShootOwner::PlayerOne ? PlayerIndex::PlayerOne : PlayerIndex::PlayerTwo;
+		const galaga::PlayerIndex playerIndex = m_Owner == ShootOwner::PlayerOne ? galaga::PlayerIndex::PlayerOne : galaga::PlayerIndex::PlayerTwo;
 
 		if (!m_GameController->CanPlayerAct(playerIndex))
 		{

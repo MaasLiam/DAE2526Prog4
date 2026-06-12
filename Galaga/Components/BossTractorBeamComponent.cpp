@@ -55,13 +55,13 @@ void BossTractorBeamComponent::Update(float)
 		return;
 	}
 
-	if (TryCapturePlayer(PlayerIndex::PlayerOne))
+	if (TryCapturePlayer(galaga::PlayerIndex::PlayerOne))
 	{
 		m_HasCapturedThisBeam = true;
 		return;
 	}
 
-	if (TryCapturePlayer(PlayerIndex::PlayerTwo))
+	if (TryCapturePlayer(galaga::PlayerIndex::PlayerTwo))
 	{
 		m_HasCapturedThisBeam = true;
 	}
@@ -112,7 +112,7 @@ void BossTractorBeamComponent::UpdateBeamVisualPosition()
 	beamTransform->SetLocalPosition(bossTransform->GetLocalPosition() + BeamVisualOffset);
 }
 
-bool BossTractorBeamComponent::TryCapturePlayer(PlayerIndex playerIndex)
+bool BossTractorBeamComponent::TryCapturePlayer(galaga::PlayerIndex playerIndex)
 {
 	if (!m_GameController.IsPlayerActive(playerIndex) || !m_GameController.IsPlayerAlive(playerIndex))
 	{
@@ -155,13 +155,13 @@ bool BossTractorBeamComponent::TryCapturePlayer(PlayerIndex playerIndex)
 
 	SpawnCapturedFighter(playerIndex);
 
-	const glm::vec3 resetPosition = playerIndex == PlayerIndex::PlayerOne ? galaga::gameplay::PlayerOneStartPosition : galaga::gameplay::PlayerTwoStartPosition;
+	const glm::vec3 resetPosition = playerIndex == galaga::PlayerIndex::PlayerOne ? galaga::gameplay::PlayerOneStartPosition : galaga::gameplay::PlayerTwoStartPosition;
 	playerTransform->SetLocalPosition(resetPosition);
 
 	return true;
 }
 
-void BossTractorBeamComponent::SpawnCapturedFighter(PlayerIndex playerIndex)
+void BossTractorBeamComponent::SpawnCapturedFighter(galaga::PlayerIndex playerIndex)
 {
 	auto* bossTransform = GetOwner()->GetComponent<dae::TransformComponent>();
 	if (!bossTransform)
@@ -178,7 +178,7 @@ void BossTractorBeamComponent::SpawnCapturedFighter(PlayerIndex playerIndex)
 	const auto formationPosition = enemy->GetFormationPosition();
 	auto capturedFighter = std::make_unique<dae::GameObject>();
 	capturedFighter->AddComponent<dae::TransformComponent>();
-	const float xOffset = playerIndex == PlayerIndex::PlayerOne ? galaga::gameplay::CapturedFighterPlayerOneOffsetX : galaga::gameplay::CapturedFighterPlayerTwoOffsetX;
+	const float xOffset = playerIndex == galaga::PlayerIndex::PlayerOne ? galaga::gameplay::CapturedFighterPlayerOneOffsetX : galaga::gameplay::CapturedFighterPlayerTwoOffsetX;
 	capturedFighter->GetComponent<dae::TransformComponent>()->SetLocalPosition(formationPosition.x + xOffset, formationPosition.y + galaga::gameplay::CapturedFighterOffsetY, 0.f);
 
 	capturedFighter->AddComponent<dae::RenderComponent>(galaga::gameplay::CapturedFighterSprite);
