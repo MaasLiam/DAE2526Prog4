@@ -30,4 +30,10 @@ namespace dae
 	{
 		return m_RealSoundSystem->IsMuted();
 	}
+
+	void LoggingSoundSystem::StopAll()
+	{
+		m_RealSoundSystem->StopAll();
+		std::cout << "[Sound] Stop all" << std::endl;
+	}
 }

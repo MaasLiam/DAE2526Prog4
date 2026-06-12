@@ -8,6 +8,8 @@ namespace dae
 	class Subject
 	{
 	public:
+		~Subject();
+
 		void AddObserver(class Observer* observer);
 		void RemoveObserver(class Observer* observer);
 		void Notify(Event event, class GameObject* sender);

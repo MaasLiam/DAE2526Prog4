@@ -13,6 +13,7 @@ namespace dae
 
 		virtual void Play(SoundId id, float volume) = 0;
 		virtual void Load(SoundId id, const std::string& filePath) = 0;
+		virtual void StopAll() = 0;
 
 		virtual void ToggleMute() = 0;
 		virtual bool IsMuted() const = 0;

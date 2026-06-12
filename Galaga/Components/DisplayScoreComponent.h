@@ -20,6 +20,8 @@ namespace galaga
 	public:
 		DisplayScoreComponent(dae::GameObject* owner, ScoreComponent& targetScore, std::string label);
 		void Notify(dae::Event event, dae::GameObject* gameObject) override;
+		~DisplayScoreComponent() override;
+		void OnSubjectDestroyed(dae::Subject* subject) override;
 
 	private:
 		void UpdateText();
@@ -27,5 +29,6 @@ namespace galaga
 		ScoreComponent* m_TargetScore{ nullptr };
 		dae::TextComponent* m_TextComponent{ nullptr };
 		std::string m_Label;
+		dae::Subject* m_TargetSubject{};
 	};
 }

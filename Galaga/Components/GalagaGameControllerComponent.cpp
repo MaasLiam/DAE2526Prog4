@@ -103,7 +103,8 @@ void galaga::GalagaGameControllerComponent::Update(float deltaTime)
 
 		StartStage(m_StageIndex + 1);
 		break;
-
+	case galaga::GameState::ModeSelection:
+		break;
 	case galaga::GameState::EnteringHighScore:
 	case galaga::GameState::HighScoreScreen:
 		break;
@@ -508,12 +509,10 @@ void galaga::GalagaGameControllerComponent::SetState(galaga::GameState state)
 		HideGameplayObjects();
 
 		m_TitleText.SetText("GALAGA");
-
 		m_ScoreTextTransform.SetLocalPosition(390.f, 235.f, 0.f);
 		m_InitialsTextTransform.SetLocalPosition(390.f, 280.f, 0.f);
 		m_TableTitleTextTransform.SetLocalPosition(390.f, 325.f, 0.f);
 		m_InstructionTextTransform.SetLocalPosition(235.f, 390.f, 0.f);
-
 		m_InstructionText.SetText("UP/DOWN SELECT     C/X/A START");
 
 		RefreshModeSelectionText();
@@ -525,9 +524,8 @@ void galaga::GalagaGameControllerComponent::SetState(galaga::GameState state)
 void galaga::GalagaGameControllerComponent::StartStage(int stageIndex)
 {
 	m_StageIndex = stageIndex;
-
+	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::StageStart), 1.0f);
 	galaga::LevelLoader::LoadStage(m_Scene, m_StageIndex, *this);
-
 	SetState(galaga::GameState::Playing);
 }
 
@@ -535,7 +533,6 @@ void galaga::GalagaGameControllerComponent::EnterHighScoreScreen()
 {
 	m_FinalScore = GetTotalScore();
 
-	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::GameOver), 1.0f);
 	galaga::LevelLoader::ClearStage(m_Scene);
 	HideGameplayObjects();
 

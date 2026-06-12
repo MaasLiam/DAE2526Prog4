@@ -11,7 +11,8 @@ galaga::DisplayScoreComponent::DisplayScoreComponent(dae::GameObject* owner, gal
 	, m_Label(std::move(label))
 {
 	m_TextComponent = GetOwner()->GetComponent<dae::TextComponent>();
-	m_TargetScore->GetSubject().AddObserver(this);
+	m_TargetSubject = &m_TargetScore->GetSubject();
+	m_TargetSubject->AddObserver(this);
 	UpdateText();
 }
 
@@ -20,6 +21,23 @@ void galaga::DisplayScoreComponent::Notify(dae::Event event, dae::GameObject*)
 	if (event == dae::Event::ScoreChanged)
 	{
 		UpdateText();
+	}
+}
+
+galaga::DisplayScoreComponent::~DisplayScoreComponent()
+{
+	if (m_TargetSubject)
+	{
+		m_TargetSubject->RemoveObserver(this);
+	}
+}
+
+void galaga::DisplayScoreComponent::OnSubjectDestroyed(dae::Subject* subject)
+{
+	if (subject == m_TargetSubject)
+	{
+		m_TargetSubject = nullptr;
+		m_TargetScore = nullptr;
 	}
 }
 

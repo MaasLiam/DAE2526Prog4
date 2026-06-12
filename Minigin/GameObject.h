@@ -15,10 +15,12 @@ namespace dae
 		void Render() const;
 
 		template <typename T, typename... Args>
-		void AddComponent(Args&&... args)
+		T& AddComponent(Args&&... args)
 		{
-
-			m_Components.emplace_back(std::make_unique<T>(this, std::forward<Args>(args)...));
+			auto component = std::make_unique<T>(this, std::forward<Args>(args)...);
+			auto& componentReference = *component;
+			m_Components.emplace_back(std::move(component));
+			return componentReference;
 		}
 
 		template<typename T>

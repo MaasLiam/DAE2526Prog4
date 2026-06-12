@@ -11,7 +11,8 @@ galaga::DisplayLivesComponent::DisplayLivesComponent(dae::GameObject* owner, Hea
 {
 
 	m_TextComponent = GetOwner()->GetComponent<dae::TextComponent>();
-	m_TargetHealth->GetSubject().AddObserver(this);
+	m_TargetSubject = &m_TargetHealth->GetSubject();
+	m_TargetSubject->AddObserver(this);
 	UpdateText();
 }
 
@@ -22,6 +23,23 @@ void galaga::DisplayLivesComponent::Notify(dae::Event event, dae::GameObject*)
 	if (event == dae::Event::PlayerDied || event == dae::Event::GameOver)
 	{
 		UpdateText();
+	}
+}
+
+galaga::DisplayLivesComponent::~DisplayLivesComponent()
+{
+	if (m_TargetSubject)
+	{
+		m_TargetSubject->RemoveObserver(this);
+	}
+}
+
+void galaga::DisplayLivesComponent::OnSubjectDestroyed(dae::Subject* subject)
+{
+	if (subject == m_TargetSubject)
+	{
+		m_TargetSubject = nullptr;
+		m_TargetHealth = nullptr;
 	}
 }
 

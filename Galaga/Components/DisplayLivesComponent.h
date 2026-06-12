@@ -21,11 +21,15 @@ namespace galaga
 		DisplayLivesComponent(dae::GameObject* owner, HealthComponent& targetHealth, std::string label);
 		void Notify(dae::Event event, dae::GameObject* sender) override;
 
+		~DisplayLivesComponent() override;
+		void OnSubjectDestroyed(dae::Subject* subject) override;
+
 	private:
 		void UpdateText();
 
 		HealthComponent* m_TargetHealth{ nullptr };
 		dae::TextComponent* m_TextComponent{ nullptr };
 		std::string m_Label;
+		dae::Subject* m_TargetSubject{};
 	};
 }

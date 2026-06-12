@@ -8,6 +8,9 @@ namespace dae
 	void NullSoundSystem::Load(SoundId, const std::string&)
 	{}
 
+	void NullSoundSystem::StopAll()
+	{}
+
 	void NullSoundSystem::ToggleMute()
 	{}
 

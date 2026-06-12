@@ -45,94 +45,317 @@
 #include "SoundIds.h"
 
 #include <array>
+#include <memory>
+#include <string>
+
+namespace
+{
+	struct TextObject
+	{
+		dae::GameObject* object{};
+		dae::TextComponent* text{};
+		dae::TransformComponent* transform{};
+	};
+
+	struct PlayerUiObjects
+	{
+		dae::GameObject* livesObject{};
+		dae::GameObject* scoreObject{};
+	};
+
+	dae::GameObject* CreateSpriteObject(dae::Scene& scene, const std::string& texturePath, const glm::vec3& position)
+	{
+		auto object = std::make_unique<dae::GameObject>();
+		object->AddComponent<dae::TransformComponent>();
+		object->GetComponent<dae::TransformComponent>()->SetLocalPosition(position);
+		object->AddComponent<dae::RenderComponent>(texturePath);
+
+		auto* rawObject = object.get();
+		scene.Add(std::move(object));
+
+		return rawObject;
+	}
+
+	TextObject CreateTextObject(dae::Scene& scene, const std::string& text, std::shared_ptr<dae::Font> font, const SDL_Color& color, const glm::vec3& position)
+	{
+		auto object = std::make_unique<dae::GameObject>();
+		object->AddComponent<dae::TransformComponent>();
+		object->GetComponent<dae::TransformComponent>()->SetLocalPosition(position);
+
+		auto* transform = object->GetComponent<dae::TransformComponent>();
+
+		object->AddComponent<dae::RenderComponent>();
+		object->AddComponent<dae::TextComponent>(text, font, color);
+
+		auto* textComponent = object->GetComponent<dae::TextComponent>();
+		auto* rawObject = object.get();
+
+		scene.Add(std::move(object));
+
+		return TextObject{ rawObject, textComponent, transform };
+	}
+
+	void BindPlayerMovementToKeyboard(
+		dae::KeyboardInput& keyboard,
+		dae::GameObject& player,
+		float speed,
+		galaga::GalagaGameControllerComponent& gameController,
+		galaga::ControlledPlayer controlledPlayer)
+	{
+		keyboard.AddBinding(
+			std::make_unique<galaga::MovePlayerCommand>(player, dae::MoveDirection::Up, speed, gameController, controlledPlayer),
+			dae::InputKey::ArrowUp,
+			dae::InputState::Pressed);
+
+		keyboard.AddBinding(
+			std::make_unique<galaga::MovePlayerCommand>(player, dae::MoveDirection::Down, speed, gameController, controlledPlayer),
+			dae::InputKey::ArrowDown,
+			dae::InputState::Pressed);
+
+		keyboard.AddBinding(
+			std::make_unique<galaga::MovePlayerCommand>(player, dae::MoveDirection::Left, speed, gameController, controlledPlayer),
+			dae::InputKey::ArrowLeft,
+			dae::InputState::Pressed);
+
+		keyboard.AddBinding(
+			std::make_unique<galaga::MovePlayerCommand>(player, dae::MoveDirection::Right, speed, gameController, controlledPlayer),
+			dae::InputKey::ArrowRight,
+			dae::InputState::Pressed);
+	}
+
+	void BindPlayerMovementToController(
+		dae::ControllerInput& controller,
+		dae::GameObject& player,
+		float speed,
+		galaga::GalagaGameControllerComponent& gameController,
+		galaga::ControlledPlayer controlledPlayer,
+		galaga::ControlContext controlContext)
+	{
+		controller.AddBinding(
+			std::make_unique<galaga::MovePlayerCommand>(player, dae::MoveDirection::Up, speed, gameController, controlledPlayer, controlContext),
+			dae::InputKey::DPadUp,
+			dae::InputState::Pressed);
+
+		controller.AddBinding(
+			std::make_unique<galaga::MovePlayerCommand>(player, dae::MoveDirection::Down, speed, gameController, controlledPlayer, controlContext),
+			dae::InputKey::DPadDown,
+			dae::InputState::Pressed);
+
+		controller.AddBinding(
+			std::make_unique<galaga::MovePlayerCommand>(player, dae::MoveDirection::Left, speed, gameController, controlledPlayer, controlContext),
+			dae::InputKey::DPadLeft,
+			dae::InputState::Pressed);
+
+		controller.AddBinding(
+			std::make_unique<galaga::MovePlayerCommand>(player, dae::MoveDirection::Right, speed, gameController, controlledPlayer, controlContext),
+			dae::InputKey::DPadRight,
+			dae::InputState::Pressed);
+	}
+
+	void BindPlayerShootToKeyboard(
+		dae::KeyboardInput& keyboard,
+		dae::GameObject& player,
+		dae::Scene& scene,
+		galaga::GalagaGameControllerComponent& gameController,
+		galaga::ShootOwner shootOwner)
+	{
+		keyboard.AddBinding(
+			std::make_unique<galaga::ShootCommand>(player, scene, &gameController, shootOwner),
+			dae::InputKey::C,
+			dae::InputState::Down);
+
+		keyboard.AddBinding(
+			std::make_unique<galaga::ShootCommand>(player, scene, &gameController, shootOwner),
+			dae::InputKey::X,
+			dae::InputState::Down);
+	}
+
+	void BindPlayerShootToController(
+		dae::ControllerInput& controller,
+		dae::GameObject& player,
+		dae::Scene& scene,
+		galaga::GalagaGameControllerComponent& gameController,
+		galaga::ShootOwner shootOwner,
+		galaga::ControlContext controlContext)
+	{
+		controller.AddBinding(
+			std::make_unique<galaga::ShootCommand>(player, scene, &gameController, shootOwner, controlContext),
+			dae::InputKey::ButtonA,
+			dae::InputState::Down);
+	}
+
+	void BindVersusBossActionsToController(
+		dae::ControllerInput& controller,
+		dae::GameObject& boss,
+		dae::GameObject& targetPlayer,
+		dae::Scene& scene,
+		galaga::GalagaGameControllerComponent& gameController,
+		galaga::VersusBossComponent& versusBoss)
+	{
+		controller.AddBinding(
+			std::make_unique<galaga::VersusBossShootCommand>(boss, targetPlayer, scene, gameController),
+			dae::InputKey::ButtonA,
+			dae::InputState::Down);
+
+		controller.AddBinding(
+			std::make_unique<galaga::VersusBossDiveCommand>(versusBoss),
+			dae::InputKey::ButtonB,
+			dae::InputState::Down);
+
+		controller.AddBinding(
+			std::make_unique<galaga::VersusBossTractorBeamCommand>(versusBoss),
+			dae::InputKey::ButtonY,
+			dae::InputState::Down);
+	}
+
+	void BindHighScoreInputToKeyboard(dae::KeyboardInput& keyboard, galaga::GalagaGameControllerComponent& gameController)
+	{
+		keyboard.AddBinding(
+			std::make_unique<galaga::ChangeInitialCommand>(gameController, 1),
+			dae::InputKey::ArrowUp,
+			dae::InputState::Down);
+
+		keyboard.AddBinding(
+			std::make_unique<galaga::ChangeInitialCommand>(gameController, -1),
+			dae::InputKey::ArrowDown,
+			dae::InputState::Down);
+
+		keyboard.AddBinding(
+			std::make_unique<galaga::MoveInitialCursorCommand>(gameController, -1),
+			dae::InputKey::ArrowLeft,
+			dae::InputState::Down);
+
+		keyboard.AddBinding(
+			std::make_unique<galaga::MoveInitialCursorCommand>(gameController, 1),
+			dae::InputKey::ArrowRight,
+			dae::InputState::Down);
+
+		keyboard.AddBinding(
+			std::make_unique<galaga::ConfirmHighScoreNameCommand>(gameController),
+			dae::InputKey::Enter,
+			dae::InputState::Down);
+
+		keyboard.AddBinding(
+			std::make_unique<galaga::ConfirmHighScoreNameCommand>(gameController),
+			dae::InputKey::C,
+			dae::InputState::Down);
+
+		keyboard.AddBinding(
+			std::make_unique<galaga::ConfirmHighScoreNameCommand>(gameController),
+			dae::InputKey::X,
+			dae::InputState::Down);
+	}
+
+	void BindHighScoreInputToController(dae::ControllerInput& controller, galaga::GalagaGameControllerComponent& gameController)
+	{
+		controller.AddBinding(
+			std::make_unique<galaga::ChangeInitialCommand>(gameController, 1),
+			dae::InputKey::DPadUp,
+			dae::InputState::Down);
+
+		controller.AddBinding(
+			std::make_unique<galaga::ChangeInitialCommand>(gameController, -1),
+			dae::InputKey::DPadDown,
+			dae::InputState::Down);
+
+		controller.AddBinding(
+			std::make_unique<galaga::MoveInitialCursorCommand>(gameController, -1),
+			dae::InputKey::DPadLeft,
+			dae::InputState::Down);
+
+		controller.AddBinding(
+			std::make_unique<galaga::MoveInitialCursorCommand>(gameController, 1),
+			dae::InputKey::DPadRight,
+			dae::InputState::Down);
+
+		controller.AddBinding(
+			std::make_unique<galaga::ConfirmHighScoreNameCommand>(gameController),
+			dae::InputKey::ButtonA,
+			dae::InputState::Down);
+	}
+
+	PlayerUiObjects CreatePlayerUi(
+		dae::Scene& scene,
+		std::shared_ptr<dae::Font> font,
+		galaga::HealthComponent& health,
+		galaga::ScoreComponent& score,
+		const std::string& label,
+		const glm::vec3& livesPosition,
+		const glm::vec3& scorePosition)
+	{
+		auto livesObject = std::make_unique<dae::GameObject>();
+		livesObject->AddComponent<dae::TransformComponent>();
+		livesObject->GetComponent<dae::TransformComponent>()->SetLocalPosition(livesPosition);
+		livesObject->AddComponent<dae::RenderComponent>();
+		livesObject->AddComponent<dae::TextComponent>(label + " Lives: 3", font, SDL_Color{ 255, 255, 255, 255 });
+		livesObject->AddComponent<galaga::DisplayLivesComponent>(health, label);
+
+		auto* livesRawObject = livesObject.get();
+		scene.Add(std::move(livesObject));
+
+		auto scoreObject = std::make_unique<dae::GameObject>();
+		scoreObject->AddComponent<dae::TransformComponent>();
+		scoreObject->GetComponent<dae::TransformComponent>()->SetLocalPosition(scorePosition);
+		scoreObject->AddComponent<dae::RenderComponent>();
+		scoreObject->AddComponent<dae::TextComponent>(label + " Score: 0", font, SDL_Color{ 255, 255, 255, 255 });
+		scoreObject->AddComponent<galaga::DisplayScoreComponent>(score, label);
+
+		auto* scoreRawObject = scoreObject.get();
+		scene.Add(std::move(scoreObject));
+
+		return PlayerUiObjects{ livesRawObject, scoreRawObject };
+	}
+}
 
 void Galaga::Initialize()
 {
 	auto& scene = dae::SceneManager::GetInstance().CreateScene();
 
 	//background
-	auto go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
-	go->AddComponent<dae::RenderComponent>("background.png");
-	scene.Add(std::move(go));
+	CreateSpriteObject(scene, "background.png", glm::vec3{ 0.f, 0.f, 0.f });
 
 	//logo 
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(358, 95);
-	go->AddComponent<dae::RenderComponent>("logo.png");
-	auto* logoObject = go.get();
-	scene.Add(std::move(go));
+	auto* logoObject = CreateSpriteObject(scene, "logo.png", glm::vec3{ 358.f, 95.f, 0.f });
 
 	auto font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36);
 
 	// game state / result screen text
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(360, 35);
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("GALAGA", font, SDL_Color{ 255, 0, 0, 255 });
-	auto* titleText = go->GetComponent<dae::TextComponent>();
-	scene.Add(std::move(go));
+	auto titleTextObject = CreateTextObject(scene, "GALAGA", font, SDL_Color{ 255, 0, 0, 255 }, glm::vec3{ 360.f, 35.f, 0.f });
+	auto* titleText = titleTextObject.text;
 
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(330, 125);
-	auto* scoreTextTransform = go->GetComponent<dae::TransformComponent>();
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("", font, SDL_Color{ 255, 255, 0, 255 });
-	auto* scoreText = go->GetComponent<dae::TextComponent>();
-	scene.Add(std::move(go));
+	//score text
+	auto scoreTextObject = CreateTextObject(scene, "", font, SDL_Color{ 255, 255, 0, 255 }, glm::vec3{ 330.f, 125.f, 0.f });
+	auto* scoreText = scoreTextObject.text;
+	auto* scoreTextTransform = scoreTextObject.transform;
 
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(390, 190);
-	auto* initialsTextTransform = go->GetComponent<dae::TransformComponent>();
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("", font, SDL_Color{ 255, 255, 255, 255 });
-	auto* initialsText = go->GetComponent<dae::TextComponent>();
-	scene.Add(std::move(go));
-	go = std::make_unique<dae::GameObject>();
+	//initials text
+	auto initialsTextObject = CreateTextObject(scene, "", font, SDL_Color{ 255, 255, 255, 255 }, glm::vec3{ 390.f, 190.f, 0.f });
+	auto* initialsText = initialsTextObject.text;
+	auto* initialsTextTransform = initialsTextObject.transform;
 
-	go->AddComponent<dae::TransformComponent>();
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(40, 280);
-	auto* instructionTextTransform = go->GetComponent<dae::TransformComponent>();
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("", font, SDL_Color{ 255, 255, 255, 255 });
-	auto* instructionText = go->GetComponent<dae::TextComponent>();
-	scene.Add(std::move(go));
+	//instruction text
+	auto instructionTextObject = CreateTextObject(scene, "", font, SDL_Color{ 255, 255, 255, 255 }, glm::vec3{ 40.f, 280.f, 0.f });
+	auto* instructionText = instructionTextObject.text;
+	auto* instructionTextTransform = instructionTextObject.transform;
 
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(320, 350);
-	auto* tableTitleTextTransform = go->GetComponent<dae::TransformComponent>();
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("", font, SDL_Color{ 255, 0, 0, 255 });
-	auto* tableTitleText = go->GetComponent<dae::TextComponent>();
-	scene.Add(std::move(go));
+	//high score table title text
+	auto tableTitleTextObject = CreateTextObject(scene, "", font, SDL_Color{ 255, 0, 0, 255 }, glm::vec3{ 320.f, 350.f, 0.f });
+	auto* tableTitleText = tableTitleTextObject.text;
+	auto* tableTitleTextTransform = tableTitleTextObject.transform;
 
 	std::array<dae::TextComponent*, 5> highScoreRows{};
 
 	for (size_t index{}; index < highScoreRows.size(); ++index)
 	{
-		go = std::make_unique<dae::GameObject>();
-		go->AddComponent<dae::TransformComponent>();
-		go->GetComponent<dae::TransformComponent>()->SetLocalPosition(330.f, 410.f + static_cast<float>(index) * 34.f);
-		go->AddComponent<dae::RenderComponent>();
-		go->AddComponent<dae::TextComponent>("", font, SDL_Color{ 255, 255, 255, 255 });
-		highScoreRows[index] = go->GetComponent<dae::TextComponent>();
-		scene.Add(std::move(go));
+		auto highScoreRow = CreateTextObject(scene, "", font, SDL_Color{ 255, 255, 255, 255 }, glm::vec3{ 330.f, 410.f + static_cast<float>(index) * 34.f, 0.f });
+		highScoreRows[index] = highScoreRow.text;
 	}
 
 	//fps counter
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(10, 10);
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("0 FPS", font, SDL_Color{ 255, 0, 0, 255 });
-	go->AddComponent<dae::FPSComponent>();
-	auto* fpsObject = go.get();
-	scene.Add(std::move(go));
+	auto fpsTextObject = CreateTextObject(scene, "0 FPS", font, SDL_Color{ 255, 0, 0, 255 }, glm::vec3{ 10.f, 10.f, 0.f });
+	auto* fpsObject = fpsTextObject.object;
+	fpsObject->AddComponent<dae::FPSComponent>();
+
 
 	auto& inputManager = dae::InputManager::GetInstance();
 	font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 20);
@@ -143,24 +366,14 @@ void Galaga::Initialize()
 
 	//add controll info text
 	//p1
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 20, 520, 0 });
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("P1: ARROWS to move, X and C to shoot", font, SDL_Color{ 255, 255, 255, 255 });
-	auto* controlsP1Text = go->GetComponent<dae::TextComponent>();
-	auto* controlsP1Object = go.get();
-	scene.Add(std::move(go));
+	auto controlsP1TextObject = CreateTextObject(scene, "P1: ARROWS to move, X and C to shoot", font, SDL_Color{ 255, 255, 255, 255 }, glm::vec3{ 20.f, 520.f, 0.f });
+	auto* controlsP1Text = controlsP1TextObject.text;
+	auto* controlsP1Object = controlsP1TextObject.object;
 
 	//p2
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 20, 550, 0 });
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("P2: D-Pad to move, A to shoot", font, SDL_Color{ 255, 255, 255, 255 });
-	auto* controlsP2Text = go->GetComponent<dae::TextComponent>();
-	auto* controlsP2Object = go.get();
-	scene.Add(std::move(go));
+	auto controlsP2TextObject = CreateTextObject(scene, "Gamepad: C0 P1 solo / P2 or Boss multi, C1 P1 multi", font, SDL_Color{ 255, 255, 255, 255 }, glm::vec3{ 20.f, 550.f, 0.f });
+	auto* controlsP2Text = controlsP2TextObject.text;
+	auto* controlsP2Object = controlsP2TextObject.object;
 
 	auto gameController = std::make_unique<dae::GameObject>();
 	gameController->AddComponent<galaga::GalagaGameControllerComponent>(
@@ -185,100 +398,55 @@ void Galaga::Initialize()
 	gameControllerComponent->RegisterPlayerTwoGameplayObject(controlsP2Object, glm::vec3{ 20.f, 550.f, 0.f });
 	// Player 1
 	/*auto go = std::make_unique<dae::GameObject>();*/
-	go = std::make_unique<dae::GameObject>();
+	auto go = std::make_unique<dae::GameObject>();
 	go->AddComponent<galaga::HealthComponent>(4);
 	go->AddComponent<galaga::ScoreComponent>();
 	go->AddComponent<galaga::MissileLimitComponent>();
 	go->AddComponent<dae::TransformComponent>();
 	go->AddComponent<dae::RenderComponent>(galaga::gameplay::FighterSprite);
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 360, 500, 0 });
+	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(galaga::gameplay::PlayerOneStartPosition);
 
 	auto* player1Health = go->GetComponent<galaga::HealthComponent>();
 	auto* player1Score = go->GetComponent<galaga::ScoreComponent>();
 
-	constexpr float player1Speed = 100.f;
+	constexpr float playerSpeed = 100.f;
 	//keyboard binding for player 1
-	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Up, player1Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerOne),
-		dae::InputKey::ArrowUp,
-		dae::InputState::Pressed);
-
-	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Down, player1Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerOne),
-		dae::InputKey::ArrowDown,
-		dae::InputState::Pressed);
-
-	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Left, player1Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerOne),
-		dae::InputKey::ArrowLeft,
-		dae::InputState::Pressed);
-
-	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Right, player1Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerOne),
-		dae::InputKey::ArrowRight,
-		dae::InputState::Pressed);
-
-	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<galaga::ShootCommand>(*go, scene, gameControllerComponent, galaga::ShootOwner::PlayerOne),
-		dae::InputKey::C,
-		dae::InputState::Down);
-
-	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<galaga::ShootCommand>(*go, scene, gameControllerComponent, galaga::ShootOwner::PlayerOne),
-		dae::InputKey::X,
-		dae::InputState::Down);
+	BindPlayerMovementToKeyboard(*inputManager.GetKeyboardInput(), *go, playerSpeed, *gameControllerComponent, galaga::ControlledPlayer::PlayerOne);
+	BindPlayerShootToKeyboard(*inputManager.GetKeyboardInput(), *go, scene, *gameControllerComponent, galaga::ShootOwner::PlayerOne);
 
 	//controller 0 binding for player 1 in singleplayer mode
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Up, player1Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerOne, galaga::ControlContext::SinglePlayerOnly),
-		dae::InputKey::DPadUp,
-		dae::InputState::Pressed);
+	BindPlayerMovementToController(
+		*inputManager.GetControllerInput(0),
+		*go,
+		playerSpeed,
+		*gameControllerComponent,
+		galaga::ControlledPlayer::PlayerOne,
+		galaga::ControlContext::SinglePlayerOnly);
 
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Down, player1Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerOne, galaga::ControlContext::SinglePlayerOnly),
-		dae::InputKey::DPadDown,
-		dae::InputState::Pressed);
-
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Left, player1Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerOne, galaga::ControlContext::SinglePlayerOnly),
-		dae::InputKey::DPadLeft,
-		dae::InputState::Pressed);
-
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Right, player1Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerOne, galaga::ControlContext::SinglePlayerOnly),
-		dae::InputKey::DPadRight,
-		dae::InputState::Pressed);
-
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::ShootCommand>(*go, scene, gameControllerComponent, galaga::ShootOwner::PlayerOne, galaga::ControlContext::SinglePlayerOnly),
-		dae::InputKey::ButtonA,
-		dae::InputState::Down);
+	BindPlayerShootToController(
+		*inputManager.GetControllerInput(0),
+		*go,
+		scene,
+		*gameControllerComponent,
+		galaga::ShootOwner::PlayerOne,
+		galaga::ControlContext::SinglePlayerOnly);
 
 	//controller 1 binding for player 1 in multiplayer mode
-	inputManager.GetControllerInput(1)->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Up, player1Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerOne, galaga::ControlContext::MultiplayerOnly),
-		dae::InputKey::DPadUp,
-		dae::InputState::Pressed);
+	BindPlayerMovementToController(
+		*inputManager.GetControllerInput(1),
+		*go,
+		playerSpeed,
+		*gameControllerComponent,
+		galaga::ControlledPlayer::PlayerOne,
+		galaga::ControlContext::MultiplayerOnly);
 
-	inputManager.GetControllerInput(1)->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Down, player1Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerOne, galaga::ControlContext::MultiplayerOnly),
-		dae::InputKey::DPadDown,
-		dae::InputState::Pressed);
-
-	inputManager.GetControllerInput(1)->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Left, player1Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerOne, galaga::ControlContext::MultiplayerOnly),
-		dae::InputKey::DPadLeft,
-		dae::InputState::Pressed);
-
-	inputManager.GetControllerInput(1)->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Right, player1Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerOne, galaga::ControlContext::MultiplayerOnly),
-		dae::InputKey::DPadRight,
-		dae::InputState::Pressed);
-
-	inputManager.GetControllerInput(1)->AddBinding(
-		std::make_unique<galaga::ShootCommand>(*go, scene, gameControllerComponent, galaga::ShootOwner::PlayerOne, galaga::ControlContext::MultiplayerOnly),
-		dae::InputKey::ButtonA,
-		dae::InputState::Down);
+	BindPlayerShootToController(
+		*inputManager.GetControllerInput(1),
+		*go,
+		scene,
+		*gameControllerComponent,
+		galaga::ShootOwner::PlayerOne,
+		galaga::ControlContext::MultiplayerOnly);
 
 	auto* player1Object = go.get();
 	player1Object->AddComponent<galaga::CollisionComponent>(galaga::gameplay::FighterCollisionWidth, galaga::gameplay::FighterCollisionHeight, galaga::gameplay::PlayerHitboxOffsetX, galaga::gameplay::PlayerHitboxOffsetY);
@@ -286,29 +454,18 @@ void Galaga::Initialize()
 
 	gameControllerComponent->RegisterGameplayObject(player1Object, galaga::gameplay::PlayerOneStartPosition);
 
-	//player1 health ui
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 20, 60, 0 });
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("P1 Lives: 3", font, SDL_Color{ 255, 255, 255, 255 });
-	go->AddComponent<galaga::DisplayLivesComponent>(*player1Health, "P1");
-	auto* player1LivesUiObject = go.get();
-	scene.Add(std::move(go));
+	//p1 lives and score ui
+	const auto player1Ui = CreatePlayerUi(
+		scene,
+		font,
+		*player1Health,
+		*player1Score,
+		"P1",
+		glm::vec3{ 20.f, 60.f, 0.f },
+		glm::vec3{ 120.f, 60.f, 0.f });
 
-	gameControllerComponent->RegisterGameplayObject(player1LivesUiObject, glm::vec3{ 20.f, 60.f, 0.f });
-
-	//player1 score ui
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 120, 60, 0 });
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("P1 Score: 0", font, SDL_Color{ 255, 255, 255, 255 });
-	go->AddComponent<galaga::DisplayScoreComponent>(*player1Score, "P1");
-	auto* player1ScoreUiObject = go.get();
-	scene.Add(std::move(go));
-
-	gameControllerComponent->RegisterGameplayObject(player1ScoreUiObject, glm::vec3{ 120.f, 60.f, 0.f });
+	gameControllerComponent->RegisterGameplayObject(player1Ui.livesObject, glm::vec3{ 20.f, 60.f, 0.f });
+	gameControllerComponent->RegisterGameplayObject(player1Ui.scoreObject, glm::vec3{ 120.f, 60.f, 0.f });
 
 
 	// Player 2
@@ -319,7 +476,7 @@ void Galaga::Initialize()
 	go->AddComponent<galaga::MissileLimitComponent>();
 	go->AddComponent<galaga::VersusBossComponent>(*gameControllerComponent, *player1Object);
 	go->AddComponent<dae::RenderComponent>("Sprites/BossGalaga.png");
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 440, 500, 0 });
+	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(galaga::gameplay::PlayerTwoStartPosition);
 
 	auto* player2Health = go->GetComponent<galaga::HealthComponent>();
 	auto* player2Score = go->GetComponent<galaga::ScoreComponent>();
@@ -336,47 +493,31 @@ void Galaga::Initialize()
 	versusBossComponent->SetBeamVisual(tractorBeamObject);
 	gameControllerComponent->RegisterObjectToHideOnResults(tractorBeamObject);
 
-	constexpr float player2Speed = 200.f; // double speed
+	BindPlayerMovementToController(
+		*inputManager.GetControllerInput(0),
+		*go,
+		playerSpeed,
+		*gameControllerComponent,
+		galaga::ControlledPlayer::PlayerTwo,
+		galaga::ControlContext::MultiplayerOnly);
 
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Up, player2Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerTwo),
-		dae::InputKey::DPadUp,
-		dae::InputState::Pressed);
+	BindPlayerShootToController(
+		*inputManager.GetControllerInput(0),
+		*go,
+		scene,
+		*gameControllerComponent,
+		galaga::ShootOwner::PlayerTwo,
+		galaga::ControlContext::MultiplayerOnly);
 
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Down, player2Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerTwo),
-		dae::InputKey::DPadDown,
-		dae::InputState::Pressed);
+	//versus boss specific actions
 
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Left, player2Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerTwo),
-		dae::InputKey::DPadLeft,
-		dae::InputState::Pressed);
-
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::MovePlayerCommand>(*go, dae::MoveDirection::Right, player2Speed, *gameControllerComponent, galaga::ControlledPlayer::PlayerTwo),
-		dae::InputKey::DPadRight,
-		dae::InputState::Pressed);
-
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::ShootCommand>(*go, scene, gameControllerComponent, galaga::ShootOwner::PlayerTwo),
-		dae::InputKey::ButtonA,
-		dae::InputState::Down);
-
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::ShootCommand>(*go, scene, gameControllerComponent, galaga::ShootOwner::PlayerTwo, galaga::ControlContext::MultiplayerOnly),
-		dae::InputKey::ButtonA,
-		dae::InputState::Down);
-
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::VersusBossDiveCommand>(*versusBossComponent),
-		dae::InputKey::ButtonB,
-		dae::InputState::Down);
-
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::VersusBossTractorBeamCommand>(*versusBossComponent),
-		dae::InputKey::ButtonY,
-		dae::InputState::Down);
+	BindVersusBossActionsToController(
+		*inputManager.GetControllerInput(0),
+		*go,
+		*player1Object,
+		scene,
+		*gameControllerComponent,
+		*versusBossComponent);
 
 	auto* player2Object = go.get();
 	player2Object->AddComponent<galaga::CollisionComponent>(galaga::gameplay::BossCollisionWidth, galaga::gameplay::BossCollisionHeight, galaga::gameplay::BossHitboxOffsetX, galaga::gameplay::BossHitboxOffsetY);
@@ -384,35 +525,18 @@ void Galaga::Initialize()
 
 	gameControllerComponent->RegisterPlayerTwoGameplayObject(player2Object, galaga::gameplay::PlayerTwoStartPosition);
 
-	//player 2 health ui
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 20, 90, 0 });
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("P2 Lives : 3", font, SDL_Color{ 255, 255, 255, 255 });
-	go->AddComponent<galaga::DisplayLivesComponent>(*player2Health, "P2");
-	auto* player2LivesUiObject = go.get();
-	scene.Add(std::move(go));
+	//player 2 health and score ui
+	const auto player2Ui = CreatePlayerUi(
+		scene,
+		font,
+		*player2Health,
+		*player2Score,
+		"P2",
+		glm::vec3{ 20.f, 90.f, 0.f },
+		glm::vec3{ 120.f, 90.f, 0.f });
 
-	gameControllerComponent->RegisterPlayerTwoGameplayObject(player2LivesUiObject, glm::vec3{ 20.f, 90.f, 0.f });
-
-	//player2 score ui
-	go = std::make_unique<dae::GameObject>();
-	go->AddComponent<dae::TransformComponent>();
-	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 120, 90, 0 });
-	go->AddComponent<dae::RenderComponent>();
-	go->AddComponent<dae::TextComponent>("P2 Score: 0", font, SDL_Color{ 255, 255, 255, 255 });
-	go->AddComponent<galaga::DisplayScoreComponent>(*player2Score, "P2");
-	auto* player2ScoreUiObject = go.get();
-	scene.Add(std::move(go));
-
-	gameControllerComponent->RegisterPlayerTwoGameplayObject(player2ScoreUiObject, glm::vec3{ 120.f, 90.f, 0.f });
-	m_pSteamAchievements = std::make_unique<dae::SteamAchievements>();
-	m_pSteamAchievementObserver = std::make_unique<dae::SteamAchievementObserver>(*m_pSteamAchievements);
-
-	player1Score->GetSubject().AddObserver(m_pSteamAchievementObserver.get());
-	player2Score->GetSubject().AddObserver(m_pSteamAchievementObserver.get());
-
+	gameControllerComponent->RegisterPlayerTwoGameplayObject(player2Ui.livesObject, glm::vec3{ 20.f, 90.f, 0.f });
+	gameControllerComponent->RegisterPlayerTwoGameplayObject(player2Ui.scoreObject, glm::vec3{ 120.f, 90.f, 0.f });
 
 	auto collisionManager = std::make_unique<dae::GameObject>();
 	collisionManager->AddComponent<galaga::EnemyPlayerCollisionComponent>(scene, *gameControllerComponent);
@@ -434,105 +558,10 @@ void Galaga::Initialize()
 
 	inputManager.GetKeyboardInput()->AddBinding(std::make_unique<galaga::SkipStageCommand>(*gameControllerComponent), dae::InputKey::F1, dae::InputState::Down);
 
-	//keyboard bindings for high score name entry
-	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<galaga::ChangeInitialCommand>(*gameControllerComponent, 1),
-		dae::InputKey::ArrowUp,
-		dae::InputState::Down
-	);
-
-	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<galaga::ChangeInitialCommand>(*gameControllerComponent, -1),
-		dae::InputKey::ArrowDown,
-		dae::InputState::Down
-	);
-
-	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<galaga::MoveInitialCursorCommand>(*gameControllerComponent, -1),
-		dae::InputKey::ArrowLeft,
-		dae::InputState::Down
-	);
-
-	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<galaga::MoveInitialCursorCommand>(*gameControllerComponent, 1),
-		dae::InputKey::ArrowRight,
-		dae::InputState::Down
-	);
-
-	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<galaga::ConfirmHighScoreNameCommand>(*gameControllerComponent),
-		dae::InputKey::Enter,
-		dae::InputState::Down
-	);
-
-	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<galaga::ConfirmHighScoreNameCommand>(*gameControllerComponent),
-		dae::InputKey::C,
-		dae::InputState::Down
-	);
-
-	inputManager.GetKeyboardInput()->AddBinding(
-		std::make_unique<galaga::ConfirmHighScoreNameCommand>(*gameControllerComponent),
-		dae::InputKey::X,
-		dae::InputState::Down
-	);
-
-	//controller 0 bindings for high score name entry 
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::ChangeInitialCommand>(*gameControllerComponent, 1),
-		dae::InputKey::DPadUp,
-		dae::InputState::Down
-	);
-
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::ChangeInitialCommand>(*gameControllerComponent, -1),
-		dae::InputKey::DPadDown,
-		dae::InputState::Down
-	);
-
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::MoveInitialCursorCommand>(*gameControllerComponent, -1),
-		dae::InputKey::DPadLeft,
-		dae::InputState::Down
-	);
-
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::MoveInitialCursorCommand>(*gameControllerComponent, 1),
-		dae::InputKey::DPadRight,
-		dae::InputState::Down
-	);
-
-	inputManager.GetControllerInput(0)->AddBinding(
-		std::make_unique<galaga::ConfirmHighScoreNameCommand>(*gameControllerComponent),
-		dae::InputKey::ButtonA,
-		dae::InputState::Down
-	);
-
-	//controller 1 bindings for high score name entry
-	inputManager.GetControllerInput(1)->AddBinding(
-		std::make_unique<galaga::ChangeInitialCommand>(*gameControllerComponent, 1),
-		dae::InputKey::DPadUp,
-		dae::InputState::Down);
-
-	inputManager.GetControllerInput(1)->AddBinding(
-		std::make_unique<galaga::ChangeInitialCommand>(*gameControllerComponent, -1),
-		dae::InputKey::DPadDown,
-		dae::InputState::Down);
-
-	inputManager.GetControllerInput(1)->AddBinding(
-		std::make_unique<galaga::MoveInitialCursorCommand>(*gameControllerComponent, -1),
-		dae::InputKey::DPadLeft,
-		dae::InputState::Down);
-
-	inputManager.GetControllerInput(1)->AddBinding(
-		std::make_unique<galaga::MoveInitialCursorCommand>(*gameControllerComponent, 1),
-		dae::InputKey::DPadRight,
-		dae::InputState::Down);
-
-	inputManager.GetControllerInput(1)->AddBinding(
-		std::make_unique<galaga::ConfirmHighScoreNameCommand>(*gameControllerComponent),
-		dae::InputKey::ButtonA,
-		dae::InputState::Down);
+	//bindings for high score name entry
+	BindHighScoreInputToKeyboard(*inputManager.GetKeyboardInput(), *gameControllerComponent);
+	BindHighScoreInputToController(*inputManager.GetControllerInput(0), *gameControllerComponent);
+	BindHighScoreInputToController(*inputManager.GetControllerInput(1), *gameControllerComponent);
 	
 	scene.Add(std::move(gameController));
 

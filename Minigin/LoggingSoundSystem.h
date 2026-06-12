@@ -15,6 +15,7 @@ namespace dae
 
 		void ToggleMute() override;
 		bool IsMuted() const override;
+		void StopAll() override;
 
 	private:
 		std::unique_ptr<SoundSystem> m_RealSoundSystem;

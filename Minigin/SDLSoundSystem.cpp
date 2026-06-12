@@ -71,11 +71,31 @@ namespace dae
 		void ToggleMute()
 		{
 			m_IsMuted = !m_IsMuted;
+
+			if (m_IsMuted)
+			{
+				StopAll();
+			}
 		}
 
 		bool IsMuted() const
 		{
 			return m_IsMuted;
+		}
+
+		void StopAll()
+		{
+			std::lock_guard<std::mutex> lock(m_Mutex);
+
+			for (auto* track : m_Tracks)
+			{
+				MIX_DestroyTrack(track);
+			}
+
+			m_Tracks.clear();
+
+			std::queue<PlayRequest> emptyQueue;
+			m_Queue.swap(emptyQueue);
 		}
 
 	private:
@@ -193,5 +213,10 @@ namespace dae
 	bool SDLSoundSystem::IsMuted() const
 	{
 		return m_Impl->IsMuted();
+	}
+
+	void SDLSoundSystem::StopAll()
+	{
+		m_Impl->StopAll();
 	}
 }

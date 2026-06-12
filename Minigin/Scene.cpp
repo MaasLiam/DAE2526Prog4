@@ -19,6 +19,13 @@ void Scene::Add(std::unique_ptr<GameObject> object)
 
 void Scene::Remove(const GameObject& object)
 {
+	const auto alreadyMarkedForRemoval = std::find(m_objectsToRemove.begin(), m_objectsToRemove.end(), &object) != m_objectsToRemove.end();
+
+	if (alreadyMarkedForRemoval)
+	{
+		return;
+	}
+
 	m_objectsToRemove.push_back(&object);
 }
 
@@ -28,7 +35,7 @@ void Scene::RemoveAll()
 	{
 		for (const auto& object : m_objects)
 		{
-			m_objectsToRemove.push_back(object.get());
+			Remove(*object);
 		}
 
 		m_objectsToAdd.clear();
