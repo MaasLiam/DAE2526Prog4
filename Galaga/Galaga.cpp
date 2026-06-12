@@ -315,12 +315,13 @@ void Galaga::Initialize()
 	CreateSpriteObject(scene, "background.png", glm::vec3{ 0.f, 0.f, 0.f });
 
 	//logo 
-	auto* logoObject = CreateSpriteObject(scene, "logo.png", glm::vec3{ 358.f, 95.f, 0.f });
+	auto* logoObject = CreateSpriteObject(scene, "galaga_logo.png", glm::vec3{ 350.f, 60.f, 0.f });
+
 
 	auto font = dae::ResourceManager::GetInstance().LoadFont("Lingua.otf", 36);
 
 	// game state / result screen text
-	auto titleTextObject = CreateTextObject(scene, "GALAGA", font, SDL_Color{ 255, 0, 0, 255 }, glm::vec3{ 360.f, 35.f, 0.f });
+	auto titleTextObject = CreateTextObject(scene, "", font, SDL_Color{ 255, 0, 0, 255 }, glm::vec3{ 350.f, 25.f, 0.f });
 	auto* titleText = titleTextObject.text;
 
 	//score text
@@ -394,6 +395,7 @@ void Galaga::Initialize()
 
 	auto& gameControllerComponent = gameControllerObject->AddComponent<galaga::GalagaGameControllerComponent>(scene, gameControllerUi);
 
+	gameControllerComponent.RegisterMenuObject(logoObject);
 	gameControllerComponent.RegisterGameplayObject(controlsP1Object, glm::vec3{ 20.f, 520.f, 0.f });
 	gameControllerComponent.RegisterPlayerTwoGameplayObject(controlsP2Object, glm::vec3{ 20.f, 550.f, 0.f });
 	// Player 1
@@ -549,7 +551,6 @@ void Galaga::Initialize()
 
 	gameControllerComponent.RegisterPlayer(player1Object);
 	gameControllerComponent.RegisterPlayer(player2Object);
-	gameControllerComponent.RegisterObjectToHideOnResults(logoObject);
 	gameControllerComponent.RegisterObjectToHideOnResults(fpsObject);
 	gameControllerComponent.RegisterGameplayObject(fpsObject, glm::vec3{ 10.f, 10.f, 0.f });
 

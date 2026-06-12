@@ -128,6 +128,23 @@ void galaga::GalagaGameControllerComponent::RegisterPlayerTwoGameplayObject(dae:
 	}
 }
 
+void galaga::GalagaGameControllerComponent::RegisterMenuObject(dae::GameObject* object)
+{
+	if (object == nullptr)
+	{
+		return;
+	}
+
+	auto* transform = object->GetComponent<dae::TransformComponent>();
+
+	if (transform == nullptr)
+	{
+		return;
+	}
+
+	m_MenuObjects.push_back(GameplayObject{ object, transform->GetLocalPosition() });
+}
+
 galaga::GameState galaga::GalagaGameControllerComponent::GetState() const
 {
 	return m_State;
@@ -433,13 +450,16 @@ void galaga::GalagaGameControllerComponent::SetState(galaga::GameState state)
 	switch (m_State)
 	{
 	case galaga::GameState::StartScreen:
-	HideResultTexts();
-	HideGameplayObjects();
-	m_TitleText.SetText("GALAGA");
+		HideResultTexts();
+		HideGameplayObjects();
+		ShowMenuObjects();
+		m_TitleText.SetText("");
+		break;
 	break;
 
 	case galaga::GameState::Playing:
 		HideResultTexts();
+		HideMenuObjects();
 		ShowGameplayObjects();
 
 		m_ScoreTextTransform.SetLocalPosition(330.f, 125.f, 0.f);
@@ -448,11 +468,13 @@ void galaga::GalagaGameControllerComponent::SetState(galaga::GameState state)
 
 	case galaga::GameState::StageComplete:
 		HideResultTexts();
+		HideMenuObjects();
 		m_TitleText.SetText("STAGE CLEAR!");
 		break;
 
 	case galaga::GameState::EnteringHighScore:
 	{
+		HideMenuObjects();
 		HideGameplayInstructionTexts();
 		m_TitleText.SetText(m_ResultMessage.empty() ? "- RESULTS -" : m_ResultMessage);
 
@@ -477,6 +499,7 @@ void galaga::GalagaGameControllerComponent::SetState(galaga::GameState state)
 	}
 
 	case galaga::GameState::HighScoreScreen:
+		HideMenuObjects();
 		m_ScoreTextTransform.SetLocalPosition(300.f, 125.f, 0.f);
 		m_InstructionTextTransform.SetLocalPosition(130.f, 300.f, 0.f);
 		m_TableTitleTextTransform.SetLocalPosition(320.f, 360.f, 0.f);
@@ -492,8 +515,9 @@ void galaga::GalagaGameControllerComponent::SetState(galaga::GameState state)
 	case galaga::GameState::ModeSelection:
 		HideResultTexts();
 		HideGameplayObjects();
+		ShowMenuObjects();
 
-		m_TitleText.SetText("GALAGA");
+		m_TitleText.SetText("");
 		m_ScoreTextTransform.SetLocalPosition(390.f, 235.f, 0.f);
 		m_InitialsTextTransform.SetLocalPosition(390.f, 280.f, 0.f);
 		m_TableTitleTextTransform.SetLocalPosition(390.f, 325.f, 0.f);
@@ -758,6 +782,46 @@ void galaga::GalagaGameControllerComponent::ShowPlayerTwoObjects()
 		{
 			transform->SetLocalPosition(gameplayObject.gameplayPosition);
 		}
+	}
+}
+
+void galaga::GalagaGameControllerComponent::HideMenuObjects()
+{
+	for (const auto& menuObject : m_MenuObjects)
+	{
+		if (menuObject.object == nullptr)
+		{
+			continue;
+		}
+
+		auto* transform = menuObject.object->GetComponent<dae::TransformComponent>();
+
+		if (transform == nullptr)
+		{
+			continue;
+		}
+
+		transform->SetLocalPosition(-1000.f, -1000.f, 0.f);
+	}
+}
+
+void galaga::GalagaGameControllerComponent::ShowMenuObjects()
+{
+	for (const auto& menuObject : m_MenuObjects)
+	{
+		if (menuObject.object == nullptr)
+		{
+			continue;
+		}
+
+		auto* transform = menuObject.object->GetComponent<dae::TransformComponent>();
+
+		if (transform == nullptr)
+		{
+			continue;
+		}
+
+		transform->SetLocalPosition(menuObject.gameplayPosition);
 	}
 }
 

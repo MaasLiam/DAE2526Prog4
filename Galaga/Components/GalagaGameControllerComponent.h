@@ -64,6 +64,7 @@ namespace galaga
 		void RegisterObjectToHideOnResults(dae::GameObject* object);
 		void RegisterGameplayObject(dae::GameObject* object, const glm::vec3& gameplayPosition);
 		void RegisterPlayerTwoGameplayObject(dae::GameObject* object, const glm::vec3& gameplayPosition);
+		void RegisterMenuObject(dae::GameObject* object);
 
 		galaga::GameState GetState() const;
 		void ForceRefreshCurrentState();
@@ -120,6 +121,8 @@ namespace galaga
 		void HideGameplayObjects();
 		void ShowGameplayObjects();
 		void ShowPlayerTwoObjects();
+		void HideMenuObjects();
+		void ShowMenuObjects();
 
 		dae::Scene& m_Scene;
 
@@ -158,6 +161,7 @@ namespace galaga
 		galaga::GameMode m_GameMode{ galaga::GameMode::SinglePlayer };
 		int m_SelectedGameModeIndex{};
 		std::string m_ResultMessage{};
+		std::vector<GameplayObject> m_MenuObjects{};
 	};
 }
 
