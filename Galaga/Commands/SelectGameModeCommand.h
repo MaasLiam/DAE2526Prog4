@@ -8,11 +8,11 @@ class GalagaGameControllerComponent;
 class SelectGameModeCommand final : public dae::Command
 {
 public:
-	SelectGameModeCommand(GalagaGameControllerComponent& gameController, GameMode gameMode);
+	SelectGameModeCommand(GalagaGameControllerComponent& gameController, galaga::GameMode gameMode);
 
 	void Execute(float deltaTime) override;
 
 private:
 	GalagaGameControllerComponent& m_GameController;
-	GameMode m_GameMode{};
+	galaga::GameMode m_GameMode{};
 };

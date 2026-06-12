@@ -1,11 +1,14 @@
 #pragma once
 
-enum class GameState
+namespace galaga
 {
-	StartScreen,
-	ModeSelection,
-	Playing,
-	StageComplete,
-	EnteringHighScore,
-	HighScoreScreen
-};
+	enum class GameState
+	{
+		StartScreen,
+		ModeSelection,
+		Playing,
+		StageComplete,
+		EnteringHighScore,
+		HighScoreScreen
+	};
+}

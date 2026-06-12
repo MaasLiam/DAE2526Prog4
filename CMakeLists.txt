@@ -81,7 +81,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Galaga/Commands/VersusBossShootCommand.cpp
   Galaga/Components/VersusBossComponent.cpp
   Galaga/Commands/VersusBossDiveCommand.cpp
-  Galaga/Commands/VersusBossTractorBeamCommand.cpp "Galaga/Components/EnemyBulletCollisionComponent.cpp" "Galaga/Components/EnemyShooterComponent.cpp")
+  Galaga/Commands/VersusBossTractorBeamCommand.cpp "Galaga/Components/EnemyBulletCollisionComponent.cpp" "Galaga/Components/EnemyShooterComponent.cpp" "Galaga/Components/BossTractorBeamComponent.cpp" "Galaga/Components/CapturedFighterComponent.cpp")
 
 # enable c++20 features
 target_compile_features(${ENGINE_TARGET} PUBLIC cxx_std_20)

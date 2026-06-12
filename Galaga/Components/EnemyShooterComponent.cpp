@@ -10,6 +10,8 @@
 #include "RenderComponent.h"
 #include "Scene.h"
 #include "TransformComponent.h"
+#include "ServiceLocator.h"
+#include "SoundIds.h"
 
 #include <memory>
 
@@ -31,7 +33,7 @@ EnemyShooterComponent::EnemyShooterComponent(dae::GameObject* owner, dae::Scene&
 
 void EnemyShooterComponent::Update(float deltaTime)
 {
-	if (m_GameController.GetState() != GameState::Playing)
+	if (m_GameController.GetState() != galaga::GameState::Playing)
 	{
 		return;
 	}
@@ -42,7 +44,7 @@ void EnemyShooterComponent::Update(float deltaTime)
 		return;
 	}
 
-	if (enemy->GetStateId() != EnemyStateId::Diving)
+	if (enemy->GetStateId() != galaga::EnemyStateId::Diving)
 	{
 		m_ShootTimer = 0.f;
 		m_HasShotDuringCurrentDive = false;

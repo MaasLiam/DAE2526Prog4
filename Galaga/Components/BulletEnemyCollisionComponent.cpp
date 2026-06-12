@@ -11,13 +11,16 @@
 #include "HealthComponent.h"
 #include "ServiceLocator.h"
 #include "SoundIds.h"
+#include "CapturedFighterComponent.h"
 
 BulletEnemyCollisionComponent::BulletEnemyCollisionComponent(dae::GameObject* owner, dae::Scene& scene, dae::ScoreComponent& scoreComponent, GalagaGameControllerComponent* gameController)
 	: dae::Component(owner)
 	, m_Scene(scene)
 	, m_ScoreComponent(scoreComponent)
 	, m_GameController(gameController)
-{}
+{
+
+}
 
 void BulletEnemyCollisionComponent::Update(float)
 {
@@ -35,7 +38,7 @@ void BulletEnemyCollisionComponent::Update(float)
 
 		if (versusBoss && versusBossCollision && versusBossHealth)
 		{
-			if (m_GameController && m_GameController->GetGameMode() == GameMode::Versus && bulletCollision->Overlaps(*versusBossCollision))
+			if (m_GameController && m_GameController->GetGameMode() == galaga::GameMode::Versus && bulletCollision->Overlaps(*versusBossCollision))
 			{
 				m_GameController->RegisterHit();
 
@@ -55,6 +58,24 @@ void BulletEnemyCollisionComponent::Update(float)
 
 				return;
 			}
+		}
+
+		auto* capturedFighter = object->GetComponent<CapturedFighterComponent>();
+		auto* capturedFighterCollision = object->GetComponent<CollisionComponent>();
+
+		if (capturedFighter && capturedFighterCollision && bulletCollision->Overlaps(*capturedFighterCollision))
+		{
+			if (m_GameController)
+			{
+				m_GameController->RegisterHit();
+			}
+
+			dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::EnemyDestroyed), 1.0f);
+
+			m_Scene.Remove(*object);
+			m_Scene.Remove(*GetOwner());
+
+			return;
 		}
 
 		auto* enemy = object->GetComponent<EnemyComponent>();
@@ -78,7 +99,7 @@ void BulletEnemyCollisionComponent::Update(float)
 
 			if (enemy->IsDead())
 			{
-				if (enemy->GetType() == EnemyType::BossGalaga)
+				if (enemy->GetType() == galaga::EnemyType::BossGalaga)
 				{
 					dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::BossGalagaDestroyed), 1.0f);
 				}
@@ -90,7 +111,7 @@ void BulletEnemyCollisionComponent::Update(float)
 				m_ScoreComponent.AddScore(scoreValue);
 				m_Scene.Remove(*object);
 			}
-			else if (enemy->GetType() == EnemyType::BossGalaga)
+			else if (enemy->GetType() == galaga::EnemyType::BossGalaga)
 			{
 				dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::BossGalagaInjured), 1.0f);
 			}

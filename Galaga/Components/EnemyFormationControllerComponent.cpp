@@ -56,5 +56,14 @@ void EnemyFormationControllerComponent::Update(float deltaTime)
     }
 
     const int randomIndex = rand() % static_cast<int>(availableEnemies.size());
-    availableEnemies[randomIndex]->StartDiving();
+
+    auto* selectedEnemy = availableEnemies[randomIndex];
+
+    if (selectedEnemy->GetType() == galaga::EnemyType::BossGalaga && rand() % 2 == 0)
+    {
+        selectedEnemy->StartTractorBeam();
+        return;
+    }
+
+    selectedEnemy->StartDiving();
 }

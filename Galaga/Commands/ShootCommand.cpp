@@ -28,12 +28,12 @@ ShootCommand::ShootCommand(dae::GameObject& shooter, dae::Scene& scene, GalagaGa
 
 void ShootCommand::Execute(float)
 {
-	if (m_GameController && m_GameController->GetState() != GameState::Playing)
+	if (m_GameController && m_GameController->GetState() != galaga::GameState::Playing)
 	{
 		return;
 	}
 
-	if (m_GameController && m_Owner == ShootOwner::PlayerTwo && m_GameController->GetGameMode() == GameMode::Versus)
+	if (m_GameController && m_Owner == ShootOwner::PlayerTwo && m_GameController->GetGameMode() == galaga::GameMode::Versus)
 	{
 		return;
 	}

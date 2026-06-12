@@ -1,8 +1,11 @@
 #pragma once
 
-enum class GameMode
+namespace galaga
 {
-	SinglePlayer,
-	Coop,
-	Versus
-};
+	enum class GameMode
+	{
+		SinglePlayer,
+		Coop,
+		Versus
+	};
+}

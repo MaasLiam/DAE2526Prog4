@@ -51,7 +51,7 @@ public:
 	void RegisterGameplayObject(dae::GameObject* object, const glm::vec3& gameplayPosition);
 	void RegisterPlayerTwoGameplayObject(dae::GameObject* object, const glm::vec3& gameplayPosition);
 
-	GameState GetState() const;
+	galaga::GameState GetState() const;
 	void ForceRefreshCurrentState();
 
 	void StartGame();
@@ -68,8 +68,8 @@ public:
 	void RegisterShotFired();
 	void RegisterHit();
 
-	void SelectGameMode(GameMode gameMode);
-	GameMode GetGameMode() const;
+	void SelectGameMode(galaga::GameMode gameMode);
+	galaga::GameMode GetGameMode() const;
 	void SetVersusWinner(int playerIndex);
 
 	bool IsPlayerActive(PlayerIndex playerIndex) const;
@@ -92,7 +92,7 @@ private:
 	int GetTotalScore() const;
 	std::string GetInitialsString() const;
 
-	void SetState(GameState state);
+	void SetState(galaga::GameState state);
 	void StartStage(int stageIndex);
 	void EnterHighScoreScreen();
 	void SaveHighScore();
@@ -128,7 +128,7 @@ private:
 
 	HighScoreManager m_HighScoreManager{ "highscores.txt" };
 
-	GameState m_State{ GameState::StartScreen };
+	galaga::GameState m_State{ galaga::GameState::StartScreen };
 	float m_StateTimer{};
 	int m_StageIndex{ 1 };
 	int m_FinalScore{};
@@ -140,7 +140,7 @@ private:
 	int m_SelectedInitialIndex{};
 
 	static constexpr int m_MaxStageIndex{ 3 };
-	GameMode m_GameMode{ GameMode::SinglePlayer };
+	galaga::GameMode m_GameMode{ galaga::GameMode::SinglePlayer };
 	int m_SelectedGameModeIndex{};
 	std::string m_ResultMessage{};
 };

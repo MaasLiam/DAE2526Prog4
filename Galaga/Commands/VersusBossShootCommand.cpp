@@ -22,7 +22,7 @@ VersusBossShootCommand::VersusBossShootCommand(dae::GameObject& boss, dae::GameO
 
 void VersusBossShootCommand::Execute(float)
 {
-	if (m_GameController.GetState() != GameState::Playing || m_GameController.GetGameMode() != GameMode::Versus)
+	if (m_GameController.GetState() != galaga::GameState::Playing || m_GameController.GetGameMode() != galaga::GameMode::Versus)
 	{
 		return;
 	}

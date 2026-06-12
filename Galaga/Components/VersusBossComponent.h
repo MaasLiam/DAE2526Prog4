@@ -3,6 +3,7 @@
 #include "Component.h"
 
 #include <glm/vec3.hpp>
+#include "GameplayConstants.h"
 
 namespace dae
 {
@@ -47,15 +48,15 @@ private:
 
 	BossState m_State{ BossState::Idle };
 
-	glm::vec3 m_StartPosition{ 400.f, 90.f, 0.f };
-	glm::vec3 m_BeamPosition{ 400.f, 350.f, 0.f };
-	glm::vec3 m_BeamVisualOffset{ -15.f, 32.f, 0.f };
-	glm::vec3 m_DiveTarget{ 400.f, 500.f, 0.f };
+	glm::vec3 m_StartPosition{ galaga::gameplay::VersusBossStartPosition };
+	glm::vec3 m_BeamPosition{ galaga::gameplay::VersusBossStartX, galaga::gameplay::TractorBeamY, 0.f };
+	glm::vec3 m_BeamVisualOffset{ galaga::gameplay::TractorBeamVisualOffset };
+	glm::vec3 m_DiveTarget{ galaga::gameplay::VersusBossStartX, galaga::gameplay::PlayerStartY, 0.f };
 
-	float m_BeamHitboxLeftOffset{ -15.f };
-	float m_BeamHitboxTopOffset{ 32.f };
-	float m_BeamHitboxWidth{ 64.f };
-	float m_BeamHitboxHeight{ 300.f };
+	float m_BeamHitboxLeftOffset{ galaga::gameplay::TractorBeamHitboxLeftOffset };
+	float m_BeamHitboxTopOffset{ galaga::gameplay::TractorBeamHitboxTopOffset };
+	float m_BeamHitboxWidth{ galaga::gameplay::TractorBeamHitboxWidth };
+	float m_BeamHitboxHeight{ galaga::gameplay::TractorBeamHitboxHeight };
 
 	float m_TractorTimer{};
 	bool m_HasDamagedPlayerThisAttack{};

@@ -10,6 +10,7 @@
 #include "KeyboardInput.h"
 #include "ControllerInput.h"
 #include "InputTypes.h"
+#include "GameplayConstants.h"
 
 #include "TransformComponent.h"
 #include "TextComponent.h"
@@ -214,7 +215,7 @@ void Galaga::Initialize()
 	go->AddComponent<dae::ScoreComponent>();
 	go->AddComponent<MissileLimitComponent>();
 	go->AddComponent<dae::TransformComponent>();
-	go->AddComponent<dae::RenderComponent>("Sprites/fighter01.png");
+	go->AddComponent<dae::RenderComponent>(galaga::gameplay::FighterSprite);
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(glm::vec3{ 360, 500, 0 });
 
 	auto* player1Health = go->GetComponent<dae::HealthComponent>();
@@ -253,10 +254,10 @@ void Galaga::Initialize()
 		dae::InputState::Down);
 
 	auto* player1Object = go.get();
-	player1Object->AddComponent<CollisionComponent>(32.f, 32.f);
+	player1Object->AddComponent<CollisionComponent>(galaga::gameplay::FighterCollisionWidth, galaga::gameplay::FighterCollisionHeight);
 	scene.Add(std::move(go));
 
-	gameControllerComponent->RegisterGameplayObject(player1Object, glm::vec3{ 360.f, 500.f, 0.f });
+	gameControllerComponent->RegisterGameplayObject(player1Object, galaga::gameplay::PlayerOneStartPosition);
 
 	//player1 health ui
 	go = std::make_unique<dae::GameObject>();
@@ -300,7 +301,7 @@ void Galaga::Initialize()
 	auto beamObject = std::make_unique<dae::GameObject>();
 	beamObject->AddComponent<dae::TransformComponent>();
 	beamObject->GetComponent<dae::TransformComponent>()->SetLocalPosition(-1000.f, -1000.f, 0.f);
-	beamObject->AddComponent<dae::RenderComponent>("Sprites/TractorBeam.png");
+	beamObject->AddComponent<dae::RenderComponent>(galaga::gameplay::TractorBeamSprite);
 
 	auto* tractorBeamObject = beamObject.get();
 	scene.Add(std::move(beamObject));
@@ -351,10 +352,10 @@ void Galaga::Initialize()
 		dae::InputState::Down);
 
 	auto* player2Object = go.get();
-	player2Object->AddComponent<CollisionComponent>(40.f, 32.f);
+	player2Object->AddComponent<CollisionComponent>(galaga::gameplay::BossCollisionWidth, galaga::gameplay::BossCollisionHeight);
 	scene.Add(std::move(go));
 
-	gameControllerComponent->RegisterPlayerTwoGameplayObject(player2Object, glm::vec3{ 440.f, 500.f, 0.f });
+	gameControllerComponent->RegisterPlayerTwoGameplayObject(player2Object, galaga::gameplay::PlayerTwoStartPosition);
 
 	//player 2 health ui
 	go = std::make_unique<dae::GameObject>();

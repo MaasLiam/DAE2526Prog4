@@ -3,6 +3,9 @@
 #include "GameObject.h"
 #include "TransformComponent.h"
 #include "RenderComponent.h"
+#include "ServiceLocator.h"
+#include "SoundIds.h"
+#include "GameplayConstants.h"
 
 #include <utility>
 #include <vector>
@@ -61,18 +64,18 @@ namespace
 	std::vector<glm::vec3> CreateEntryPath(
 		const glm::vec3& start,
 		const glm::vec3& target,
-		EnemyType type
+		galaga::EnemyType type
 	)
 	{
 		switch (type)
 		{
-		case EnemyType::Bee:
+		case galaga::EnemyType::Bee:
 			return CreateBeeEntryPath(start, target);
 
-		case EnemyType::Butterfly:
+		case galaga::EnemyType::Butterfly:
 			return CreateButterflyEntryPath(start, target);
 
-		case EnemyType::BossGalaga:
+		case galaga::EnemyType::BossGalaga:
 			return CreateBossEntryPath(start, target);
 		}
 
@@ -109,9 +112,9 @@ public:
 	{
 		switch (enemy.GetType())
 		{
-		case EnemyType::Bee: return 50;
-		case EnemyType::Butterfly: return 80;
-		case EnemyType::BossGalaga: return 150;
+		case galaga::EnemyType::Bee: return 50;
+		case galaga::EnemyType::Butterfly: return 80;
+		case galaga::EnemyType::BossGalaga: return 150;
 		}
 
 		return 0;
@@ -135,10 +138,10 @@ public:
 
 		auto position = transform->GetLocalPosition();
 
-		const float diveSpeed = enemy.GetType() == EnemyType::Butterfly ? 90.f : 70.f;
+		const float diveSpeed = enemy.GetType() == galaga::EnemyType::Butterfly ? 90.f : 70.f;
 		position.y += diveSpeed * deltaTime;
 
-		if (enemy.GetType() == EnemyType::Butterfly)
+		if (enemy.GetType() == galaga::EnemyType::Butterfly)
 			position.x += m_Direction * 50.f * deltaTime;
 
 		m_WiggleTimer += deltaTime;
@@ -163,9 +166,9 @@ public:
 	{
 		switch (enemy.GetType())
 		{
-		case EnemyType::Bee: return 100;
-		case EnemyType::Butterfly: return 160;
-		case EnemyType::BossGalaga: return 400;
+		case galaga::EnemyType::Bee: return 100;
+		case galaga::EnemyType::Butterfly: return 160;
+		case galaga::EnemyType::BossGalaga: return 400;
 		}
 
 		return 0;
@@ -179,6 +182,24 @@ private:
 class TractorBeamEnemyState final : public EnemyState
 {
 public:
+	void OnEnter(EnemyComponent& enemy) override
+	{
+		enemy.SetTractorBeamActive(false);
+
+		auto* transform = enemy.GetOwner()->GetComponent<dae::TransformComponent>();
+		if (!transform)
+		{
+			return;
+		}
+
+		const auto currentPosition = transform->GetLocalPosition();
+		m_BeamPosition = glm::vec3{ currentPosition.x, galaga::gameplay::TractorBeamY, 0.f };
+	}
+
+	void OnExit(EnemyComponent& enemy) override
+	{
+		enemy.SetTractorBeamActive(false);
+	}
 
 	std::unique_ptr<EnemyState> Update(EnemyComponent& enemy, float deltaTime) override
 	{
@@ -188,14 +209,44 @@ public:
 			return nullptr;
 		}
 
-		auto position = transform->GetLocalPosition();
-		position.y += 35.f * deltaTime;
-		transform->SetLocalPosition(position);
-
-		m_Timer += deltaTime;
-		if (m_Timer >= 3.f)
+		switch (m_Phase)
 		{
-			return std::make_unique<InFormationEnemyState>();
+		case Phase::MovingToBeamPosition:
+			MoveTowards(*transform, m_BeamPosition, 180.f, deltaTime);
+
+			if (IsNear(*transform, m_BeamPosition, 8.f))
+			{
+				transform->SetLocalPosition(m_BeamPosition);
+				enemy.SetTractorBeamActive(true);
+				m_Timer = 0.f;
+				m_Phase = Phase::BeamActive;
+
+				dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::TractorBeam), 1.0f);
+			}
+
+			break;
+
+		case Phase::BeamActive:
+			m_Timer += deltaTime;
+
+			if (m_Timer >= 2.5f)
+			{
+				enemy.SetTractorBeamActive(false);
+				m_Phase = Phase::Returning;
+			}
+
+			break;
+
+		case Phase::Returning:
+			MoveTowards(*transform, enemy.GetFormationPosition(), 180.f, deltaTime);
+
+			if (IsNear(*transform, enemy.GetFormationPosition(), 8.f))
+			{
+				transform->SetLocalPosition(enemy.GetFormationPosition());
+				return std::make_unique<InFormationEnemyState>();
+			}
+
+			break;
 		}
 
 		return nullptr;
@@ -207,6 +258,43 @@ public:
 	}
 
 private:
+	enum class Phase
+	{
+		MovingToBeamPosition,
+		BeamActive,
+		Returning
+	};
+
+	static void MoveTowards(dae::TransformComponent& transform, const glm::vec3& target, float speed, float deltaTime)
+	{
+		const auto position = transform.GetLocalPosition();
+		const auto difference = target - position;
+		const float distance = glm::length(difference);
+
+		if (distance <= 0.001f)
+		{
+			return;
+		}
+
+		const auto direction = difference / distance;
+		const auto movement = direction * speed * deltaTime;
+
+		if (glm::length(movement) >= distance)
+		{
+			transform.SetLocalPosition(target);
+			return;
+		}
+
+		transform.SetLocalPosition(position + movement);
+	}
+
+	static bool IsNear(const dae::TransformComponent& transform, const glm::vec3& target, float distance)
+	{
+		return glm::length(transform.GetLocalPosition() - target) <= distance;
+	}
+
+	Phase m_Phase{ Phase::MovingToBeamPosition };
+	glm::vec3 m_BeamPosition{};
 	float m_Timer{};
 };
 
@@ -282,13 +370,13 @@ public:
 	{
 		switch (enemy.GetType())
 		{
-		case EnemyType::Bee:
+		case galaga::EnemyType::Bee:
 			return 50;
 
-		case EnemyType::Butterfly:
+		case galaga::EnemyType::Butterfly:
 			return 80;
 
-		case EnemyType::BossGalaga:
+		case galaga::EnemyType::BossGalaga:
 			return 150;
 		}
 
@@ -296,17 +384,17 @@ public:
 	}
 
 private:
-	static float GetEntrySpeed(EnemyType type)
+	static float GetEntrySpeed(galaga::EnemyType type)
 	{
 		switch (type)
 		{
-		case EnemyType::Bee:
+		case galaga::EnemyType::Bee:
 			return 170.f;
 
-		case EnemyType::Butterfly:
+		case galaga::EnemyType::Butterfly:
 			return 190.f;
 
-		case EnemyType::BossGalaga:
+		case galaga::EnemyType::BossGalaga:
 			return 150.f;
 		}
 
@@ -317,11 +405,11 @@ private:
 	size_t m_CurrentWaypoint{};
 };
 
-EnemyComponent::EnemyComponent(dae::GameObject* owner, EnemyType type)
+EnemyComponent::EnemyComponent(dae::GameObject* owner, galaga::EnemyType type)
 	: dae::Component(owner)
 	, m_Type(type)
 {
-	if (m_Type == EnemyType::BossGalaga)
+	if (m_Type == galaga::EnemyType::BossGalaga)
 	{
 		m_Health = 2;
 	}
@@ -349,57 +437,63 @@ int EnemyComponent::GetScoreValue() const
 	return m_State ? m_State->GetScoreValue(*this) : 0;
 }
 
-EnemyType EnemyComponent::GetType() const
+galaga::EnemyType EnemyComponent::GetType() const
 {
 	return m_Type;
 }
 
-EnemyStateId EnemyComponent::GetStateId() const
+galaga::EnemyStateId EnemyComponent::GetStateId() const
 {
 	if (!m_State)
 	{
-		return EnemyStateId::Dead;
+		return galaga::EnemyStateId::Dead;
 	}
 
 	if (IsDead())
 	{
-		return EnemyStateId::Dead;
+		return galaga::EnemyStateId::Dead;
 	}
 
 	if (dynamic_cast<FlyingIntoFormationEnemyState*>(m_State.get()))
 	{
-		return EnemyStateId::FlyingIntoFormation;
+		return galaga::EnemyStateId::FlyingIntoFormation;
 	}
 
 	if (dynamic_cast<InFormationEnemyState*>(m_State.get()))
 	{
-		return EnemyStateId::InFormation;
+		return galaga::EnemyStateId::InFormation;
 	}
 
 	if (dynamic_cast<DivingEnemyState*>(m_State.get()))
 	{
-		return EnemyStateId::Diving;
+		return galaga::EnemyStateId::Diving;
 	}
 
 	if (dynamic_cast<TractorBeamEnemyState*>(m_State.get()))
 	{
-		return EnemyStateId::TractorBeam;
+		return galaga::EnemyStateId::TractorBeam;
 	}
 
-	return EnemyStateId::Dead;
+	return galaga::EnemyStateId::Dead;
 }
 
 void EnemyComponent::StartDiving()
 {
 	ChangeState(std::make_unique<DivingEnemyState>());
+
+	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::EnemyDive), 1.0f);
 }
 
 void EnemyComponent::StartTractorBeam()
 {
-	if (m_Type == EnemyType::BossGalaga)
+	if (m_Type != galaga::EnemyType::BossGalaga)
 	{
-		ChangeState(std::make_unique<TractorBeamEnemyState>());
+		return;
 	}
+
+	ChangeState(std::make_unique<TractorBeamEnemyState>());
+
+	dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::EnemyDive), 1.0f);
 }
 
 void EnemyComponent::ReturnToFormation()
@@ -422,7 +516,7 @@ void EnemyComponent::TakeDamage()
 
 	--m_Health;
 
-	if (m_Type == EnemyType::BossGalaga && m_Health == 1)
+	if (m_Type == galaga::EnemyType::BossGalaga && m_Health == 1)
 	{
 		auto* render = GetOwner()->GetComponent<dae::RenderComponent>();
 		if (render)
@@ -491,4 +585,14 @@ void EnemyComponent::SetFormationPosition(const glm::vec3& position)
 bool EnemyComponent::IsInFormation() const
 {
 	return m_IsInFormation;
+}
+
+bool EnemyComponent::IsTractorBeamActive() const
+{
+	return m_IsTractorBeamActive;
+}
+
+void EnemyComponent::SetTractorBeamActive(bool isActive)
+{
+	m_IsTractorBeamActive = isActive;
 }

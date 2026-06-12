@@ -10,6 +10,7 @@
 #include "RenderComponent.h"
 #include "ServiceLocator.h"
 #include "SoundIds.h"
+#include "GameplayConstants.h"
 
 #include <glm/geometric.hpp>
 
@@ -23,7 +24,7 @@ VersusBossComponent::VersusBossComponent(dae::GameObject* owner, GalagaGameContr
 
 void VersusBossComponent::Update(float deltaTime)
 {
-	if (m_GameController.GetState() != GameState::Playing || m_GameController.GetGameMode() != GameMode::Versus)
+	if (m_GameController.GetState() != galaga::GameState::Playing || m_GameController.GetGameMode() != galaga::GameMode::Versus)
 	{
 		return;
 	}
@@ -135,7 +136,7 @@ void VersusBossComponent::Update(float deltaTime)
 void VersusBossComponent::StartDive()
 {
 	SetBeamVisible(false);
-	if (m_GameController.GetState() != GameState::Playing || m_GameController.GetGameMode() != GameMode::Versus || m_State != BossState::Idle)
+	if (m_GameController.GetState() != galaga::GameState::Playing || m_GameController.GetGameMode() != galaga::GameMode::Versus || m_State != BossState::Idle)
 	{
 		return;
 	}
@@ -156,7 +157,7 @@ void VersusBossComponent::StartDive()
 
 void VersusBossComponent::StartTractorBeam()
 {
-	if (m_GameController.GetState() != GameState::Playing || m_GameController.GetGameMode() != GameMode::Versus || m_State != BossState::Idle)
+	if (m_GameController.GetState() != galaga::GameState::Playing || m_GameController.GetGameMode() != galaga::GameMode::Versus || m_State != BossState::Idle)
 	{
 		return;
 	}
@@ -320,7 +321,7 @@ void VersusBossComponent::TryCapturePlayerWithBeam()
 	{
 		playerHealth->LoseLife();
 		dae::ServiceLocator::GetSoundSystem().Play(galaga::ToSoundId(galaga::SoundIds::PlayerHit), 1.0f);
-		playerTransform->SetLocalPosition(360.f, 500.f, 0.f);
+		playerTransform->SetLocalPosition(galaga::gameplay::PlayerOneStartPosition);
 
 		m_HasDamagedPlayerThisAttack = true;
 	}

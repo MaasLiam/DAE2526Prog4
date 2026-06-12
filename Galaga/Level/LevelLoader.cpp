@@ -9,6 +9,9 @@
 #include "BulletComponent.h"
 #include "EnemyShooterComponent.h"
 #include "GalagaGameControllerComponent.h"
+#include "BossTractorBeamComponent.h"
+#include "TractorBeamVisualComponent.h"
+#include "CapturedFighterComponent.h"
 
 #include <fstream>
 #include <stdexcept>
@@ -19,41 +22,41 @@ namespace
 {
 	struct EnemySpawn
 	{
-		EnemyType type{};
+		galaga::EnemyType type{};
 		glm::vec3 formationPosition{};
 	};
 
-	EnemyType ParseEnemyType(const std::string& text)
+	galaga::EnemyType ParseEnemyType(const std::string& text)
 	{
 		if (text == "Bee")
 		{
-			return EnemyType::Bee;
+			return galaga::EnemyType::Bee;
 		}
 
 		if (text == "Butterfly")
 		{
-			return EnemyType::Butterfly;
+			return galaga::EnemyType::Butterfly;
 		}
 
 		if (text == "BossGalaga")
 		{
-			return EnemyType::BossGalaga;
+			return galaga::EnemyType::BossGalaga;
 		}
 
 		throw std::runtime_error("Unknown enemy type in level file: " + text);
 	}
 
-	const char* GetEnemyTexture(EnemyType type)
+	const char* GetEnemyTexture(galaga::EnemyType type)
 	{
 		switch (type)
 		{
-		case EnemyType::Bee:
+		case galaga::EnemyType::Bee:
 			return "Sprites/Bee01.png";
 
-		case EnemyType::Butterfly:
+		case galaga::EnemyType::Butterfly:
 			return "Sprites/Butterfly01.png";
 
-		case EnemyType::BossGalaga:
+		case galaga::EnemyType::BossGalaga:
 			return "Sprites/BossGalaga.png";
 		}
 
@@ -69,7 +72,7 @@ namespace
 	{
 		for (const auto& object : scene.GetObjects())
 		{
-			if (object->GetComponent<EnemyComponent>() || object->GetComponent<BulletComponent>())
+			if (object->GetComponent<EnemyComponent>() || object->GetComponent<BulletComponent>() || object->GetComponent<TractorBeamVisualComponent>() || object->GetComponent<CapturedFighterComponent>())
 			{
 				scene.Remove(*object);
 			}
@@ -135,6 +138,11 @@ namespace
 			enemy->AddComponent<CollisionComponent>(32.f, 32.f);
 			enemy->AddComponent<EnemyComponent>(spawn.type);
 			enemy->AddComponent<EnemyShooterComponent>(scene, gameController);
+
+			if (spawn.type == galaga::EnemyType::BossGalaga)
+			{
+				enemy->AddComponent<BossTractorBeamComponent>(scene, gameController);
+			}
 
 			auto* enemyComponent = enemy->GetComponent<EnemyComponent>();
 			enemyComponent->FlyIntoFormation(spawn.formationPosition);
