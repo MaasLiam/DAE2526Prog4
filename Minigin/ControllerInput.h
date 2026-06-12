@@ -13,9 +13,9 @@ namespace dae
 		~ControllerInput();
 
 		ControllerInput(const ControllerInput&) = delete;
+		ControllerInput(ControllerInput&&) = delete;
 		ControllerInput& operator=(const ControllerInput&) = delete;
-		ControllerInput(ControllerInput&&) noexcept;
-		ControllerInput& operator=(ControllerInput&&) noexcept;
+		ControllerInput& operator=(ControllerInput&&) = delete;
 
 		void AddBinding(std::unique_ptr<Command> command, InputKey key, InputState state);
 		void RemoveBinding(InputKey key, InputState state);

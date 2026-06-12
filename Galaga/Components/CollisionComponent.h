@@ -13,6 +13,13 @@ namespace galaga
 		bool Overlaps(const CollisionComponent& other) const;
 		SDL_FRect GetBounds() const;
 
+		~CollisionComponent() override = default;
+
+		CollisionComponent(const CollisionComponent&) = delete;
+		CollisionComponent(CollisionComponent&&) = delete;
+		CollisionComponent& operator=(const CollisionComponent&) = delete;
+		CollisionComponent& operator=(CollisionComponent&&) = delete;
+
 	private:
 		float m_Width{};
 		float m_Height{};

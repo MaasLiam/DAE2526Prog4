@@ -14,6 +14,11 @@ namespace dae
 		InputManager();
 		~InputManager();
 
+		InputManager(const InputManager&) = delete;
+		InputManager(InputManager&&) = delete;
+		InputManager& operator=(const InputManager&) = delete;
+		InputManager& operator=(InputManager&&) = delete;
+
 		bool ProcessInput(float deltaTime);
 
 		KeyboardInput* GetKeyboardInput() const;

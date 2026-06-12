@@ -20,6 +20,13 @@ namespace dae
         void SetTexture(Texture2D* texture);
         void SetTexture(const std::string& filename);
 
+        ~RenderComponent() override = default;
+
+        RenderComponent(const RenderComponent&) = delete;
+        RenderComponent(RenderComponent&&) = delete;
+        RenderComponent& operator=(const RenderComponent&) = delete;
+        RenderComponent& operator=(RenderComponent&&) = delete;
+
     private:
 		Texture2D* m_pTexture{};
     };

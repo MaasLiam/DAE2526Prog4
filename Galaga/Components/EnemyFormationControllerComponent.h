@@ -17,6 +17,13 @@ namespace galaga
 
         void Update(float deltaTime) override;
 
+        ~EnemyFormationControllerComponent() override = default;
+
+        EnemyFormationControllerComponent(const EnemyFormationControllerComponent&) = delete;
+        EnemyFormationControllerComponent(EnemyFormationControllerComponent&&) = delete;
+        EnemyFormationControllerComponent& operator=(const EnemyFormationControllerComponent&) = delete;
+        EnemyFormationControllerComponent& operator=(EnemyFormationControllerComponent&&) = delete;
+
     private:
         dae::Scene& m_Scene;
 

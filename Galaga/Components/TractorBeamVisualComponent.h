@@ -12,5 +12,12 @@ namespace galaga
 		{
 		
 		}
+
+		~TractorBeamVisualComponent() override = default;
+
+		TractorBeamVisualComponent(const TractorBeamVisualComponent&) = delete;
+		TractorBeamVisualComponent(TractorBeamVisualComponent&&) = delete;
+		TractorBeamVisualComponent& operator=(const TractorBeamVisualComponent&) = delete;
+		TractorBeamVisualComponent& operator=(TractorBeamVisualComponent&&) = delete;
 	};
 }

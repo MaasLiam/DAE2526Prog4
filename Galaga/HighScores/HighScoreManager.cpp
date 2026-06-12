@@ -67,8 +67,8 @@ void HighScoreManager::SortAndTrim()
 		}
 	);
 
-	if (m_HighScores.size() > static_cast<size_t>(m_MaxEntries))
+	if (m_HighScores.size() > static_cast<size_t>(MaxEntries))
 	{
-		m_HighScores.resize(static_cast<size_t>(m_MaxEntries));
+		m_HighScores.resize(static_cast<size_t>(MaxEntries));
 	}
 }

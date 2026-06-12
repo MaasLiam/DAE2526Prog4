@@ -18,6 +18,13 @@ namespace galaga
 
 		void Update(float deltaTime) override;
 
+		~EnemyBulletCollisionComponent() override = default;
+
+		EnemyBulletCollisionComponent(const EnemyBulletCollisionComponent&) = delete;
+		EnemyBulletCollisionComponent(EnemyBulletCollisionComponent&&) = delete;
+		EnemyBulletCollisionComponent& operator=(const EnemyBulletCollisionComponent&) = delete;
+		EnemyBulletCollisionComponent& operator=(EnemyBulletCollisionComponent&&) = delete;
+
 	private:
 		bool TryHitPlayer(galaga::PlayerIndex playerIndex);
 

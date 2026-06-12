@@ -17,6 +17,13 @@ namespace galaga
 
 		void Update(float deltaTime) override;
 
+		~CapturedFighterComponent() override = default;
+
+		CapturedFighterComponent(const CapturedFighterComponent&) = delete;
+		CapturedFighterComponent(CapturedFighterComponent&&) = delete;
+		CapturedFighterComponent& operator=(const CapturedFighterComponent&) = delete;
+		CapturedFighterComponent& operator=(CapturedFighterComponent&&) = delete;
+
 	private:
 		void Shoot();
 

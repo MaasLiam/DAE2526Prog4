@@ -22,6 +22,12 @@ namespace galaga
 	{
 	public:
 		MovePlayerCommand(dae::GameObject& object, dae::MoveDirection direction, float speed, GalagaGameControllerComponent& gameController, ControlledPlayer controlledPlayer, ControlContext controlContext = ControlContext::Always);
+		~MovePlayerCommand() override = default;
+
+		MovePlayerCommand(const MovePlayerCommand&) = delete;
+		MovePlayerCommand(MovePlayerCommand&&) = delete;
+		MovePlayerCommand& operator=(const MovePlayerCommand&) = delete;
+		MovePlayerCommand& operator=(MovePlayerCommand&&) = delete;
 
 		void Execute(float deltaTime) override;
 

@@ -13,6 +13,12 @@ public:
 	void AddScore(const std::string& name, int score);
 	std::vector<HighScoreEntry> GetHighScores() const;
 
+	~HighScoreManager() = default;
+	HighScoreManager(const HighScoreManager&) = delete;
+	HighScoreManager(HighScoreManager&&) = delete;
+	HighScoreManager& operator=(const HighScoreManager&) = delete;
+	HighScoreManager& operator=(HighScoreManager&&) = delete;
+
 private:
 	void Load();
 	void Save() const;
@@ -21,5 +27,5 @@ private:
 	std::string m_FilePath{};
 	std::vector<HighScoreEntry> m_HighScores{};
 
-	static constexpr int m_MaxEntries{ 5 };
+	static constexpr int MaxEntries{ 5 };
 };

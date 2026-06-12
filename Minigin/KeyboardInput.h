@@ -8,6 +8,12 @@ namespace dae
 	{
 	public:
 		KeyboardInput();
+		~KeyboardInput() override = default;
+
+		KeyboardInput(const KeyboardInput&) = delete;
+		KeyboardInput(KeyboardInput&&) = delete;
+		KeyboardInput& operator=(const KeyboardInput&) = delete;
+		KeyboardInput& operator=(KeyboardInput&&) = delete;
 
 	protected:
 		void UpdateState() override;

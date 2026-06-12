@@ -11,6 +11,13 @@ namespace dae
 	public:
 		RotationComponent(GameObject* owner, float radius, float angularSpeed);
 		void Update(float deltaTime) override;
+
+		~RotationComponent() override = default;
+
+		RotationComponent(const RotationComponent&) = delete;
+		RotationComponent(RotationComponent&&) = delete;
+		RotationComponent& operator=(const RotationComponent&) = delete;
+		RotationComponent& operator=(RotationComponent&&) = delete;
 	private:
 		float m_Radius{};
 		float m_AngularSpeed{};

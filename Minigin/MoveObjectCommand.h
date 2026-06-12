@@ -18,6 +18,12 @@ namespace dae
 	{
 	public:
 		MoveObjectCommand(GameObject& object, MoveDirection direction, float speed);
+		~MoveObjectCommand() override = default;
+
+		MoveObjectCommand(const MoveObjectCommand&) = delete;
+		MoveObjectCommand(MoveObjectCommand&&) = delete;
+		MoveObjectCommand& operator=(const MoveObjectCommand&) = delete;
+		MoveObjectCommand& operator=(MoveObjectCommand&&) = delete;
 
 		void Execute(float deltaTime) override;
 

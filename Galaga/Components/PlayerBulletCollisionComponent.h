@@ -17,6 +17,13 @@ namespace galaga
 
 		void Update(float deltaTime) override;
 
+		~PlayerBulletCollisionComponent() override = default;
+
+		PlayerBulletCollisionComponent(const PlayerBulletCollisionComponent&) = delete;
+		PlayerBulletCollisionComponent(PlayerBulletCollisionComponent&&) = delete;
+		PlayerBulletCollisionComponent& operator=(const PlayerBulletCollisionComponent&) = delete;
+		PlayerBulletCollisionComponent& operator=(PlayerBulletCollisionComponent&&) = delete;
+
 	private:
 		dae::Scene& m_Scene;
 		dae::GameObject& m_Player;

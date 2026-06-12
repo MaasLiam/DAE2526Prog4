@@ -21,6 +21,13 @@ namespace galaga
 
         void AddPlayer(dae::GameObject* player);
 
+        ~EnemyPlayerCollisionComponent() override = default;
+
+        EnemyPlayerCollisionComponent(const EnemyPlayerCollisionComponent&) = delete;
+        EnemyPlayerCollisionComponent(EnemyPlayerCollisionComponent&&) = delete;
+        EnemyPlayerCollisionComponent& operator=(const EnemyPlayerCollisionComponent&) = delete;
+        EnemyPlayerCollisionComponent& operator=(EnemyPlayerCollisionComponent&&) = delete;
+
     private:
         dae::Scene& m_Scene;
         std::vector<dae::GameObject*> m_Players;

@@ -46,6 +46,13 @@ namespace galaga
 			dae::TextComponent& controlsP2Text
 		);
 
+		~GalagaGameControllerComponent() override = default;
+
+		GalagaGameControllerComponent(const GalagaGameControllerComponent&) = delete;
+		GalagaGameControllerComponent(GalagaGameControllerComponent&&) = delete;
+		GalagaGameControllerComponent& operator=(const GalagaGameControllerComponent&) = delete;
+		GalagaGameControllerComponent& operator=(GalagaGameControllerComponent&&) = delete;
+
 		void Update(float deltaTime) override;
 
 		void RegisterPlayer(dae::GameObject* player);

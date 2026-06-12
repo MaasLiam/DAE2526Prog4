@@ -19,6 +19,13 @@ namespace galaga
 
 		void Update(float deltaTime) override;
 
+		~BossTractorBeamComponent() override = default;
+
+		BossTractorBeamComponent(const BossTractorBeamComponent&) = delete;
+		BossTractorBeamComponent(BossTractorBeamComponent&&) = delete;
+		BossTractorBeamComponent& operator=(const BossTractorBeamComponent&) = delete;
+		BossTractorBeamComponent& operator=(BossTractorBeamComponent&&) = delete;
+
 	private:
 		void CreateBeamVisual();
 		void RemoveBeamVisual();

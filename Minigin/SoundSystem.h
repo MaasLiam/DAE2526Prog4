@@ -9,7 +9,13 @@ namespace dae
 	class SoundSystem
 	{
 	public:
+		SoundSystem() = default;
 		virtual ~SoundSystem() = default;
+
+		SoundSystem(const SoundSystem&) = delete;
+		SoundSystem(SoundSystem&&) = delete;
+		SoundSystem& operator=(const SoundSystem&) = delete;
+		SoundSystem& operator=(SoundSystem&&) = delete;
 
 		virtual void Play(SoundId id, float volume) = 0;
 		virtual void Load(SoundId id, const std::string& filePath) = 0;

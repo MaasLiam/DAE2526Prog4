@@ -10,6 +10,13 @@ namespace dae
 	public:
 		explicit LoggingSoundSystem(std::unique_ptr<SoundSystem>&& realSoundSystem);
 
+		~LoggingSoundSystem() override = default;
+
+		LoggingSoundSystem(const LoggingSoundSystem&) = delete;
+		LoggingSoundSystem(LoggingSoundSystem&&) = delete;
+		LoggingSoundSystem& operator=(const LoggingSoundSystem&) = delete;
+		LoggingSoundSystem& operator=(LoggingSoundSystem&&) = delete;
+
 		void Play(SoundId id, float volume) override;
 		void Load(SoundId id, const std::string& filePath) override;
 

@@ -18,6 +18,13 @@ namespace galaga
 	public:
 		VersusBossComponent(dae::GameObject* owner, GalagaGameControllerComponent& gameController, dae::GameObject& targetPlayer);
 
+		~VersusBossComponent() override = default;
+
+		VersusBossComponent(const VersusBossComponent&) = delete;
+		VersusBossComponent(VersusBossComponent&&) = delete;
+		VersusBossComponent& operator=(const VersusBossComponent&) = delete;
+		VersusBossComponent& operator=(VersusBossComponent&&) = delete;
+
 		void Update(float deltaTime) override;
 		void StartDive();
 		void StartTractorBeam();

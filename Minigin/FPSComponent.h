@@ -11,6 +11,13 @@ namespace dae
 		FPSComponent(GameObject* parent); 
 		void Update(float deltaTime);
 
+		~FPSComponent() override = default;
+
+		FPSComponent(const FPSComponent&) = delete;
+		FPSComponent(FPSComponent&&) = delete;
+		FPSComponent& operator=(const FPSComponent&) = delete;
+		FPSComponent& operator=(FPSComponent&&) = delete;
+
 		private:
 			TextComponent* m_pTextComponent{};
 			float m_AccumulatedTime{};

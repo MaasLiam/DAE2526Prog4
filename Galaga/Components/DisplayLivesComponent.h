@@ -24,6 +24,11 @@ namespace galaga
 		~DisplayLivesComponent() override;
 		void OnSubjectDestroyed(dae::Subject* subject) override;
 
+		DisplayLivesComponent(const DisplayLivesComponent&) = delete;
+		DisplayLivesComponent(DisplayLivesComponent&&) = delete;
+		DisplayLivesComponent& operator=(const DisplayLivesComponent&) = delete;
+		DisplayLivesComponent& operator=(DisplayLivesComponent&&) = delete;
+
 	private:
 		void UpdateText();
 

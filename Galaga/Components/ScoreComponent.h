@@ -15,6 +15,13 @@ namespace galaga
 		int GetScore() const;
 		dae::Subject& GetSubject();
 
+		~ScoreComponent() override = default;
+
+		ScoreComponent(const ScoreComponent&) = delete;
+		ScoreComponent(ScoreComponent&&) = delete;
+		ScoreComponent& operator=(const ScoreComponent&) = delete;
+		ScoreComponent& operator=(ScoreComponent&&) = delete;
+
 	private:
 		int m_Score{ 0 };
 		dae::Subject m_Subject{};

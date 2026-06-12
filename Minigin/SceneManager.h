@@ -16,6 +16,13 @@ namespace dae
 		void Update(float deltaTime);
 		void Render();
 		void LateUpdate();
+
+		~SceneManager() override = default;
+
+		SceneManager(const SceneManager&) = delete;
+		SceneManager(SceneManager&&) = delete;
+		SceneManager& operator=(const SceneManager&) = delete;
+		SceneManager& operator=(SceneManager&&) = delete;
 	private:
 		friend class Singleton<SceneManager>;
 		SceneManager() = default;

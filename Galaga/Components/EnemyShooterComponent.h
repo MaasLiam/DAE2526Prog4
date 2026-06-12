@@ -17,6 +17,13 @@ namespace galaga
 
 		void Update(float deltaTime) override;
 
+		~EnemyShooterComponent() override = default;
+
+		EnemyShooterComponent(const EnemyShooterComponent&) = delete;
+		EnemyShooterComponent(EnemyShooterComponent&&) = delete;
+		EnemyShooterComponent& operator=(const EnemyShooterComponent&) = delete;
+		EnemyShooterComponent& operator=(EnemyShooterComponent&&) = delete;
+
 	private:
 		void Shoot();
 

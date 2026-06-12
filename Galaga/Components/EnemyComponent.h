@@ -29,6 +29,10 @@ namespace galaga
 	public:
 		EnemyComponent(dae::GameObject* owner, galaga::EnemyType type);
 		~EnemyComponent() override;
+		EnemyComponent(const EnemyComponent&) = delete;
+		EnemyComponent(EnemyComponent&&) = delete;
+		EnemyComponent& operator=(const EnemyComponent&) = delete;
+		EnemyComponent& operator=(EnemyComponent&&) = delete;
 
 		void Update(float deltaTime) override;
 

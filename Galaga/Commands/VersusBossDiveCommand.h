@@ -13,6 +13,13 @@ namespace galaga
 
 		void Execute(float deltaTime) override;
 
+		~VersusBossDiveCommand() override = default;
+
+		VersusBossDiveCommand(const VersusBossDiveCommand&) = delete;
+		VersusBossDiveCommand(VersusBossDiveCommand&&) = delete;
+		VersusBossDiveCommand& operator=(const VersusBossDiveCommand&) = delete;
+		VersusBossDiveCommand& operator=(VersusBossDiveCommand&&) = delete;
+
 	private:
 		VersusBossComponent& m_Boss;
 	};

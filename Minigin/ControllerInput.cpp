@@ -276,8 +276,6 @@ dae::ControllerInput::ControllerInput(unsigned int controllerIndex)
 }
 
 dae::ControllerInput::~ControllerInput() = default;
-dae::ControllerInput::ControllerInput(ControllerInput&&) noexcept = default;
-dae::ControllerInput& dae::ControllerInput::operator=(ControllerInput&&) noexcept = default;
 
 void dae::ControllerInput::AddBinding(std::unique_ptr<Command> command, InputKey key, InputState state)
 {

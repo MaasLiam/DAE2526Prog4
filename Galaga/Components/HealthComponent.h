@@ -10,6 +10,13 @@ namespace galaga
 	public:
 		HealthComponent(dae::GameObject* parent, int startLives = 3);
 
+		~HealthComponent() override = default;
+
+		HealthComponent(const HealthComponent&) = delete;
+		HealthComponent(HealthComponent&&) = delete;
+		HealthComponent& operator=(const HealthComponent&) = delete;
+		HealthComponent& operator=(HealthComponent&&) = delete;
+
 		void LoseLife();
 		void Reset(int lives);
 		int GetLives() const;

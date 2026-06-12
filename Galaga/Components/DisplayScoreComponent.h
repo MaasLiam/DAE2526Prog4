@@ -23,6 +23,11 @@ namespace galaga
 		~DisplayScoreComponent() override;
 		void OnSubjectDestroyed(dae::Subject* subject) override;
 
+		DisplayScoreComponent(const DisplayScoreComponent&) = delete;
+		DisplayScoreComponent(DisplayScoreComponent&&) = delete;
+		DisplayScoreComponent& operator=(const DisplayScoreComponent&) = delete;
+		DisplayScoreComponent& operator=(DisplayScoreComponent&&) = delete;
+
 	private:
 		void UpdateText();
 

@@ -12,6 +12,12 @@ namespace galaga
 		SelectGameModeCommand(GalagaGameControllerComponent& gameController, GameMode gameMode);
 
 		void Execute(float deltaTime) override;
+		~SelectGameModeCommand() override = default;
+
+		SelectGameModeCommand(const SelectGameModeCommand&) = delete;
+		SelectGameModeCommand(SelectGameModeCommand&&) = delete;
+		SelectGameModeCommand& operator=(const SelectGameModeCommand&) = delete;
+		SelectGameModeCommand& operator=(SelectGameModeCommand&&) = delete;
 
 	private:
 		GalagaGameControllerComponent& m_GameController;

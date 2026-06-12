@@ -18,6 +18,13 @@ namespace galaga
 
 		void Execute(float deltaTime) override;
 
+		~VersusBossShootCommand() override = default;
+
+		VersusBossShootCommand(const VersusBossShootCommand&) = delete;
+		VersusBossShootCommand(VersusBossShootCommand&&) = delete;
+		VersusBossShootCommand& operator=(const VersusBossShootCommand&) = delete;
+		VersusBossShootCommand& operator=(VersusBossShootCommand&&) = delete;
+
 	private:
 		dae::GameObject& m_Boss;
 		dae::GameObject& m_TargetPlayer;

@@ -16,6 +16,13 @@ namespace dae
 		void SetLocalPosition(const glm::vec3& position);
 		const glm::vec3& GetWorldPosition() const;
 		void SetDirtyWorldPosition();
+
+		~TransformComponent() override = default;
+
+		TransformComponent(const TransformComponent&) = delete;
+		TransformComponent(TransformComponent&&) = delete;
+		TransformComponent& operator=(const TransformComponent&) = delete;
+		TransformComponent& operator=(TransformComponent&&) = delete;
 	private:
 		glm::vec3 m_LocalPosition{};
 		mutable glm::vec3 m_WorldPosition{};

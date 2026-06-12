@@ -13,6 +13,13 @@ namespace galaga
 
 		void Execute(float deltaTime) override;
 
+		~ChangeInitialCommand() override = default;
+
+		ChangeInitialCommand(const ChangeInitialCommand&) = delete;
+		ChangeInitialCommand(ChangeInitialCommand&&) = delete;
+		ChangeInitialCommand& operator=(const ChangeInitialCommand&) = delete;
+		ChangeInitialCommand& operator=(ChangeInitialCommand&&) = delete;
+
 	private:
 		GalagaGameControllerComponent& m_GameController;
 		int m_Direction{};

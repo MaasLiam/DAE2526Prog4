@@ -13,6 +13,13 @@ namespace galaga
 
 		void Execute(float deltaTime) override;
 
+		~VersusBossTractorBeamCommand() override = default;
+
+		VersusBossTractorBeamCommand(const VersusBossTractorBeamCommand&) = delete;
+		VersusBossTractorBeamCommand(VersusBossTractorBeamCommand&&) = delete;
+		VersusBossTractorBeamCommand& operator=(const VersusBossTractorBeamCommand&) = delete;
+		VersusBossTractorBeamCommand& operator=(VersusBossTractorBeamCommand&&) = delete;
+
 	private:
 		VersusBossComponent& m_Boss;
 	};

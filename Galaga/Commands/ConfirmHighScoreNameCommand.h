@@ -12,6 +12,13 @@ namespace galaga
 
 		void Execute(float deltaTime) override;
 
+		~ConfirmHighScoreNameCommand() override = default;
+
+		ConfirmHighScoreNameCommand(const ConfirmHighScoreNameCommand&) = delete;
+		ConfirmHighScoreNameCommand(ConfirmHighScoreNameCommand&&) = delete;
+		ConfirmHighScoreNameCommand& operator=(const ConfirmHighScoreNameCommand&) = delete;
+		ConfirmHighScoreNameCommand& operator=(ConfirmHighScoreNameCommand&&) = delete;
+
 	private:
 		GalagaGameControllerComponent& m_GameController;
 	};

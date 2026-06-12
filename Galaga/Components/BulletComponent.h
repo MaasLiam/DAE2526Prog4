@@ -21,6 +21,11 @@ namespace galaga
 
 		void Update(float deltaTime) override;
 
+		BulletComponent(const BulletComponent&) = delete;
+		BulletComponent(BulletComponent&&) = delete;
+		BulletComponent& operator=(const BulletComponent&) = delete;
+		BulletComponent& operator=(BulletComponent&&) = delete;
+
 	private:
 		dae::Scene& m_Scene;
 		float m_Speed{};
