@@ -45,7 +45,6 @@ namespace galaga
 		bool CanShootForCurrentState() const;
 		void SpawnBullet();
 
-		dae::GameObject& m_Shooter;
 		dae::Scene& m_Scene;
 		GalagaGameControllerComponent* m_GameController{};
 		MissileLimitComponent* m_MissileLimit{};

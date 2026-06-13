@@ -44,8 +44,7 @@ galaga::ShootCommand::ShootCommand(
 	ShootOwner owner,
 	ControlContext controlContext
 )
-	: m_Shooter(shooter)
-	, m_Scene(scene)
+	: m_Scene(scene)
 	, m_GameController(gameController)
 	, m_MissileLimit(shooter.GetComponent<MissileLimitComponent>())
 	, m_ShooterTransform(shooter.GetComponent<dae::TransformComponent>())

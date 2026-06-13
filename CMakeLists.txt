@@ -40,6 +40,7 @@ add_library(${ENGINE_TARGET} STATIC
   Minigin/ServiceLocator.cpp
   Minigin/LoggingSoundSystem.cpp
   Minigin/SDLSoundSystem.cpp
+  Minigin/Observer.cpp
 )
 
 # game executable
@@ -83,7 +84,7 @@ add_executable(${TARGET_NAME} ${TARGET_PARAM}
   Galaga/Components/EnemyBulletCollisionComponent.cpp
   Galaga/Components/EnemyShooterComponent.cpp
   Galaga/Components/BossTractorBeamComponent.cpp
-  Galaga/Components/CapturedFighterComponent.cpp "Minigin/Observer.cpp")
+  Galaga/Components/CapturedFighterComponent.cpp)
 
 # enable c++20 features
 target_compile_features(${ENGINE_TARGET} PUBLIC cxx_std_20)
