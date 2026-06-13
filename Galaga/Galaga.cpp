@@ -479,11 +479,11 @@ void Galaga::Initialize()
 	// Player 2
 	go = std::make_unique<dae::GameObject>();
 	go->AddComponent<dae::TransformComponent>();
-	go->AddComponent<galaga::HealthComponent>(4);
+	go->AddComponent<galaga::HealthComponent>(galaga::gameplay::StartingLives);
 	go->AddComponent<galaga::ScoreComponent>();
 	go->AddComponent<galaga::MissileLimitComponent>();
 	go->AddComponent<galaga::VersusBossComponent>(gameControllerComponent, *player1Object);
-	go->AddComponent<dae::RenderComponent>("Sprites/BossGalaga.png");
+	go->AddComponent<dae::RenderComponent>(galaga::gameplay::FighterTwoSprite);
 	go->GetComponent<dae::TransformComponent>()->SetLocalPosition(galaga::gameplay::PlayerTwoStartPosition);
 
 	auto* player2Health = go->GetComponent<galaga::HealthComponent>();

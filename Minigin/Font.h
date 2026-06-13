@@ -14,10 +14,10 @@ namespace dae
 		explicit Font(const std::string& fullPath, float size);
 		~Font();
 
-		Font(const Font &) = delete;
-		Font(Font &&) = delete;
-		Font & operator= (const Font &) = delete;
-		Font & operator= (const Font &&) = delete;
+		Font(const Font&) = delete;
+		Font(Font&&) = delete;
+		Font& operator=(const Font&) = delete;
+		Font& operator=(Font&&) = delete;
 	private:
 		TTF_Font* m_font;
 	};

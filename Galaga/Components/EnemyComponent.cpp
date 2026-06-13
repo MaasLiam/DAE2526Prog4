@@ -12,6 +12,15 @@
 
 namespace
 {
+	constexpr float DiveWiggleInterval{ 0.45f };
+	constexpr float DiveResetY{ 520.f };
+
+	constexpr float TractorBeamMoveSpeed{ 180.f };
+	constexpr float TractorBeamSnapDistance{ 8.f };
+	constexpr float TractorBeamDuration{ 2.5f };
+
+	constexpr float MinimumMovementDistance{ 0.001f };
+	constexpr float EntrySnapDistance{ 4.f };
 	std::vector<glm::vec3> CreateBeeEntryPath(const glm::vec3& start, const glm::vec3& target)
 	{
 		const bool entersFromLeft = start.x < target.x;
@@ -112,9 +121,12 @@ public:
 	{
 		switch (enemy.GetType())
 		{
-		case galaga::EnemyType::Bee: return 50;
-		case galaga::EnemyType::Butterfly: return 80;
-		case galaga::EnemyType::BossGalaga: return 150;
+		case galaga::EnemyType::Bee: 
+			return galaga::gameplay::BeeFormationScore;
+		case galaga::EnemyType::Butterfly: 
+			return galaga::gameplay::ButterflyFormationScore;
+		case galaga::EnemyType::BossGalaga: 
+			return galaga::gameplay::BossFormationScore;
 		}
 
 		return 0;
@@ -138,14 +150,14 @@ public:
 
 		auto position = transform->GetLocalPosition();
 
-		const float diveSpeed = enemy.GetType() == galaga::EnemyType::Butterfly ? 90.f : 70.f;
+		const float diveSpeed = enemy.GetType() == galaga::EnemyType::Butterfly ? galaga::gameplay::ButterflyDiveSpeed : galaga::gameplay::BeeDiveSpeed;
 		position.y += diveSpeed * deltaTime;
 
 		if (enemy.GetType() == galaga::EnemyType::Butterfly)
-			position.x += m_Direction * 50.f * deltaTime;
+			position.x += m_Direction * galaga::gameplay::ButterflyHorizontalDiveSpeed * deltaTime;
 
 		m_WiggleTimer += deltaTime;
-		if (m_WiggleTimer >= 0.45f)
+		if (m_WiggleTimer >= DiveWiggleInterval)
 		{
 			m_WiggleTimer = 0.f;
 			m_Direction *= -1.f;
@@ -153,7 +165,7 @@ public:
 
 		transform->SetLocalPosition(position);
 
-		if (position.y > 520.f)
+		if (position.y > DiveResetY)
 		{
 			transform->SetLocalPosition(enemy.GetFormationPosition());
 			return std::make_unique<InFormationEnemyState>();
@@ -166,9 +178,12 @@ public:
 	{
 		switch (enemy.GetType())
 		{
-		case galaga::EnemyType::Bee: return 100;
-		case galaga::EnemyType::Butterfly: return 160;
-		case galaga::EnemyType::BossGalaga: return 400;
+		case galaga::EnemyType::Bee: 
+			return galaga::gameplay::BeeDivingScore;
+		case galaga::EnemyType::Butterfly: 
+			return galaga::gameplay::ButterflyDivingScore;
+		case galaga::EnemyType::BossGalaga: 
+			return galaga::gameplay::BossDivingScore;
 		}
 
 		return 0;
@@ -212,9 +227,9 @@ public:
 		switch (m_Phase)
 		{
 		case Phase::MovingToBeamPosition:
-			MoveTowards(*transform, m_BeamPosition, 180.f, deltaTime);
+			MoveTowards(*transform, m_BeamPosition, TractorBeamMoveSpeed, deltaTime);
 
-			if (IsNear(*transform, m_BeamPosition, 8.f))
+			if (IsNear(*transform, m_BeamPosition, TractorBeamSnapDistance))
 			{
 				transform->SetLocalPosition(m_BeamPosition);
 				enemy.SetTractorBeamActive(true);
@@ -229,7 +244,7 @@ public:
 		case Phase::BeamActive:
 			m_Timer += deltaTime;
 
-			if (m_Timer >= 2.5f)
+			if (m_Timer >= TractorBeamDuration)
 			{
 				enemy.SetTractorBeamActive(false);
 				m_Phase = Phase::Returning;
@@ -238,9 +253,9 @@ public:
 			break;
 
 		case Phase::Returning:
-			MoveTowards(*transform, enemy.GetFormationPosition(), 180.f, deltaTime);
+			MoveTowards(*transform, enemy.GetFormationPosition(), TractorBeamMoveSpeed, deltaTime);
 
-			if (IsNear(*transform, enemy.GetFormationPosition(), 8.f))
+			if (IsNear(*transform, enemy.GetFormationPosition(), TractorBeamSnapDistance))
 			{
 				transform->SetLocalPosition(enemy.GetFormationPosition());
 				return std::make_unique<InFormationEnemyState>();
@@ -254,7 +269,7 @@ public:
 
 	int GetScoreValue(const galaga::EnemyComponent&) const override
 	{
-		return 400;
+		return galaga::gameplay::BossDivingScore;
 	}
 
 private:
@@ -271,7 +286,7 @@ private:
 		const auto difference = target - position;
 		const float distance = glm::length(difference);
 
-		if (distance <= 0.001f)
+		if (distance <= MinimumMovementDistance)
 		{
 			return;
 		}
@@ -335,7 +350,7 @@ public:
 		const glm::vec3 direction = target - position;
 		const float distance = glm::length(direction);
 
-		if (distance < 4.f)
+		if (distance < EntrySnapDistance)
 		{
 			transform->SetLocalPosition(target);
 			++m_CurrentWaypoint;
@@ -371,13 +386,13 @@ public:
 		switch (enemy.GetType())
 		{
 		case galaga::EnemyType::Bee:
-			return 50;
+			return galaga::gameplay::BeeFormationScore;
 
 		case galaga::EnemyType::Butterfly:
-			return 80;
+			return galaga::gameplay::ButterflyFormationScore;
 
 		case galaga::EnemyType::BossGalaga:
-			return 150;
+			return galaga::gameplay::BossFormationScore;
 		}
 
 		return 0;
@@ -389,16 +404,16 @@ private:
 		switch (type)
 		{
 		case galaga::EnemyType::Bee:
-			return 170.f;
+			return galaga::gameplay::BeeEntrySpeed;
 
 		case galaga::EnemyType::Butterfly:
-			return 190.f;
+			return galaga::gameplay::ButterflyEntrySpeed;
 
 		case galaga::EnemyType::BossGalaga:
-			return 150.f;
+			return galaga::gameplay::BossEntrySpeed;
 		}
 
-		return 170.f;
+		return galaga::gameplay::BeeEntrySpeed;
 	}
 
 	std::vector<glm::vec3> m_Waypoints{};
@@ -411,7 +426,7 @@ galaga::EnemyComponent::EnemyComponent(dae::GameObject* owner, galaga::EnemyType
 {
 	if (m_Type == galaga::EnemyType::BossGalaga)
 	{
-		m_Health = 2;
+		m_Health = galaga::gameplay::BossHealth;
 	}
 
 	ChangeState(std::make_unique<InFormationEnemyState>());
@@ -521,7 +536,7 @@ void galaga::EnemyComponent::TakeDamage()
 		auto* render = GetOwner()->GetComponent<dae::RenderComponent>();
 		if (render)
 		{
-			render->SetTexture("Sprites/BossGalagaDamaged.png");
+			render->SetTexture(galaga::gameplay::VersusBossDamagedSprite);
 		}
 
 		return;

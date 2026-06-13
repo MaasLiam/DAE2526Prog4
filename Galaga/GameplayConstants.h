@@ -36,6 +36,9 @@ namespace galaga::gameplay
 	inline constexpr const char* FighterSprite{ "Sprites/fighter01.png" };
 	inline constexpr const char* CapturedFighterSprite{ "Sprites/fighter02.png" };
 	inline constexpr const char* TractorBeamSprite{ "Sprites/TractorBeam.png" };
+	inline constexpr const char* FighterTwoSprite{ "Sprites/fighter03.png" };
+	inline constexpr const char* VersusBossSprite{ "Sprites/BossGalaga.png" };
+	inline constexpr const char* VersusBossDamagedSprite{ "Sprites/BossGalagaDamaged.png" };
 
 	inline constexpr float PlayerHitboxOffsetX{ -20.f };
 	inline constexpr float PlayerHitboxOffsetY{ 0.f };
@@ -59,4 +62,22 @@ namespace galaga::gameplay
 	inline constexpr int MaxStageIndex{ 3 };
 
 	inline constexpr float HiddenObjectPosition{ -1000.f };
+
+	inline constexpr int BeeFormationScore{ 50 };
+	inline constexpr int ButterflyFormationScore{ 80 };
+	inline constexpr int BossFormationScore{ 150 };
+
+	inline constexpr int BeeDivingScore{ 100 };
+	inline constexpr int ButterflyDivingScore{ 160 };
+	inline constexpr int BossDivingScore{ 400 };
+
+	inline constexpr int BossHealth{ 2 };
+
+	inline constexpr float BeeDiveSpeed{ 70.f };
+	inline constexpr float ButterflyDiveSpeed{ 90.f };
+	inline constexpr float ButterflyHorizontalDiveSpeed{ 50.f };
+
+	inline constexpr float BeeEntrySpeed{ 170.f };
+	inline constexpr float ButterflyEntrySpeed{ 190.f };
+	inline constexpr float BossEntrySpeed{ 150.f };
 }

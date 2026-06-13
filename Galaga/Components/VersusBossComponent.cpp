@@ -26,6 +26,7 @@ void galaga::VersusBossComponent::Update(float deltaTime)
 {
 	if (m_GameController.GetState() != galaga::GameState::Playing || m_GameController.GetGameMode() != galaga::GameMode::Versus)
 	{
+		HideBeamVisual();
 		return;
 	}
 
@@ -184,7 +185,7 @@ void galaga::VersusBossComponent::TakeHit()
 		auto* render = GetOwner()->GetComponent<dae::RenderComponent>();
 		if (render)
 		{
-			render->SetTexture("Sprites/BossGalagaDamaged.png");
+			render->SetTexture(galaga::gameplay::VersusBossDamagedSprite);
 		}
 
 		m_DamagedVisualApplied = true;
@@ -199,6 +200,7 @@ bool galaga::VersusBossComponent::IsDead() const
 void galaga::VersusBossComponent::SetBeamVisual(dae::GameObject* beamVisual)
 {
 	m_BeamVisual = beamVisual;
+	HideBeamVisual();
 }
 
 void galaga::VersusBossComponent::Reset()
@@ -206,10 +208,10 @@ void galaga::VersusBossComponent::Reset()
 	m_State = BossState::Idle;
 	m_TractorTimer = 0.f;
 	m_HasDamagedPlayerThisAttack = false;
-	m_HitPoints = 4;
+	m_HitPoints = galaga::gameplay::BossHealth;
 	m_DamagedVisualApplied = false;
 
-	SetBeamVisible(false);
+	HideBeamVisual();
 
 	auto* transform = GetOwner()->GetComponent<dae::TransformComponent>();
 	if (transform)
@@ -220,7 +222,7 @@ void galaga::VersusBossComponent::Reset()
 	auto* render = GetOwner()->GetComponent<dae::RenderComponent>();
 	if (render)
 	{
-		render->SetTexture("Sprites/BossGalaga.png");
+		render->SetTexture(galaga::gameplay::VersusBossSprite);
 	}
 }
 
@@ -329,29 +331,37 @@ void galaga::VersusBossComponent::TryCapturePlayerWithBeam()
 
 void galaga::VersusBossComponent::SetBeamVisible(bool isVisible)
 {
-	if (!m_BeamVisual)
+	if (m_BeamVisual == nullptr)
 	{
 		return;
 	}
 
 	auto* beamTransform = m_BeamVisual->GetComponent<dae::TransformComponent>();
-	if (!beamTransform)
+
+	if (beamTransform == nullptr)
 	{
 		return;
 	}
 
 	if (!isVisible)
 	{
-		beamTransform->SetLocalPosition(-1000.f, -1000.f, 0.f);
+		beamTransform->SetLocalPosition(galaga::gameplay::HiddenObjectPosition, galaga::gameplay::HiddenObjectPosition, 0.f);
+
 		return;
 	}
 
 	auto* bossTransform = GetOwner()->GetComponent<dae::TransformComponent>();
-	if (!bossTransform)
+
+	if (bossTransform == nullptr)
 	{
 		return;
 	}
 
 	const auto bossPosition = bossTransform->GetLocalPosition();
 	beamTransform->SetLocalPosition(bossPosition + m_BeamVisualOffset);
+}
+
+void galaga::VersusBossComponent::HideBeamVisual()
+{
+	SetBeamVisible(false);
 }

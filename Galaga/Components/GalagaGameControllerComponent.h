@@ -146,6 +146,7 @@ namespace galaga
 
 		void SetObjectPosition(dae::GameObject* object, const glm::vec3& position) const;
 		void HideObject(dae::GameObject* object) const;
+		void SetObjectTexture(dae::GameObject* object, const char* texturePath) const;
 
 		bool IsObjectRegistered(const std::vector<dae::GameObject*>& objects, dae::GameObject* object) const;
 		bool IsGameplayObjectRegistered(const std::vector<GameplayObject>& objects, dae::GameObject* object) const;

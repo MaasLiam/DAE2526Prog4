@@ -17,6 +17,9 @@
 #include "ServiceLocator.h"
 #include "SoundIds.h"
 
+#include "RenderComponent.h"
+#include "ResourceManager.h"
+
 #include <algorithm>
 #include <array>
 #include <string>
@@ -767,15 +770,18 @@ void galaga::GalagaGameControllerComponent::ShowPlayerTwoObjects()
 			continue;
 		}
 
-		if (m_GameMode == galaga::GameMode::Versus)
-		{
-			const bool isPlayerTwoShip = gameplayObject.gameplayPosition.x == galaga::gameplay::PlayerTwoStartX && gameplayObject.gameplayPosition.y == galaga::gameplay::PlayerStartY;
+		const bool isPlayerTwoShip = gameplayObject.gameplayPosition.x == galaga::gameplay::PlayerTwoStartX && gameplayObject.gameplayPosition.y == galaga::gameplay::PlayerStartY;
 
-			if (isPlayerTwoShip)
-			{
-				SetObjectPosition(gameplayObject.object, galaga::gameplay::VersusBossStartPosition);
-				continue;
-			}
+		if (isPlayerTwoShip && m_GameMode == galaga::GameMode::Versus)
+		{
+			SetObjectTexture(gameplayObject.object, galaga::gameplay::VersusBossSprite);
+			SetObjectPosition(gameplayObject.object, galaga::gameplay::VersusBossStartPosition);
+			continue;
+		}
+
+		if (isPlayerTwoShip)
+		{
+			SetObjectTexture(gameplayObject.object, galaga::gameplay::FighterTwoSprite);
 		}
 
 		SetObjectPosition(gameplayObject.object, gameplayObject.gameplayPosition);
@@ -818,6 +824,24 @@ void galaga::GalagaGameControllerComponent::SetObjectPosition(dae::GameObject* o
 void galaga::GalagaGameControllerComponent::HideObject(dae::GameObject * object) const
 {
 	SetObjectPosition(object, glm::vec3{galaga::gameplay::HiddenObjectPosition, galaga::gameplay::HiddenObjectPosition, 0.f});
+}
+
+void galaga::GalagaGameControllerComponent::SetObjectTexture(dae::GameObject* object, const char* texturePath) const
+{
+	if (object == nullptr || texturePath == nullptr)
+	{
+		return;
+	}
+
+	auto* renderComponent = object->GetComponent<dae::RenderComponent>();
+
+	if (renderComponent == nullptr)
+	{
+		return;
+	}
+
+	const auto texture = dae::ResourceManager::GetInstance().LoadTexture(texturePath);
+	renderComponent->SetTexture(texture.get());
 }
 
 bool galaga::GalagaGameControllerComponent::IsObjectRegistered(const std::vector<dae::GameObject*>& objects, dae::GameObject* object) const

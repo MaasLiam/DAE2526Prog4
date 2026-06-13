@@ -50,6 +50,7 @@ namespace galaga
 		void TryDamagePlayerOnContact();
 		void TryCapturePlayerWithBeam();
 		void SetBeamVisible(bool isVisible);
+		void HideBeamVisual();
 
 		GalagaGameControllerComponent& m_GameController;
 		dae::GameObject& m_TargetPlayer;
@@ -68,7 +69,7 @@ namespace galaga
 
 		float m_TractorTimer{};
 		bool m_HasDamagedPlayerThisAttack{};
-		int m_HitPoints{ 4 };
+		int m_HitPoints{ galaga::gameplay::BossHealth };
 		bool m_DamagedVisualApplied{};
 		dae::GameObject* m_BeamVisual{};
 	};
