@@ -55,10 +55,9 @@ jobs:
       - name: Prepare Artifact
         run: |
           mkdir -p dist
-          find build-web -maxdepth 2 -type f -name "Galaga_web.*" -print -exec cp {} dist/ \;
+          cp build-web/minigin_web.* dist/
+          cp build-web/Galaga_web.* dist/
           cp web/*.html dist/
-          echo "Dist contents:"
-          ls -la dist
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3
