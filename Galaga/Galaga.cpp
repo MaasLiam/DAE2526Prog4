@@ -50,6 +50,10 @@
 
 namespace
 {
+	constexpr float HudX{ 640.f };
+	constexpr float HudTopY{ 60.f };
+	constexpr float HudLineGap{ 40.f };
+
 	struct TextObject
 	{
 		dae::GameObject* object{};
@@ -325,7 +329,7 @@ void Galaga::Initialize()
 	auto* titleText = titleTextObject.text;
 
 	//score text
-	auto scoreTextObject = CreateTextObject(scene, "", font, SDL_Color{ 255, 255, 0, 255 }, glm::vec3{ 330.f, 125.f, 0.f });
+	auto scoreTextObject = CreateTextObject(scene, "", font, SDL_Color{ 255, 255, 0, 255 }, glm::vec3{ HudX, HudTopY, 0.f });
 	auto* scoreText = scoreTextObject.text;
 	auto* scoreTextTransform = scoreTextObject.transform;
 
@@ -367,12 +371,12 @@ void Galaga::Initialize()
 
 	//add controll info text
 	//p1
-	auto controlsP1TextObject = CreateTextObject(scene, "P1: ARROWS to move, X and C to shoot", font, SDL_Color{ 255, 255, 255, 255 }, glm::vec3{ 20.f, 520.f, 0.f });
+	auto controlsP1TextObject = CreateTextObject(scene, "Keyboard: ARROWS to move, X and C to shoot", font, SDL_Color{ 255, 255, 255, 255 }, glm::vec3{ 20.f, 520.f, 0.f });
 	auto* controlsP1Text = controlsP1TextObject.text;
 	auto* controlsP1Object = controlsP1TextObject.object;
 
 	//p2
-	auto controlsP2TextObject = CreateTextObject(scene, "Gamepad: C0 P1 solo / P2 or Boss multi, C1 P1 multi", font, SDL_Color{ 255, 255, 255, 255 }, glm::vec3{ 20.f, 550.f, 0.f });
+	auto controlsP2TextObject = CreateTextObject(scene, "Gamepad: dpad to move, A to shoot. Versus: B to dive Y to start beam", font, SDL_Color{ 255, 255, 255, 255 }, glm::vec3{ 20.f, 550.f, 0.f });
 	auto* controlsP2Text = controlsP2TextObject.text;
 	auto* controlsP2Object = controlsP2TextObject.object;
 	auto gameController = std::make_unique<dae::GameObject>();
@@ -396,12 +400,11 @@ void Galaga::Initialize()
 	auto& gameControllerComponent = gameControllerObject->AddComponent<galaga::GalagaGameControllerComponent>(scene, gameControllerUi);
 
 	gameControllerComponent.RegisterMenuObject(logoObject);
-	gameControllerComponent.RegisterGameplayObject(controlsP1Object, glm::vec3{ 20.f, 520.f, 0.f });
-	gameControllerComponent.RegisterPlayerTwoGameplayObject(controlsP2Object, glm::vec3{ 20.f, 550.f, 0.f });
+	gameControllerComponent.RegisterMenuObject(controlsP1Object);
+	gameControllerComponent.RegisterMenuObject(controlsP2Object);
 	// Player 1
-	/*auto go = std::make_unique<dae::GameObject>();*/
 	auto go = std::make_unique<dae::GameObject>();
-	go->AddComponent<galaga::HealthComponent>(4);
+	go->AddComponent<galaga::HealthComponent>(galaga::gameplay::StartingLives);
 	go->AddComponent<galaga::ScoreComponent>();
 	go->AddComponent<galaga::MissileLimitComponent>();
 	go->AddComponent<dae::TransformComponent>();
@@ -457,17 +460,20 @@ void Galaga::Initialize()
 	gameControllerComponent.RegisterGameplayObject(player1Object, galaga::gameplay::PlayerOneStartPosition);
 
 	//p1 lives and score ui
+	const auto player1LivesPosition = glm::vec3{ HudX, HudTopY, 0.f };
+	const auto player1ScorePosition = glm::vec3{ HudX, HudTopY + HudLineGap, 0.f };
+
 	const auto player1Ui = CreatePlayerUi(
 		scene,
 		font,
 		*player1Health,
 		*player1Score,
 		"P1",
-		glm::vec3{ 20.f, 60.f, 0.f },
-		glm::vec3{ 120.f, 60.f, 0.f });
+		player1LivesPosition,
+		player1ScorePosition);
 
-	gameControllerComponent.RegisterGameplayObject(player1Ui.livesObject, glm::vec3{ 20.f, 60.f, 0.f });
-	gameControllerComponent.RegisterGameplayObject(player1Ui.scoreObject, glm::vec3{ 120.f, 60.f, 0.f });
+	gameControllerComponent.RegisterGameplayObject(player1Ui.livesObject, player1LivesPosition);
+	gameControllerComponent.RegisterGameplayObject(player1Ui.scoreObject, player1ScorePosition);
 
 
 	// Player 2
@@ -486,7 +492,7 @@ void Galaga::Initialize()
 
 	auto beamObject = std::make_unique<dae::GameObject>();
 	beamObject->AddComponent<dae::TransformComponent>();
-	beamObject->GetComponent<dae::TransformComponent>()->SetLocalPosition(-1000.f, -1000.f, 0.f);
+	beamObject->GetComponent<dae::TransformComponent>()->SetLocalPosition(galaga::gameplay::HiddenObjectPosition, galaga::gameplay::HiddenObjectPosition, 0.f);
 	beamObject->AddComponent<dae::RenderComponent>(galaga::gameplay::TractorBeamSprite);
 
 	auto* tractorBeamObject = beamObject.get();
@@ -528,17 +534,20 @@ void Galaga::Initialize()
 	gameControllerComponent.RegisterPlayerTwoGameplayObject(player2Object, galaga::gameplay::PlayerTwoStartPosition);
 
 	//player 2 health and score ui
+	const auto player2LivesPosition = glm::vec3{ HudX, HudTopY + HudLineGap * 3.f, 0.f };
+	const auto player2ScorePosition = glm::vec3{ HudX, HudTopY + HudLineGap * 4.f, 0.f };
+
 	const auto player2Ui = CreatePlayerUi(
 		scene,
 		font,
 		*player2Health,
 		*player2Score,
 		"P2",
-		glm::vec3{ 20.f, 90.f, 0.f },
-		glm::vec3{ 120.f, 90.f, 0.f });
+		player2LivesPosition,
+		player2ScorePosition);
 
-	gameControllerComponent.RegisterPlayerTwoGameplayObject(player2Ui.livesObject, glm::vec3{ 20.f, 90.f, 0.f });
-	gameControllerComponent.RegisterPlayerTwoGameplayObject(player2Ui.scoreObject, glm::vec3{ 120.f, 90.f, 0.f });
+	gameControllerComponent.RegisterPlayerTwoGameplayObject(player2Ui.livesObject, player2LivesPosition);
+	gameControllerComponent.RegisterPlayerTwoGameplayObject(player2Ui.scoreObject, player2ScorePosition);
 
 	auto collisionManager = std::make_unique<dae::GameObject>();
 	collisionManager->AddComponent<galaga::EnemyPlayerCollisionComponent>(scene, gameControllerComponent);

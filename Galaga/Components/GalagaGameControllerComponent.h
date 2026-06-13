@@ -101,16 +101,36 @@ namespace galaga
 			glm::vec3 gameplayPosition{};
 		};
 
+		static constexpr int InitialCount{ 3 };
+		static constexpr int GameModeCount{ 3 };
+
+		static constexpr float StartScreenDuration{ 1.5f };
+		static constexpr float StageCompleteDuration{ 2.f };
+
 		bool AreAllEnemiesDefeated() const;
 		bool AreAllPlayersDead() const;
 		bool IsPlayerOneDead() const;
 
 		int GetTotalScore() const;
 		std::string GetInitialsString() const;
+		galaga::GameMode GetSelectedGameMode() const;
 
 		void SetState(galaga::GameState state);
+
+		void EnterStartScreenState();
+		void EnterPlayingState();
+		void EnterStageCompleteState();
+		void EnterHighScoreEntryState();
+		void EnterHighScoreScreenState();
+		void EnterModeSelectionState();
+
+		void UpdateStartScreenState();
+		void UpdatePlayingState();
+		void UpdateStageCompleteState();
+
 		void StartStage(int stageIndex);
 		void EnterHighScoreScreen();
+		void ResetPlayer(dae::GameObject& player, size_t playerIndex);
 		void SaveHighScore();
 
 		void RefreshNameEntryText();
@@ -123,6 +143,12 @@ namespace galaga
 		void ShowPlayerTwoObjects();
 		void HideMenuObjects();
 		void ShowMenuObjects();
+
+		void SetObjectPosition(dae::GameObject* object, const glm::vec3& position) const;
+		void HideObject(dae::GameObject* object) const;
+
+		bool IsObjectRegistered(const std::vector<dae::GameObject*>& objects, dae::GameObject* object) const;
+		bool IsGameplayObjectRegistered(const std::vector<GameplayObject>& objects, dae::GameObject* object) const;
 
 		dae::Scene& m_Scene;
 
@@ -154,10 +180,9 @@ namespace galaga
 		int m_ShotsFired{};
 		int m_Hits{};
 
-		std::array<char, 3> m_Initials{ 'A', 'A', 'A' };
+		std::array<char, InitialCount> m_Initials{ 'A', 'A', 'A' };
 		int m_SelectedInitialIndex{};
 
-		static constexpr int MaxStageIndex{ 3 };
 		galaga::GameMode m_GameMode{ galaga::GameMode::SinglePlayer };
 		int m_SelectedGameModeIndex{};
 		std::string m_ResultMessage{};

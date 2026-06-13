@@ -17,6 +17,8 @@
 #include "ServiceLocator.h"
 #include "SoundIds.h"
 
+#include <algorithm>
+#include <array>
 #include <string>
 
 galaga::GalagaGameControllerComponent::GalagaGameControllerComponent(dae::GameObject* owner, dae::Scene& scene, GameControllerUi ui)
@@ -45,51 +47,18 @@ void galaga::GalagaGameControllerComponent::Update(float deltaTime)
 	switch (m_State)
 	{
 	case galaga::GameState::StartScreen:
-		if (m_StateTimer >= 1.5f)
-		{
-			SetState(galaga::GameState::ModeSelection);
-		}
+		UpdateStartScreenState();
 		break;
 
 	case galaga::GameState::Playing:
-		if (m_GameMode == galaga::GameMode::Versus)
-		{
-			if (IsPlayerOneDead())
-			{
-				SetVersusWinner(2);
-			}
-
-			return;
-		}
-
-		if (AreAllPlayersDead())
-		{
-			EnterHighScoreScreen();
-			return;
-		}
-
-		if (AreAllEnemiesDefeated())
-		{
-			SetState(galaga::GameState::StageComplete);
-		}
+		UpdatePlayingState();
 		break;
 
 	case galaga::GameState::StageComplete:
-		if (m_StateTimer < 2.f)
-		{
-			return;
-		}
-
-		if (m_StageIndex >= MaxStageIndex)
-		{
-			EnterHighScoreScreen();
-			return;
-		}
-
-		StartStage(m_StageIndex + 1);
+		UpdateStageCompleteState();
 		break;
+
 	case galaga::GameState::ModeSelection:
-		break;
 	case galaga::GameState::EnteringHighScore:
 	case galaga::GameState::HighScoreScreen:
 		break;
@@ -98,39 +67,47 @@ void galaga::GalagaGameControllerComponent::Update(float deltaTime)
 
 void galaga::GalagaGameControllerComponent::RegisterPlayer(dae::GameObject* player)
 {
-	if (player)
+	if (player == nullptr || IsObjectRegistered(m_Players, player))
 	{
-		m_Players.push_back(player);
+		return;
 	}
+
+	m_Players.emplace_back(player);
 }
 
 void galaga::GalagaGameControllerComponent::RegisterObjectToHideOnResults(dae::GameObject* object)
 {
-	if (object)
+	if (object == nullptr || IsObjectRegistered(m_ObjectsToHideOnResults, object))
 	{
-		m_ObjectsToHideOnResults.push_back(object);
+		return;
 	}
+
+	m_ObjectsToHideOnResults.emplace_back(object);
 }
 
 void galaga::GalagaGameControllerComponent::RegisterGameplayObject(dae::GameObject* object, const glm::vec3& gameplayPosition)
 {
-	if (object)
+	if (object == nullptr || IsGameplayObjectRegistered(m_GameplayObjects, object))
 	{
-		m_GameplayObjects.push_back(GameplayObject{ object, gameplayPosition });
+		return;
 	}
+
+	m_GameplayObjects.emplace_back(GameplayObject{ object, gameplayPosition });
 }
 
 void galaga::GalagaGameControllerComponent::RegisterPlayerTwoGameplayObject(dae::GameObject* object, const glm::vec3& gameplayPosition)
 {
-	if (object)
+	if (object == nullptr || IsGameplayObjectRegistered(m_PlayerTwoGameplayObjects, object))
 	{
-		m_PlayerTwoGameplayObjects.push_back(GameplayObject{ object, gameplayPosition });
+		return;
 	}
+
+	m_PlayerTwoGameplayObjects.emplace_back(GameplayObject{ object, gameplayPosition });
 }
 
 void galaga::GalagaGameControllerComponent::RegisterMenuObject(dae::GameObject* object)
 {
-	if (object == nullptr)
+	if (object == nullptr || IsGameplayObjectRegistered(m_MenuObjects, object))
 	{
 		return;
 	}
@@ -142,7 +119,7 @@ void galaga::GalagaGameControllerComponent::RegisterMenuObject(dae::GameObject* 
 		return;
 	}
 
-	m_MenuObjects.push_back(GameplayObject{ object, transform->GetLocalPosition() });
+	m_MenuObjects.emplace_back(GameplayObject{ object, transform->GetLocalPosition() });
 }
 
 galaga::GameState galaga::GalagaGameControllerComponent::GetState() const
@@ -165,36 +142,12 @@ void galaga::GalagaGameControllerComponent::StartGame()
 
 	for (size_t index{}; index < m_Players.size(); ++index)
 	{
-		auto* player = m_Players[index];
-		if (!player)
+		if (m_Players[index] == nullptr)
 		{
 			continue;
 		}
 
-		auto* health = player->GetComponent<HealthComponent>();
-		if (health)
-		{
-			health->Reset(4);
-		}
-
-		auto* score = player->GetComponent<ScoreComponent>();
-		if (score)
-		{
-			score->Reset();
-		}
-
-		auto* transform = player->GetComponent<dae::TransformComponent>();
-		if (transform)
-		{
-			const glm::vec3 startPosition = index == 0 ? galaga::gameplay::PlayerOneStartPosition : galaga::gameplay::PlayerTwoStartPosition;
-			transform->SetLocalPosition(startPosition);
-		}
-
-		auto* versusBoss = player->GetComponent<VersusBossComponent>();
-		if (versusBoss)
-		{
-			versusBoss->Reset();
-		}
+		ResetPlayer(*m_Players[index], index);
 	}
 
 	StartStage(1);
@@ -207,7 +160,7 @@ void galaga::GalagaGameControllerComponent::SkipStage()
 		return;
 	}
 
-	if (m_StageIndex >= MaxStageIndex)
+	if (m_StageIndex >= galaga::gameplay::MaxStageIndex)
 	{
 		EnterHighScoreScreen();
 		return;
@@ -276,9 +229,9 @@ void galaga::GalagaGameControllerComponent::MoveInitialCursor(int direction)
 
 	if (m_SelectedInitialIndex < 0)
 	{
-		m_SelectedInitialIndex = 2;
+		m_SelectedInitialIndex = InitialCount - 1;
 	}
-	else if (m_SelectedInitialIndex > 2)
+	else if (m_SelectedInitialIndex >= InitialCount)
 	{
 		m_SelectedInitialIndex = 0;
 	}
@@ -308,9 +261,9 @@ void galaga::GalagaGameControllerComponent::MoveMenuSelection(int direction)
 
 	if (m_SelectedGameModeIndex < 0)
 	{
-		m_SelectedGameModeIndex = 2;
+		m_SelectedGameModeIndex = GameModeCount - 1;
 	}
-	else if (m_SelectedGameModeIndex > 2)
+	else if (m_SelectedGameModeIndex >= GameModeCount)
 	{
 		m_SelectedGameModeIndex = 0;
 	}
@@ -322,21 +275,7 @@ void galaga::GalagaGameControllerComponent::ConfirmCurrentSelection()
 {
 	if (m_State == galaga::GameState::ModeSelection)
 	{
-		switch (m_SelectedGameModeIndex)
-		{
-		case 0:
-			SelectGameMode(galaga::GameMode::SinglePlayer);
-			break;
-
-		case 1:
-			SelectGameMode(galaga::GameMode::Coop);
-			break;
-
-		case 2:
-			SelectGameMode(galaga::GameMode::Versus);
-			break;
-		}
-
+		SelectGameMode(GetSelectedGameMode());
 		return;
 	}
 
@@ -442,6 +381,19 @@ std::string galaga::GalagaGameControllerComponent::GetInitialsString() const
 	return std::string{ m_Initials.begin(), m_Initials.end() };
 }
 
+galaga::GameMode galaga::GalagaGameControllerComponent::GetSelectedGameMode() const
+{
+	constexpr std::array<galaga::GameMode, GameModeCount> gameModes{galaga::GameMode::SinglePlayer, galaga::GameMode::Coop, galaga::GameMode::Versus};
+	const auto selectedIndex = static_cast<size_t>(m_SelectedGameModeIndex);
+
+	if (selectedIndex >= gameModes.size())
+	{
+		return galaga::GameMode::SinglePlayer;
+	}
+
+	return gameModes[selectedIndex];
+}
+
 void galaga::GalagaGameControllerComponent::SetState(galaga::GameState state)
 {
 	m_State = state;
@@ -450,84 +402,160 @@ void galaga::GalagaGameControllerComponent::SetState(galaga::GameState state)
 	switch (m_State)
 	{
 	case galaga::GameState::StartScreen:
-		HideResultTexts();
-		HideGameplayObjects();
-		ShowMenuObjects();
-		m_TitleText.SetText("");
+		EnterStartScreenState();
 		break;
-	break;
 
 	case galaga::GameState::Playing:
-		HideResultTexts();
-		HideMenuObjects();
-		ShowGameplayObjects();
-
-		m_ScoreTextTransform.SetLocalPosition(330.f, 125.f, 0.f);
-		m_TitleText.SetText("STAGE " + std::to_string(m_StageIndex));
+		EnterPlayingState();
 		break;
 
 	case galaga::GameState::StageComplete:
-		HideResultTexts();
-		HideMenuObjects();
-		m_TitleText.SetText("STAGE CLEAR!");
+		EnterStageCompleteState();
 		break;
 
 	case galaga::GameState::EnteringHighScore:
-	{
-		HideMenuObjects();
-		HideGameplayInstructionTexts();
-		m_TitleText.SetText(m_ResultMessage.empty() ? "- RESULTS -" : m_ResultMessage);
-
-		m_ScoreTextTransform.SetLocalPosition(120.f, 125.f, 0.f);
-		m_InitialsTextTransform.SetLocalPosition(390.f, 210.f, 0.f);
-		m_InstructionTextTransform.SetLocalPosition(95.f, 285.f, 0.f);
-		m_TableTitleTextTransform.SetLocalPosition(320.f, 360.f, 0.f);
-
-		const int ratio = m_ShotsFired == 0 ? 0 : (m_Hits * 100) / m_ShotsFired;
-
-		m_ScoreText.SetText(
-			"SCORE: " + std::to_string(m_FinalScore) +
-			"   SHOTS: " + std::to_string(m_ShotsFired) +
-			"   HITS: " + std::to_string(m_Hits) +
-			"   HIT%: " + std::to_string(ratio)
-		);
-
-		m_TableTitleText.SetText("ENTER YOUR INITIALS");
-		m_InstructionText.SetText("UP/DOWN CHANGE  LEFT/RIGHT SELECT  ENTER/A SAVE");
-		RefreshNameEntryText();
+		EnterHighScoreEntryState();
 		break;
-	}
 
 	case galaga::GameState::HighScoreScreen:
-		HideMenuObjects();
-		m_ScoreTextTransform.SetLocalPosition(300.f, 125.f, 0.f);
-		m_InstructionTextTransform.SetLocalPosition(130.f, 300.f, 0.f);
-		m_TableTitleTextTransform.SetLocalPosition(320.f, 360.f, 0.f);
-
-		m_TitleText.SetText("- HIGHSCORES -");
-		m_ScoreText.SetText("FINAL SCORE: " + std::to_string(m_FinalScore));
-		m_InitialsText.SetText("");
-		m_InstructionText.SetText("C/X/A/ENTER RETURN TO MENU");
-		m_TableTitleText.SetText("RANK   NAME   SCORE");
-		RefreshHighScoreTable();
+		EnterHighScoreScreenState();
 		break;
 
 	case galaga::GameState::ModeSelection:
-		HideResultTexts();
-		HideGameplayObjects();
-		ShowMenuObjects();
-
-		m_TitleText.SetText("");
-		m_ScoreTextTransform.SetLocalPosition(390.f, 235.f, 0.f);
-		m_InitialsTextTransform.SetLocalPosition(390.f, 280.f, 0.f);
-		m_TableTitleTextTransform.SetLocalPosition(390.f, 325.f, 0.f);
-		m_InstructionTextTransform.SetLocalPosition(235.f, 390.f, 0.f);
-		m_InstructionText.SetText("UP/DOWN SELECT     C/X/A START");
-
-		RefreshModeSelectionText();
+		EnterModeSelectionState();
 		break;
 	}
+}
 
+void galaga::GalagaGameControllerComponent::EnterStartScreenState()
+{
+	HideResultTexts();
+	HideGameplayObjects();
+	ShowMenuObjects();
+
+	m_TitleText.SetText("");
+}
+
+void galaga::GalagaGameControllerComponent::EnterPlayingState()
+{
+	HideResultTexts();
+	HideMenuObjects();
+	ShowGameplayObjects();
+
+	m_ScoreTextTransform.SetLocalPosition(330.f, 125.f, 0.f);
+	m_TitleText.SetText("STAGE " + std::to_string(m_StageIndex));
+}
+
+void galaga::GalagaGameControllerComponent::EnterStageCompleteState()
+{
+	HideResultTexts();
+	HideMenuObjects();
+
+	m_TitleText.SetText("STAGE CLEAR!");
+}
+
+void galaga::GalagaGameControllerComponent::EnterHighScoreEntryState()
+{
+	HideMenuObjects();
+	HideGameplayInstructionTexts();
+
+	m_TitleText.SetText(m_ResultMessage.empty() ? "- RESULTS -" : m_ResultMessage);
+	m_ScoreTextTransform.SetLocalPosition(120.f, 125.f, 0.f);
+	m_InitialsTextTransform.SetLocalPosition(390.f, 210.f, 0.f);
+	m_InstructionTextTransform.SetLocalPosition(95.f, 285.f, 0.f);
+	m_TableTitleTextTransform.SetLocalPosition(320.f, 360.f, 0.f);
+
+	const int hitRatio = m_ShotsFired == 0 ? 0 : (m_Hits * 100) / m_ShotsFired;
+	m_ScoreText.SetText("SCORE: " + std::to_string(m_FinalScore) + "   SHOTS: " + std::to_string(m_ShotsFired) + "   HITS: " + std::to_string(m_Hits) + "   HIT%: " + std::to_string(hitRatio));
+	m_TableTitleText.SetText("ENTER YOUR INITIALS");
+	m_InstructionText.SetText("UP/DOWN CHANGE  LEFT/RIGHT SELECT  ENTER/A SAVE");
+
+	RefreshNameEntryText();
+}
+
+void galaga::GalagaGameControllerComponent::EnterHighScoreScreenState()
+{
+	HideMenuObjects();
+
+	m_ScoreTextTransform.SetLocalPosition(300.f, 125.f, 0.f);
+	m_InstructionTextTransform.SetLocalPosition(130.f, 300.f, 0.f);
+	m_TableTitleTextTransform.SetLocalPosition(320.f, 360.f, 0.f);
+
+	m_TitleText.SetText("- HIGHSCORES -");
+	m_ScoreText.SetText("FINAL SCORE: " + std::to_string(m_FinalScore));
+	m_InitialsText.SetText("");
+	m_InstructionText.SetText("C/X/A/ENTER RETURN TO MENU");
+	m_TableTitleText.SetText("RANK   NAME   SCORE");
+
+	RefreshHighScoreTable();
+}
+
+void galaga::GalagaGameControllerComponent::EnterModeSelectionState()
+{
+	HideResultTexts();
+	HideGameplayObjects();
+	ShowMenuObjects();
+
+	m_TitleText.SetText("");
+
+	m_ScoreTextTransform.SetLocalPosition(390.f, 235.f, 0.f);
+	m_InitialsTextTransform.SetLocalPosition(390.f, 280.f, 0.f);
+	m_TableTitleTextTransform.SetLocalPosition(390.f, 325.f, 0.f);
+	m_InstructionTextTransform.SetLocalPosition(235.f, 390.f, 0.f);
+
+	m_InstructionText.SetText("UP/DOWN SELECT     C/X/A START");
+
+	RefreshModeSelectionText();
+}
+
+void galaga::GalagaGameControllerComponent::UpdateStartScreenState()
+{
+	if (m_StateTimer < StartScreenDuration)
+	{
+		return;
+	}
+
+	SetState(galaga::GameState::ModeSelection);
+}
+
+void galaga::GalagaGameControllerComponent::UpdatePlayingState()
+{
+	if (m_GameMode == galaga::GameMode::Versus)
+	{
+		if (IsPlayerOneDead())
+		{
+			SetVersusWinner(2);
+		}
+
+		return;
+	}
+
+	if (AreAllPlayersDead())
+	{
+		EnterHighScoreScreen();
+		return;
+	}
+
+	if (AreAllEnemiesDefeated())
+	{
+		SetState(galaga::GameState::StageComplete);
+	}
+}
+
+void galaga::GalagaGameControllerComponent::UpdateStageCompleteState()
+{
+	if (m_StateTimer < StageCompleteDuration)
+	{
+		return;
+	}
+
+	if (m_StageIndex >= galaga::gameplay::MaxStageIndex)
+	{
+		EnterHighScoreScreen();
+		return;
+	}
+
+	StartStage(m_StageIndex + 1);
 }
 
 void galaga::GalagaGameControllerComponent::StartStage(int stageIndex)
@@ -547,19 +575,38 @@ void galaga::GalagaGameControllerComponent::EnterHighScoreScreen()
 
 	for (auto* object : m_ObjectsToHideOnResults)
 	{
-		if (!object)
-		{
-			continue;
-		}
-
-		auto* transform = object->GetComponent<dae::TransformComponent>();
-		if (transform)
-		{
-			transform->SetLocalPosition(-1000.f, -1000.f, 0.f);
-		}
+		HideObject(object);
 	}
 
 	SetState(galaga::GameState::EnteringHighScore);
+}
+
+void galaga::GalagaGameControllerComponent::ResetPlayer(dae::GameObject& player, size_t playerIndex)
+{
+	auto* health = player.GetComponent<HealthComponent>();
+	if (health != nullptr)
+	{
+		health->Reset(galaga::gameplay::StartingLives);
+	}
+
+	auto* score = player.GetComponent<ScoreComponent>();
+	if (score != nullptr)
+	{
+		score->Reset();
+	}
+
+	auto* transform = player.GetComponent<dae::TransformComponent>();
+	if (transform != nullptr)
+	{
+		const auto startPosition = playerIndex == 0 ? galaga::gameplay::PlayerOneStartPosition : galaga::gameplay::PlayerTwoStartPosition;
+		transform->SetLocalPosition(startPosition);
+	}
+
+	auto* versusBoss = player.GetComponent<VersusBossComponent>();
+	if (versusBoss != nullptr)
+	{
+		versusBoss->Reset();
+	}
 }
 
 void galaga::GalagaGameControllerComponent::SaveHighScore()
@@ -571,7 +618,7 @@ void galaga::GalagaGameControllerComponent::RefreshNameEntryText()
 {
 	std::string initials{};
 
-	for (int index{}; index < 3; ++index)
+	for (int index{}; index < InitialCount; ++index)
 	{
 		if (index == m_SelectedInitialIndex)
 		{
@@ -646,7 +693,7 @@ void galaga::GalagaGameControllerComponent::HideGameplayInstructionTexts()
 
 void galaga::GalagaGameControllerComponent::RefreshModeSelectionText()
 {
-	constexpr std::array<const char*, 3> modeNames
+	constexpr std::array<const char*, GameModeCount> modeNames
 	{
 		"1 PLAYER",
 		"2 PLAYERS",
@@ -681,72 +728,33 @@ void galaga::GalagaGameControllerComponent::RefreshModeSelectionText()
 
 void galaga::GalagaGameControllerComponent::HideGameplayObjects()
 {
-	auto hideObject = [](const GameplayObject& gameplayObject)
-		{
-			if (!gameplayObject.object)
-			{
-				return;
-			}
-
-			auto* transform = gameplayObject.object->GetComponent<dae::TransformComponent>();
-			if (transform)
-			{
-				transform->SetLocalPosition(-1000.f, -1000.f, 0.f);
-			}
-		};
-
 	for (const auto& gameplayObject : m_GameplayObjects)
 	{
-		hideObject(gameplayObject);
+		HideObject(gameplayObject.object);
 	}
 
 	for (const auto& gameplayObject : m_PlayerTwoGameplayObjects)
 	{
-		hideObject(gameplayObject);
+		HideObject(gameplayObject.object);
 	}
 }
 
-
 void galaga::GalagaGameControllerComponent::ShowGameplayObjects()
 {
-	auto showObject = [](const GameplayObject& gameplayObject)
-		{
-			if (!gameplayObject.object)
-			{
-				return;
-			}
-
-			auto* transform = gameplayObject.object->GetComponent<dae::TransformComponent>();
-			if (transform)
-			{
-				transform->SetLocalPosition(gameplayObject.gameplayPosition);
-			}
-		};
-
 	for (const auto& gameplayObject : m_GameplayObjects)
 	{
-		showObject(gameplayObject);
+		SetObjectPosition(gameplayObject.object, gameplayObject.gameplayPosition);
 	}
 
 	if (m_GameMode != galaga::GameMode::SinglePlayer)
 	{
 		ShowPlayerTwoObjects();
+		return;
 	}
-	else
-	{
-		for (const auto& gameplayObject : m_PlayerTwoGameplayObjects)
-		{
-			if (!gameplayObject.object)
-			{
-				continue;
-			}
 
-			auto* transform = gameplayObject.object->GetComponent<dae::TransformComponent>();
-			if (transform)
-			{
-				transform->SetLocalPosition(-1000.f, -1000.f, 0.f);
-			}
-		}
+	for (const auto& gameplayObject : m_PlayerTwoGameplayObjects)
+	{
+		HideObject(gameplayObject.object);
 	}
 }
 
@@ -754,13 +762,7 @@ void galaga::GalagaGameControllerComponent::ShowPlayerTwoObjects()
 {
 	for (const auto& gameplayObject : m_PlayerTwoGameplayObjects)
 	{
-		if (!gameplayObject.object)
-		{
-			continue;
-		}
-
-		auto* transform = gameplayObject.object->GetComponent<dae::TransformComponent>();
-		if (!transform)
+		if (gameplayObject.object == nullptr)
 		{
 			continue;
 		}
@@ -771,17 +773,12 @@ void galaga::GalagaGameControllerComponent::ShowPlayerTwoObjects()
 
 			if (isPlayerTwoShip)
 			{
-				transform->SetLocalPosition(galaga::gameplay::VersusBossStartPosition);
-			}
-			else
-			{
-				transform->SetLocalPosition(gameplayObject.gameplayPosition);
+				SetObjectPosition(gameplayObject.object, galaga::gameplay::VersusBossStartPosition);
+				continue;
 			}
 		}
-		else
-		{
-			transform->SetLocalPosition(gameplayObject.gameplayPosition);
-		}
+
+		SetObjectPosition(gameplayObject.object, gameplayObject.gameplayPosition);
 	}
 }
 
@@ -789,19 +786,7 @@ void galaga::GalagaGameControllerComponent::HideMenuObjects()
 {
 	for (const auto& menuObject : m_MenuObjects)
 	{
-		if (menuObject.object == nullptr)
-		{
-			continue;
-		}
-
-		auto* transform = menuObject.object->GetComponent<dae::TransformComponent>();
-
-		if (transform == nullptr)
-		{
-			continue;
-		}
-
-		transform->SetLocalPosition(-1000.f, -1000.f, 0.f);
+		HideObject(menuObject.object);
 	}
 }
 
@@ -809,20 +794,47 @@ void galaga::GalagaGameControllerComponent::ShowMenuObjects()
 {
 	for (const auto& menuObject : m_MenuObjects)
 	{
-		if (menuObject.object == nullptr)
-		{
-			continue;
-		}
-
-		auto* transform = menuObject.object->GetComponent<dae::TransformComponent>();
-
-		if (transform == nullptr)
-		{
-			continue;
-		}
-
-		transform->SetLocalPosition(menuObject.gameplayPosition);
+		SetObjectPosition(menuObject.object, menuObject.gameplayPosition);
 	}
+}
+
+void galaga::GalagaGameControllerComponent::SetObjectPosition(dae::GameObject* object, const glm::vec3& position) const
+{
+	if (object == nullptr)
+	{
+		return;
+	}
+
+	auto* transform = object->GetComponent<dae::TransformComponent>();
+
+	if (transform == nullptr)
+	{
+		return;
+	}
+
+	transform->SetLocalPosition(position);
+}
+
+void galaga::GalagaGameControllerComponent::HideObject(dae::GameObject * object) const
+{
+	SetObjectPosition(object, glm::vec3{galaga::gameplay::HiddenObjectPosition, galaga::gameplay::HiddenObjectPosition, 0.f});
+}
+
+bool galaga::GalagaGameControllerComponent::IsObjectRegistered(const std::vector<dae::GameObject*>& objects, dae::GameObject* object) const
+{
+	return std::find(objects.begin(), objects.end(), object) != objects.end();
+}
+
+bool galaga::GalagaGameControllerComponent::IsGameplayObjectRegistered(const std::vector<GameplayObject>& objects, dae::GameObject* object) const
+{
+	return std::find_if(
+		objects.begin(),
+		objects.end(),
+		[object](const GameplayObject& gameplayObject)
+		{
+			return gameplayObject.object == object;
+		}
+	) != objects.end();
 }
 
 void galaga::GalagaGameControllerComponent::SelectGameMode(galaga::GameMode gameMode)

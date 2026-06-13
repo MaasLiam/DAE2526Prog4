@@ -54,4 +54,9 @@ namespace galaga::gameplay
 
 	inline constexpr float EnemyBulletSpawnOffsetX{ -2.f };
 	inline constexpr float EnemyBulletSpawnOffsetY{ 28.f };
+
+	inline constexpr int StartingLives{ 4 };
+	inline constexpr int MaxStageIndex{ 3 };
+
+	inline constexpr float HiddenObjectPosition{ -1000.f };
 }
