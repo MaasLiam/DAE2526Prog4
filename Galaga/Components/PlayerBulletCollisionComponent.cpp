@@ -10,7 +10,6 @@
 galaga::PlayerBulletCollisionComponent::PlayerBulletCollisionComponent(dae::GameObject* owner, dae::Scene& scene, dae::GameObject& player)
 	: dae::Component(owner)
 	, m_Scene(scene)
-	, m_Player(player)
 	, m_BulletCollision(owner->GetComponent<CollisionComponent>())
 	, m_PlayerCollision(player.GetComponent<CollisionComponent>())
 	, m_PlayerHealth(player.GetComponent<HealthComponent>())

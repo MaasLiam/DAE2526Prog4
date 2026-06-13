@@ -28,7 +28,6 @@ namespace galaga
 
 	private:
 		dae::Scene& m_Scene;
-		dae::GameObject& m_Player;
 
 		CollisionComponent* m_BulletCollision{};
 		CollisionComponent* m_PlayerCollision{};
